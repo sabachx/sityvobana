@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>სიტყვობანა – ადმინი</title>
+  <style>
+    :root {
+      --bg:#0f0e17; --bg2:#1a1a2e; --surface:#1e1e3a; --surface2:#252545;
+      --border:#3a3a5c; --text:#fffffe; --dim:#a7a9be; --muted:#666680;
+      --accent:#e8c547; --green:#2dc653; --red:#e55353; --yellow:#c9963a;
+      --radius:8px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min-height:100vh;}
+
+    /* LOGIN */
+    #login-screen{
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      min-height:100vh;gap:16px;padding:20px;
+    }
+    #login-screen h1{font-size:22px;color:var(--accent);}
+    #login-screen p{font-size:13px;color:var(--muted);}
+    #login-screen input{
+      width:280px;padding:12px 16px;background:var(--surface);
+      border:1px solid var(--border);border-radius:var(--radius);
+      color:var(--text);font-size:14px;outline:none;
+    }
+    #login-screen input:focus{border-color:var(--accent);}
+    #login-screen button{
+      width:280px;padding:13px;background:var(--accent);color:var(--bg);
+      border:none;border-radius:var(--radius);font-size:14px;font-weight:700;cursor:pointer;
+    }
+    #login-screen button:hover{background:#f0d060;}
+    .login-err{color:var(--red);font-size:12px;display:none;}
+
+    /* MAIN LAYOUT */
+    #admin-screen{display:none;}
+    .topbar{
+      background:var(--bg2);border-bottom:1px solid var(--border);
+      padding:12px 24px;display:flex;align-items:center;justify-content:space-between;
+      position:sticky;top:0;z-index:100;
+    }
+    .topbar h1{font-size:18px;color:var(--accent);}
+    .topbar-right{display:flex;gap:10px;align-items:center;}
+    .topbar-right span{font-size:12px;color:var(--muted);}
+    .logout-btn{
+      background:var(--surface);border:1px solid var(--border);
+      color:var(--dim);padding:6px 14px;border-radius:var(--radius);
+      font-size:12px;cursor:pointer;
+    }
+    .logout-btn:hover{border-color:var(--red);color:var(--red);}
+
+    /* TABS */
+    .tabs{
+      display:flex;border-bottom:1px solid var(--border);
+      padding:0 24px;background:var(--bg2);
+    }
+    .tab{
+      padding:12px 20px;font-size:13px;font-weight:600;
+      color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;
+      transition:all .2s;
+    }
+    .tab:hover{color:var(--text);}
+    .tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+    /* CONTENT */
+    .content{max-width:900px;margin:0 auto;padding:24px;}
+
+    /* STATS ROW */
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+    .stat-card{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--radius);padding:16px;text-align:center;
+    }
+    .stat-card .sc-n{font-size:28px;font-weight:700;color:var(--accent);}
+    .stat-card .sc-l{font-size:11px;color:var(--muted);margin-top:4px;}
+
+    /* SECTION HEADER */
+    .section-header{
+      display:flex;align-items:center;justify-content:space-between;
+      margin-bottom:14px;
+    }
+    .section-header h2{font-size:15px;font-weight:700;color:var(--text);}
+    .badge{
+      font-size:10px;padding:3px 8px;border-radius:10px;font-weight:700;
+    }
+    .badge-yellow{background:rgba(232,197,71,.15);color:var(--accent);}
+    .badge-green{background:rgba(45,198,83,.15);color:var(--green);}
+    .badge-red{background:rgba(229,83,83,.15);color:var(--red);}
+
+    /* SUGGESTION CARDS */
+    .sugg-card{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--radius);padding:14px 16px;
+      display:flex;align-items:center;gap:14px;margin-bottom:8px;
+    }
+    .sugg-word{font-size:20px;font-weight:700;color:var(--accent);min-width:90px;letter-spacing:2px;}
+    .sugg-meta{flex:1;font-size:11px;color:var(--muted);line-height:1.6;}
+    .sugg-meta span{color:var(--dim);}
+    .sugg-actions{display:flex;gap:6px;}
+    .act-btn{
+      padding:6px 14px;border-radius:var(--radius);font-size:12px;font-weight:600;
+      cursor:pointer;border:none;transition:all .2s;
+    }
+    .act-approve{background:rgba(45,198,83,.15);color:var(--green);}
+    .act-approve:hover{background:var(--green);color:#fff;}
+    .act-reject{background:rgba(229,83,83,.12);color:var(--red);}
+    .act-reject:hover{background:var(--red);color:#fff;}
+    .act-pending{background:rgba(232,197,71,.12);color:var(--accent);}
+    .act-pending:hover{background:var(--yellow);color:var(--bg);}
+
+    /* STATUS PILL */
+    .status-pill{
+      font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;
+    }
+    .sp-pending{background:rgba(232,197,71,.15);color:var(--accent);}
+    .sp-approved{background:rgba(45,198,83,.15);color:var(--green);}
+    .sp-rejected{background:rgba(229,83,83,.15);color:var(--red);}
+
+    /* WORD LIST TABLE */
+    .word-table{width:100%;border-collapse:collapse;}
+    .word-table th{
+      text-align:left;font-size:11px;color:var(--muted);
+      letter-spacing:1px;text-transform:uppercase;
+      padding:8px 12px;border-bottom:1px solid var(--border);
+    }
+    .word-table td{
+      padding:9px 12px;font-size:13px;border-bottom:1px solid rgba(58,58,92,.4);
+    }
+    .word-table tr:hover td{background:rgba(255,255,255,.02);}
+    .word-ka{font-size:15px;font-weight:600;color:var(--accent);letter-spacing:1px;}
+    .word-type{font-size:10px;padding:2px 7px;border-radius:8px;}
+    .wt-daily{background:rgba(45,198,83,.12);color:var(--green);}
+    .wt-valid{background:rgba(232,197,71,.1);color:var(--accent);}
+    .del-word-btn{
+      background:none;border:none;color:var(--muted);cursor:pointer;
+      font-size:14px;padding:2px 6px;border-radius:4px;
+    }
+    .del-word-btn:hover{background:rgba(229,83,83,.15);color:var(--red);}
+
+    /* ADD WORD FORM */
+    .add-form{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--radius);padding:16px;margin-bottom:20px;
+      display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;
+    }
+    .add-form .field{display:flex;flex-direction:column;gap:4px;}
+    .add-form label{font-size:11px;color:var(--muted);}
+    .add-form input,.add-form select{
+      background:var(--surface2);border:1px solid var(--border);
+      color:var(--text);padding:9px 12px;border-radius:var(--radius);
+      font-size:13px;outline:none;
+    }
+    .add-form input:focus,.add-form select:focus{border-color:var(--accent);}
+    .add-form select option{background:var(--surface2);}
+    .add-btn{
+      padding:9px 20px;background:var(--accent);color:var(--bg);
+      border:none;border-radius:var(--radius);font-size:13px;font-weight:700;
+      cursor:pointer;
+    }
+    .add-btn:hover{background:#f0d060;}
+
+    /* FILTER BAR */
+    .filter-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+    .filter-btn{
+      padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;
+      cursor:pointer;border:1px solid var(--border);background:var(--surface);
+      color:var(--muted);transition:all .2s;
+    }
+    .filter-btn.active{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+    .search-input{
+      flex:1;min-width:160px;padding:5px 12px;background:var(--surface);
+      border:1px solid var(--border);border-radius:20px;
+      color:var(--text);font-size:12px;outline:none;
+    }
+    .search-input:focus{border-color:var(--accent);}
+
+    /* EMPTY STATE */
+    .empty{text-align:center;padding:40px;color:var(--muted);font-size:13px;}
+
+    /* TOAST */
+    #toast{
+      position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+      background:var(--text);color:var(--bg);padding:10px 20px;
+      border-radius:20px;font-size:13px;font-weight:600;
+      opacity:0;transition:opacity .25s;pointer-events:none;z-index:9999;
+      white-space:nowrap;
+    }
+    #toast.show{opacity:1;}
+
+    /* LOADING */
+    .loading{text-align:center;padding:30px;color:var(--muted);font-size:13px;}
+    .spin{display:inline-block;animation:spin 1s linear infinite;}
+    @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+    .tab-panel{display:none;}
+    .tab-panel.active{display:block;}
+
+    @media(max-width:600px){
+      .stats-row{grid-template-columns:repeat(2,1fr);}
+      .sugg-card{flex-wrap:wrap;}
+      .content{padding:16px;}
+    }
+  </style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- ══ LOGIN ══ -->
+<div id="login-screen">
+  <h1>⚡ სიტყვობანა</h1>
+  <p>ადმინის პანელი</p>
+  <input type="password" id="pwd-input" placeholder="პაროლი" onkeydown="if(event.key==='Enter')doLogin()"/>
+  <button onclick="doLogin()">შესვლა</button>
+  <div class="login-err" id="login-err">არასწორი პაროლი</div>
+</div>
+
+<!-- ══ ADMIN ══ -->
+<div id="admin-screen">
+  <div class="topbar">
+    <h1>⚡ სიტყვობანა — ადმინი</h1>
+    <div class="topbar-right">
+      <span id="db-status">🟡 დაკავშირება...</span>
+      <button class="logout-btn" onclick="doLogout()">გასვლა</button>
+    </div>
+  </div>
+
+  <!-- Firebase rules warning -->
+  <div id="rules-banner" style="display:none;background:rgba(229,83,83,.15);border-bottom:1px solid rgba(229,83,83,.3);padding:10px 24px;font-size:12px;color:#e55353;gap:10px;align-items:center;">
+    ⚠️ Firebase-ის წვდომა შეზღუდულია. გადადი Firebase Console → Realtime Database → Rules და დააყენე <code style="background:rgba(0,0,0,.3);padding:2px 6px;border-radius:4px;">".read":true, ".write":true</code>
+    <button onclick="this.parentElement.style.display='none'" style="margin-left:auto;background:none;border:none;color:#e55353;cursor:pointer;font-size:16px">✕</button>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('suggestions')">💡 შეთავაზებები <span id="pending-badge"></span></div>
+    <div class="tab" onclick="switchTab('words')">📚 სიტყვების სია</div>
+    <div class="tab" onclick="switchTab('stats')">📊 სტატისტიკა</div>
+  </div>
+
+  <div class="content">
+
+    <!-- SUGGESTIONS TAB -->
+    <div class="tab-panel active" id="tab-suggestions">
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterSugg('all',this)">ყველა</button>
+        <button class="filter-btn" onclick="filterSugg('pending',this)">განსახილველი</button>
+        <button class="filter-btn" onclick="filterSugg('approved',this)">დამტკიცებული</button>
+        <button class="filter-btn" onclick="filterSugg('rejected',this)">უარყოფილი</button>
+        <input class="search-input" id="sugg-search" placeholder="ძებნა..." oninput="renderSuggestions()"/>
+      </div>
+      <div id="sugg-list"><div class="loading"><span class="spin">⏳</span> იტვირთება...</div></div>
+    </div>
+
+    <!-- WORDS TAB -->
+    <div class="tab-panel" id="tab-words">
+      <div class="add-form">
+        <div class="field">
+          <label>სიტყვა</label>
+          <input type="text" id="new-word" placeholder="ქართული სიტყვა" maxlength="15"/>
+        </div>
+        <button class="add-btn" onclick="addWord()">+ დამატება</button>
+        <button class="add-btn" onclick="toggleBulk()" style="background:var(--surface2);color:var(--dim);border:1px solid var(--border)">📋 მასობრივი დამატება</button>
+      </div>
+
+      <!-- BULK IMPORT -->
+      <div id="bulk-panel" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--accent)">📋 მასობრივი დამატება</div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px">შეიყვანე სიტყვები — თითო სიტყვა თითო სტრიქონზე. მხოლოდ ქართული, მინიმუმ 4 ასო.</p>
+        <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:200px;">
+            <label>სიტყვები (ერთი სტრიქონზე ერთი)</label>
+            <textarea id="bulk-words" placeholder="სახლი&#10;წყალი&#10;ვარდი&#10;ღვინო..." style="width:100%;height:150px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);padding:10px;font-size:13px;resize:vertical;outline:none;font-family:system-ui;margin-top:4px;"></textarea>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;min-width:160px;">
+            <div id="bulk-preview" style="font-size:11px;color:var(--muted);padding:8px;background:var(--bg);border-radius:var(--radius);min-height:40px;"></div>
+            <button class="add-btn" onclick="bulkImport()" style="margin-top:auto">⚡ ყველას დამატება</button>
+          </div>
+        </div>
+        <div id="bulk-result" style="font-size:12px;color:var(--green);display:none;padding:8px;background:rgba(45,198,83,.1);border-radius:var(--radius);"></div>
+      </div>
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterWords('all',this)">ყველა</button>
+        <button class="filter-btn" onclick="filterWords('5',this)">5 ასო (დღის)</button>
+        <button class="filter-btn" onclick="filterWords('6',this)">6 ასო (განსაკუთრებული)</button>
+        <button class="filter-btn" onclick="filterWords('other',this)">სხვა სიგრძე (ბლიცი)</button>
+        <input class="search-input" id="word-search" placeholder="ძებნა..." oninput="renderWords()"/>
+      </div>
+      <div id="word-count" style="font-size:12px;color:var(--muted);margin-bottom:10px;"></div>
+      <div id="word-list"><div class="loading"><span class="spin">⏳</span> იტვირთება...</div></div>
+    </div>
+
+    <!-- STATS TAB -->
+    <div class="tab-panel" id="tab-stats">
+      <div class="stats-row">
+        <div class="stat-card"><div class="sc-n" id="st-total-words">—</div><div class="sc-l">სულ სიტყვა</div></div>
+        <div class="stat-card"><div class="sc-n" id="st-daily-words">—</div><div class="sc-l">დღის სიტყვა</div></div>
+        <div class="stat-card"><div class="sc-n" id="st-pending">—</div><div class="sc-l">განსახილველი</div></div>
+        <div class="stat-card"><div class="sc-n" id="st-approved">—</div><div class="sc-l">დამტკიცებული</div></div>
+      </div>
+      <div class="section-header"><h2>ბოლო შეთავაზებები</h2></div>
+      <div id="recent-sugg"></div>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import {
+  getDatabase, ref, onValue, push, set, update, remove, get
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+// ── CONFIG ──
+const ADMIN_PASSWORD = 'sityvobana2025'; // Change this!
+const FB_CONFIG = {
+  apiKey:"AIzaSyDUwQUWDHXtHtxRq6RcZcbId3z-kzrAwwY",
+  authDomain:"sityvobana-2a717.firebaseapp.com",
+  databaseURL:"https://sityvobana-2a717-default-rtdb.firebaseio.com",
+  projectId:"sityvobana-2a717",
+  storageBucket:"sityvobana-2a717.firebasestorage.app",
+  messagingSenderId:"654904298229",
+  appId:"1:654904298229:web:6d6e54a5681edd5975d3bc"
+};
+
+// Georgian swear word blocklist (add more as needed)
+const BLOCKED_WORDS = [
+  "ლაშქარა","სიძვა","სიძვა","მეძავი","სიხარჯე",
+  // add Georgian profanity here
+];
+
+const app = initializeApp(FB_CONFIG);
+const db  = getDatabase(app);
+
+// ── STATE ──
+let allSuggestions = {};
+let allWords = {};
+let suggFilter = 'all';
+let wordFilter = 'all';
+
+// ── LOGIN ──
+window.doLogin = function() {
+  const pwd = document.getElementById('pwd-input').value;
+  if (pwd === ADMIN_PASSWORD) {
+    sessionStorage.setItem('admin_auth', '1');
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-screen').style.display = 'block';
+    initAdmin();
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+    document.getElementById('pwd-input').value = '';
+    document.getElementById('pwd-input').focus();
+  }
+};
+
+window.doLogout = function() {
+  sessionStorage.removeItem('admin_auth');
+  location.reload();
+};
+
+// Auto-login if session exists
+if (sessionStorage.getItem('admin_auth')) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-screen').style.display = 'block';
+  initAdmin();
+}
+
+// ── INIT ──
+function initAdmin() {
+  document.getElementById('db-status').textContent = '🟡 დაკავშირება...';
+  loadSuggestions();
+  loadWords();
+}
+
+// ── SUGGESTIONS ──
+function loadSuggestions() {
+  const suggRef = ref(db, 'suggestions');
+  onValue(suggRef, snap => {
+    allSuggestions = snap.val() || {};
+    renderSuggestions();
+    updateStats();
+    document.getElementById('db-status').textContent = '🟢 დაკავშირებულია';
+    document.getElementById('rules-banner').style.display = 'none';
+  }, err => {
+    document.getElementById('db-status').textContent = '🔴 შეცდომა';
+    if (err.code === 'PERMISSION_DENIED') {
+      document.getElementById('rules-banner').style.display = 'flex';
+    }
+    document.getElementById('sugg-list').innerHTML = `<div class="empty">⚠️ წვდომა აკრძალულია — Firebase-ის წესები არ არის დაყენებული</div>`;
+  });
+}
+
+window.renderSuggestions = function() {
+  const search = (document.getElementById('sugg-search')?.value || '').trim().toLowerCase();
+  const list = document.getElementById('sugg-list');
+  const entries = Object.entries(allSuggestions)
+    .filter(([,s]) => suggFilter === 'all' || s.status === suggFilter)
+    .filter(([,s]) => !search || (s.word||'').toLowerCase().includes(search))
+    .sort((a,b) => (b[1].date||'').localeCompare(a[1].date||''));
+
+  const pendingCount = Object.values(allSuggestions).filter(s=>s.status==='pending').length;
+  document.getElementById('pending-badge').textContent = pendingCount > 0 ? ` (${pendingCount})` : '';
+
+  if (!entries.length) {
+    list.innerHTML = '<div class="empty">შეთავაზება არ მოიძებნა</div>';
+    return;
+  }
+
+  list.innerHTML = entries.map(([id, s]) => `
+    <div class="sugg-card" id="sc-${id}">
+      <div class="sugg-word">${s.word || '—'}</div>
+      <div class="sugg-meta">
+        <span>${formatDate(s.date)}</span><br>
+        <span class="status-pill sp-${s.status||'pending'}">${statusLabel(s.status)}</span>
+      </div>
+      <div class="sugg-actions">
+        ${s.status !== 'approved' ? `<button class="act-btn act-approve" onclick="approveSugg('${id}','${s.word}')">✓ დამტკიცება</button>` : ''}
+        ${s.status !== 'rejected' ? `<button class="act-btn act-reject" onclick="rejectSugg('${id}')">✕ უარყოფა</button>` : ''}
+        ${s.status === 'rejected' ? `<button class="act-btn act-pending" onclick="pendingSugg('${id}')">↩ განხილვაზე</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+};
+
+window.approveSugg = async function(id, word) {
+  if (!word || [...word].length < 4) { toast('სიტყვა ძალიან მოკლეა'); return; }
+  if (isBlocked(word)) { toast('ეს სიტყვა დაბლოკილია'); return; }
+  try {
+    await update(ref(db, `suggestions/${id}`), { status: 'approved', reviewedAt: new Date().toISOString() });
+    // Check not already in words
+    const existing = Object.values(allWords).find(w => w.word === word);
+    if (!existing) {
+      await push(ref(db, 'words'), {
+        word,
+        length: [...word].length,
+        addedAt: new Date().toISOString(),
+        source: 'suggestion'
+      });
+    }
+    toast(`"${word}" დამტკიცებულია და დამატებულია ✓`);
+  } catch(e) {
+    toast(`შეცდომა: ${e.message}`);
+    console.error(e);
+  }
+};
+
+window.rejectSugg = async function(id) {
+  try { await update(ref(db, `suggestions/${id}`), { status: 'rejected', reviewedAt: new Date().toISOString() }); toast('უარყოფილია'); }
+  catch(e) { toast(`შეცდომა: ${e.message}`); }
+};
+
+window.pendingSugg = async function(id) {
+  try { await update(ref(db, `suggestions/${id}`), { status: 'pending' }); toast('განხილვაზე დაბრუნდა'); }
+  catch(e) { toast(`შეცდომა: ${e.message}`); }
+};
+
+window.filterSugg = function(f, btn) {
+  suggFilter = f;
+  document.querySelectorAll('#tab-suggestions .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSuggestions();
+};
+
+// ── WORDS ──
+function loadWords() {
+  const wordsRef = ref(db, 'words');
+  onValue(wordsRef, snap => {
+    allWords = snap.val() || {};
+    renderWords();
+    updateStats();
+  }, err => {
+    if (err.code === 'PERMISSION_DENIED') {
+      document.getElementById('rules-banner').style.display = 'flex';
+    }
+    document.getElementById('word-list').innerHTML = `<div class="empty">⚠️ წვდომა აკრძალულია — Firebase-ის წესები არ არის დაყენებული</div>`;
+    document.getElementById('word-count').textContent = '';
+  });
+}
+
+window.renderWords = function() {
+  const search = (document.getElementById('word-search')?.value || '').toLowerCase();
+  const list = document.getElementById('word-list');
+  const entries = Object.entries(allWords)
+    .filter(([,w]) => {
+      if (wordFilter === 'all') return true;
+      const len = [...(w.word||'')].length;
+      if (wordFilter === '5') return len === 5;
+      if (wordFilter === '6') return len === 6;
+      if (wordFilter === 'other') return len !== 5 && len !== 6;
+      return true;
+    })
+    .filter(([,w]) => !search || (w.word||'').toLowerCase().includes(search))
+    .sort((a,b) => (a[1].word||'').localeCompare(b[1].word||''));
+
+  document.getElementById('word-count').textContent = `${entries.length} სიტყვა`;
+
+  if (!entries.length) {
+    list.innerHTML = '<div class="empty">სიტყვა არ მოიძებნა. დაამატე პირველი სიტყვა ზემოდან.</div>';
+    return;
+  }
+
+  list.innerHTML = `
+    <table class="word-table">
+      <thead><tr>
+        <th>სიტყვა</th><th>სიგრძე</th><th>გამოყენება</th><th>წყარო</th><th>თარიღი</th><th></th>
+      </tr></thead>
+      <tbody>
+        ${entries.map(([id,w]) => {
+          const len = [...(w.word||'')].length;
+          const usage = len === 5 ? '<span class="word-type wt-daily">📅 დღის/ბლიცი</span>'
+                      : len === 6 ? '<span class="word-type wt-valid">⭐ განსაკ/ბლიცი</span>'
+                      : '<span class="word-type">🎲 ბლიცი</span>';
+          return `<tr>
+            <td class="word-ka">${w.word||'—'}</td>
+            <td style="font-size:13px;color:var(--dim)">${len}</td>
+            <td>${usage}</td>
+            <td style="font-size:11px;color:var(--muted)">${w.source||'manual'}</td>
+            <td style="font-size:11px;color:var(--muted)">${formatDate(w.addedAt)}</td>
+            <td><button class="del-word-btn" onclick="deleteWord('${id}','${w.word}')" title="წაშლა">🗑</button></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+};
+
+window.addWord = async function() {
+  const wordEl = document.getElementById('new-word');
+  const word   = wordEl.value.trim();
+
+  if (!word) { toast('სიტყვა შეიყვანე'); return; }
+  if (!/^[\u10D0-\u10FF]+$/.test(word)) { toast('მხოლოდ ქართული ასოები'); return; }
+  if ([...word].length < 4) { toast('მინიმუმ 4 ასო'); return; }
+  if (isBlocked(word)) { toast('ეს სიტყვა დაბლოკილია'); return; }
+
+  const existing = Object.values(allWords).find(w => w.word === word);
+  if (existing) { toast(`"${word}" უკვე არსებობს`); return; }
+
+  try {
+    await push(ref(db, 'words'), {
+      word,
+      length: [...word].length,
+      addedAt: new Date().toISOString(),
+      source: 'manual'
+    });
+    wordEl.value = '';
+    toast(`"${word}" წარმატებით დამატებულია ✓`);
+  } catch(e) {
+    toast(`შეცდომა: ${e.message}`);
+    console.error('addWord error:', e);
+  }
+};
+
+window.deleteWord = async function(id, word) {
+  if (!confirm(`წაშალო "${word}"?`)) return;
+  try { await remove(ref(db, `words/${id}`)); toast(`"${word}" წაშლილია`); }
+  catch(e) { toast(`შეცდომა: ${e.message}`); }
+};
+
+window.toggleBulk = function() {
+  const p = document.getElementById('bulk-panel');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+  if (p.style.display === 'block') document.getElementById('bulk-words').focus();
+};
+
+// Live preview of bulk words
+document.addEventListener('DOMContentLoaded', () => {
+  const ta = document.getElementById('bulk-words');
+  if (ta) ta.addEventListener('input', () => {
+    const words = parseBulkWords(ta.value);
+    const preview = document.getElementById('bulk-preview');
+    if (words.length === 0) { preview.textContent = ''; return; }
+    preview.textContent = `${words.length} სიტყვა მზადაა დასამატებლად`;
+    preview.style.color = 'var(--green)';
+  });
+});
+
+function parseBulkWords(text) {
+  return text.split(/[\n,،\s]+/)
+    .map(w => w.trim())
+    .filter(w => w.length >= 4 && /^[\u10D0-\u10FF]+$/.test(w) && !isBlocked(w));
+}
+
+window.bulkImport = async function() {
+  const text  = document.getElementById('bulk-words').value;
+  const words = parseBulkWords(text);
+
+  if (words.length === 0) { toast('ვალიდური სიტყვა ვერ მოიძებნა'); return; }
+
+  const resultEl = document.getElementById('bulk-result');
+  resultEl.style.display = 'block';
+  resultEl.textContent = `⏳ ემატება ${words.length} სიტყვა...`;
+
+  const existing = new Set(Object.values(allWords).map(w => w.word));
+  let added = 0, skipped = 0;
+
+  for (const word of words) {
+    if (existing.has(word)) { skipped++; continue; }
+    try {
+      await push(ref(db, 'words'), {
+        word,
+        length: [...word].length,
+        addedAt: new Date().toISOString(),
+        source: 'bulk'
+      });
+      existing.add(word);
+      added++;
+    } catch(e) {
+      console.error('bulk error for', word, e);
+      skipped++;
+    }
+  }
+
+  resultEl.textContent = `✓ დამატებულია ${added} სიტყვა${skipped > 0 ? `, გამოტოვებულია ${skipped} (უკვე არსებობდა)` : ''}`;
+  document.getElementById('bulk-words').value = '';
+  document.getElementById('bulk-preview').textContent = '';
+  toast(`${added} სიტყვა წარმატებით დამატებულია`);
+};
+
+window.filterWords = function(f, btn) {
+  wordFilter = f;
+  document.querySelectorAll('#tab-words .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderWords();
+};
+
+// ── STATS ──
+function updateStats() {
+  const words = Object.values(allWords);
+  const suggs = Object.values(allSuggestions);
+  document.getElementById('st-total-words').textContent = words.length;
+  document.getElementById('st-daily-words').textContent = words.filter(w=>w.type==='daily').length;
+  document.getElementById('st-pending').textContent = suggs.filter(s=>s.status==='pending').length;
+  document.getElementById('st-approved').textContent = suggs.filter(s=>s.status==='approved').length;
+
+  // Recent suggestions
+  const recent = suggs.sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,5);
+  document.getElementById('recent-sugg').innerHTML = recent.length
+    ? recent.map(s=>`
+        <div class="sugg-card">
+          <div class="sugg-word">${s.word}</div>
+          <div class="sugg-meta"><span>${formatDate(s.date)}</span></div>
+          <span class="status-pill sp-${s.status||'pending'}">${statusLabel(s.status)}</span>
+        </div>`).join('')
+    : '<div class="empty">შეთავაზება არ არის</div>';
+}
+
+// ── TABS ──
+window.switchTab = function(name) {
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',
+    ['suggestions','words','stats'][i]===name));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+};
+
+// ── UTILS ──
+function isBlocked(word) {
+  return BLOCKED_WORDS.some(b => word.includes(b));
+}
+function formatDate(iso) {
+  if (!iso) return '—';
+  try { return new Date(iso).toLocaleDateString('ka-GE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
+  catch(e) { return iso.slice(0,10); }
+}
+function statusLabel(s) {
+  return {pending:'განსახილველი', approved:'დამტკიცებული', rejected:'უარყოფილი'}[s] || 'განსახილველი';
+}
+
+let toastT;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>

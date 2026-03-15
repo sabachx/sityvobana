@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#0f0e17"/>
+  <title>⚡ ბლიც სიტყვობანა</title>
+  <style>
+    :root {
+      --bg:#0f0e17; --bg2:#1a1a2e; --surface:#1e1e3a; --surface2:#252545;
+      --border:#3a3a5c; --text:#fffffe; --dim:#a7a9be; --muted:#666680;
+      --accent:#e8c547; --green:#2dc653; --yellow:#c9963a;
+      --grey:#3a3a5c; --grey-used:#2a2a45; --red:#e55;
+      --blitz:#ff6b35; --radius:8px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+    html,body{height:100%;overflow:hidden;}
+    body{
+      background:var(--bg);color:var(--text);
+      font-family:system-ui,-apple-system,sans-serif;
+      display:flex;flex-direction:column;align-items:center;
+      overflow:hidden;padding-bottom:env(safe-area-inset-bottom);
+    }
+    body::before{
+      content:'';position:fixed;inset:0;pointer-events:none;
+      background:radial-gradient(ellipse at 25% 25%,rgba(255,107,53,.07) 0%,transparent 50%),
+                 radial-gradient(ellipse at 75% 75%,rgba(232,197,71,.04) 0%,transparent 50%);
+    }
+
+    /* SCREENS */
+    .screen{display:none;flex-direction:column;align-items:center;width:100%;max-width:520px;height:100%;overflow:hidden;position:relative;z-index:1;}
+    .screen.active{display:flex;}
+
+    /* HEADER */
+    .hdr{
+      width:100%;padding:10px 14px 8px;flex-shrink:0;
+      display:flex;align-items:center;justify-content:space-between;
+      border-bottom:1px solid var(--border);
+    }
+    .hdr-logo{display:flex;align-items:center;gap:8px;}
+    .hdr-logo .ico{font-size:20px;}
+    .hdr-logo .nm{font-size:16px;font-weight:800;color:var(--blitz);letter-spacing:1px;}
+    .hdr-logo .sb{font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+    .hdr-right{display:flex;gap:8px;align-items:center;}
+    .pill-btn{
+      background:var(--surface);border:1px solid var(--border);color:var(--dim);
+      padding:6px 12px;border-radius:var(--radius);font-size:11px;cursor:pointer;
+      text-decoration:none;display:inline-flex;align-items:center;gap:4px;transition:all .2s;
+    }
+    .pill-btn:hover{border-color:var(--accent);color:var(--text);}
+    .room-id-badge{
+      font-size:10px;color:var(--muted);letter-spacing:1px;
+      background:var(--surface);border:1px solid var(--border);
+      padding:4px 10px;border-radius:20px;
+    }
+
+    /* SHARED */
+    .btn{
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      width:100%;padding:13px;border-radius:var(--radius);
+      border:1px solid var(--border);background:var(--surface);color:var(--text);
+      font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;margin-bottom:8px;
+      text-decoration:none;
+    }
+    .btn:hover{background:var(--surface2);border-color:var(--accent);}
+    .btn-blitz{background:var(--blitz);color:#fff;border-color:var(--blitz);}
+    .btn-blitz:hover{background:#ff8255;border-color:#ff8255;}
+    .btn-blitz:disabled{opacity:.4;pointer-events:none;}
+    .btn-green{background:var(--green);color:#fff;border-color:var(--green);}
+    .btn-accent{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+    input[type=text]{
+      width:100%;background:var(--surface);border:1px solid var(--border);
+      color:var(--text);padding:11px 13px;border-radius:var(--radius);
+      font-size:14px;margin-bottom:8px;outline:none;transition:border-color .2s;
+    }
+    input:focus{border-color:var(--accent);}
+    input::placeholder{color:var(--muted);}
+    label{font-size:11px;color:var(--muted);margin-bottom:3px;display:block;}
+    .section-scroll{flex:1;overflow-y:auto;width:100%;padding:16px;min-height:0;}
+
+    /* TOAST */
+    #toast{
+      position:fixed;top:68px;left:50%;
+      transform:translateX(-50%) translateY(-8px);
+      background:var(--text);color:var(--bg);
+      padding:8px 16px;border-radius:20px;
+      font-weight:600;font-size:13px;z-index:1000;
+      opacity:0;transition:all .25s;pointer-events:none;
+      white-space:nowrap;max-width:90vw;text-align:center;
+    }
+    #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+    /* ══ SCREEN: SETUP ══ */
+    .setup-body{
+      flex:1;display:flex;flex-direction:column;align-items:center;
+      justify-content:center;padding:20px;gap:18px;width:100%;
+    }
+    .setup-hero{text-align:center;}
+    .setup-hero .big{font-size:30px;font-weight:800;color:var(--blitz);}
+    .setup-hero .sub{font-size:13px;color:var(--dim);margin-top:6px;line-height:1.5;}
+    .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:340px;}
+    .mc{
+      background:var(--surface);border:2px solid var(--border);
+      border-radius:12px;padding:16px 10px;cursor:pointer;
+      transition:all .2s;text-align:center;
+    }
+    .mc:hover,.mc.sel{border-color:var(--blitz);background:rgba(255,107,53,.08);}
+    .mc .mci{font-size:26px;margin-bottom:6px;}
+    .mc .mct{font-size:13px;font-weight:700;margin-bottom:3px;}
+    .mc .mcd{font-size:10px;color:var(--muted);line-height:1.4;}
+    .setup-fields{width:100%;max-width:340px;}
+    .setup-actions{width:100%;max-width:340px;}
+    .setup-note{font-size:10px;color:var(--muted);text-align:center;max-width:300px;line-height:1.6;}
+
+    /* ══ SCREEN: LOBBY ══ */
+    .lobby-top{
+      width:100%;padding:10px 16px;flex-shrink:0;
+      display:flex;gap:8px;flex-wrap:wrap;
+    }
+    .lobby-link-row{
+      width:100%;padding:0 16px 10px;flex-shrink:0;
+      display:flex;gap:6px;
+    }
+    .link-box{
+      flex:1;background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--radius);padding:9px 12px;
+      font-size:11px;color:var(--dim);overflow:hidden;
+      text-overflow:ellipsis;white-space:nowrap;
+    }
+    .icon-copy{
+      background:var(--surface2);border:1px solid var(--border);
+      border-radius:var(--radius);padding:9px 12px;cursor:pointer;
+      font-size:14px;flex-shrink:0;transition:all .2s;
+    }
+    .icon-copy:hover{border-color:var(--accent);}
+    .players-header{
+      width:100%;padding:0 16px 6px;
+      display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+    }
+    .players-header span{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+    .players-list{
+      flex:1;overflow-y:auto;width:100%;padding:0 16px;min-height:0;
+    }
+    .player-row{
+      display:flex;align-items:center;gap:10px;
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--radius);padding:10px 14px;margin-bottom:6px;
+      transition:border-color .3s;
+    }
+    .player-row.is-host{border-color:rgba(255,107,53,.4);}
+    .player-row .pr-avatar{
+      width:32px;height:32px;border-radius:50%;
+      background:linear-gradient(135deg,var(--blitz),var(--accent));
+      display:flex;align-items:center;justify-content:center;
+      font-size:14px;font-weight:700;color:var(--bg);flex-shrink:0;
+    }
+    .player-row .pr-name{flex:1;font-size:13px;font-weight:600;}
+    .player-row .pr-badge{
+      font-size:9px;letter-spacing:1px;text-transform:uppercase;
+      padding:3px 7px;border-radius:10px;
+    }
+    .pr-badge.host{background:rgba(255,107,53,.2);color:var(--blitz);}
+    .pr-badge.you{background:rgba(232,197,71,.15);color:var(--accent);}
+    .pr-badge.ready{background:rgba(45,198,83,.15);color:var(--green);}
+    .lobby-footer{
+      width:100%;padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+      flex-shrink:0;border-top:1px solid var(--border);
+    }
+    .start-note{font-size:11px;color:var(--muted);text-align:center;margin-top:6px;}
+    .pulse{animation:pulse 1.5s ease-in-out infinite;}
+    @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+
+    /* ══ SCREEN: GAME ══ */
+    .game-topbar{
+      width:100%;padding:7px 12px;flex-shrink:0;
+      display:flex;align-items:center;justify-content:space-between;gap:6px;
+      border-bottom:1px solid var(--border);
+    }
+    .timer-pill{
+      display:flex;align-items:center;gap:5px;
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:20px;padding:5px 12px;flex-shrink:0;
+    }
+    .timer-pill .tv{font-size:15px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;}
+    .timer-pill.danger .tv{color:var(--red);animation:flash .5s ease-in-out infinite;}
+    @keyframes flash{0%,100%{opacity:1}50%{opacity:.3}}
+    .prog-pills{display:flex;gap:5px;align-items:center;}
+    .prog-dot{
+      width:9px;height:9px;border-radius:50%;
+      background:var(--surface2);border:1px solid var(--border);transition:all .3s;
+    }
+    .prog-dot.done{background:var(--green);border-color:var(--green);}
+    .prog-dot.cur{background:var(--blitz);border-color:var(--blitz);}
+    .pts-pill{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:20px;padding:5px 12px;
+      font-size:12px;color:var(--accent);font-weight:700;flex-shrink:0;
+    }
+    .word-label{
+      font-size:10px;color:var(--muted);text-align:center;
+      padding:3px 0;letter-spacing:1px;flex-shrink:0;
+    }
+    #board-wrap{
+      flex:1;display:flex;align-items:center;justify-content:center;
+      padding:4px 0;min-height:0;
+    }
+    #blitz-board{display:grid;gap:5px;}
+    .brow{display:flex;gap:5px;}
+    .bt{
+      width:var(--ts,50px);height:var(--ts,50px);
+      border:2px solid var(--border);border-radius:6px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:calc(var(--ts,50px)*.4);font-weight:700;
+      color:var(--text);background:var(--surface);transition:border-color .1s;flex-shrink:0;
+    }
+    .bt.filled{border-color:var(--dim);animation:tpop .1s ease;}
+    .bt.correct{background:var(--green);border-color:var(--green);color:#fff;}
+    .bt.present{background:var(--yellow);border-color:var(--yellow);color:#fff;}
+    .bt.absent{background:var(--grey);border-color:var(--grey);color:var(--dim);}
+    .bt.reveal{animation:tflip .4s ease forwards;}
+    .bt.shake{animation:tshake .35s ease;}
+    @keyframes tpop{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+    @keyframes tflip{0%{transform:rotateX(0)}50%{transform:rotateX(-90deg)}100%{transform:rotateX(0)}}
+    @keyframes tshake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+
+    /* live leaderboard strip */
+    .lb-strip{
+      width:100%;padding:4px 10px;flex-shrink:0;
+      display:flex;gap:6px;overflow-x:auto;
+      scrollbar-width:none;
+    }
+    .lb-strip::-webkit-scrollbar{display:none;}
+    .lb-chip{
+      display:flex;flex-direction:column;align-items:center;gap:2px;
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:8px;padding:5px 8px;flex-shrink:0;min-width:52px;
+      transition:border-color .3s;
+    }
+    .lb-chip.is-me{border-color:rgba(255,107,53,.5);}
+    .lb-chip .lc-name{font-size:9px;color:var(--muted);max-width:48px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .lb-chip .lc-dots{display:flex;gap:2px;}
+    .lc-dot{width:7px;height:7px;border-radius:50%;background:var(--surface2);transition:background .3s;}
+    .lc-dot.done{background:var(--green);}
+    .lb-chip .lc-pts{font-size:10px;font-weight:700;color:var(--accent);}
+
+    /* keyboard */
+    #blitz-kb{
+      width:100%;max-width:520px;
+      padding:0 5px calc(5px + env(safe-area-inset-bottom));
+      flex-shrink:0;
+    }
+    .kbrow{display:flex;justify-content:center;gap:4px;margin-bottom:4px;}
+    .key{
+      height:44px;min-width:0;padding:0 2px;border-radius:6px;
+      border:1px solid transparent;background:var(--surface2);color:var(--text);
+      font-size:16px;font-weight:600;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;
+      transition:background .12s,transform .1s;
+      user-select:none;-webkit-user-select:none;flex:1;touch-action:manipulation;
+    }
+    .key:active{transform:scale(.91);background:var(--border);}
+    .ekey{flex:1.8;font-size:10.5px;border:1px solid var(--border);}
+    .dkey{flex:1.3;font-size:17px;border:1px solid var(--border);}
+    .key.correct{background:var(--green);color:#fff;border-color:var(--green);}
+    .key.present{background:var(--yellow);color:#fff;border-color:var(--yellow);}
+    .key.absent{background:var(--grey-used);color:var(--muted);}
+
+    /* solved flash */
+    .sf{
+      position:fixed;inset:0;background:rgba(45,198,83,.12);
+      display:flex;align-items:center;justify-content:center;z-index:50;pointer-events:none;
+      animation:sfade .85s ease forwards;
+    }
+    .sf span{font-size:44px;font-weight:800;color:var(--green);animation:spop .5s ease forwards;}
+    @keyframes sfade{0%{opacity:1}75%{opacity:1}100%{opacity:0}}
+    @keyframes spop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.2)}100%{transform:scale(1);opacity:1}}
+
+    /* ══ SCREEN: RESULT ══ */
+    .result-scroll{flex:1;overflow-y:auto;width:100%;padding:14px 16px 20px;min-height:0;}
+    .r-title{font-size:22px;font-weight:800;color:var(--blitz);text-align:center;margin-bottom:4px;}
+    .r-sub{font-size:12px;color:var(--dim);text-align:center;margin-bottom:16px;}
+    .my-score-hero{
+      background:linear-gradient(135deg,rgba(255,107,53,.14),rgba(232,197,71,.08));
+      border:1px solid rgba(255,107,53,.3);border-radius:14px;
+      padding:16px;text-align:center;margin-bottom:14px;
+    }
+    .msh-pts{font-size:48px;font-weight:800;color:var(--blitz);line-height:1;}
+    .msh-lbl{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:4px;}
+    .breakdown-title{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+    .bd-row{
+      display:flex;align-items:center;justify-content:space-between;
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--radius);padding:9px 13px;margin-bottom:5px;
+    }
+    .bd-row.unsolved .bd-word{color:var(--muted);}
+    .bd-word{font-size:15px;font-weight:700;color:var(--accent);letter-spacing:2px;}
+    .bd-detail{font-size:10px;color:var(--dim);margin-top:2px;}
+    .bd-pts{font-size:17px;font-weight:700;}
+    .time-row{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:7px 13px;margin-bottom:12px;
+    }
+    .tr-lbl{font-size:12px;color:var(--dim);}
+    .tr-pts{font-size:15px;font-weight:700;color:var(--green);}
+
+    /* leaderboard */
+    .lb-title{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+    .lb-row{
+      display:flex;align-items:center;gap:10px;
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--radius);padding:10px 13px;margin-bottom:5px;
+      transition:border-color .3s;
+    }
+    .lb-row.rank1{border-color:var(--accent);}
+    .lb-row.is-me{border-color:rgba(255,107,53,.4);}
+    .lb-rank{font-size:16px;width:24px;text-align:center;flex-shrink:0;}
+    .lb-name{flex:1;font-size:13px;font-weight:600;}
+    .lb-dots{display:flex;gap:3px;margin-right:8px;}
+    .lb-dot{width:8px;height:8px;border-radius:50%;background:var(--surface2);}
+    .lb-dot.done{background:var(--green);}
+    .lb-score{font-size:15px;font-weight:700;color:var(--accent);}
+    .lb-waiting{font-size:11px;color:var(--muted);font-style:italic;}
+    .winner-card{
+      text-align:center;padding:12px;border-radius:var(--radius);
+      margin-bottom:12px;font-size:14px;font-weight:700;
+    }
+    .wc-you{background:rgba(45,198,83,.12);color:var(--green);}
+    .wc-other{background:rgba(58,58,92,.3);color:var(--dim);}
+    .wc-tie{background:rgba(232,197,71,.1);color:var(--accent);}
+    .waiting-note{text-align:center;font-size:12px;color:var(--muted);padding:10px;margin-bottom:8px;}
+
+    @media(max-height:700px){.key{height:38px;} #board-wrap{padding:2px 0;}}
+    @media(max-width:360px){.key{font-size:14px;}}
+  </style>
+</head>
+<body>
+<div id="toast"></div>
+
+<!-- ══════════════ SETUP ══════════════ -->
+<div class="screen active" id="s-setup">
+  <div class="hdr">
+    <div class="hdr-logo"><span class="ico">⚡</span><div><div class="nm">ბლიცი</div><div class="sb">მულტიპლეიერი</div></div></div>
+    <a href="index.html" class="pill-btn">← დღის სიტყვა</a>
+  </div>
+  <div class="setup-body">
+    <div class="setup-hero">
+      <div class="big">⚡ ბლიც სიტყვობანა</div>
+      <div class="sub">3 სიტყვა · 5 წუთი · ყველა თამაშობს ბრმად · მეტი ქულა იმარჯვებს</div>
+    </div>
+    <div class="mode-grid">
+      <div class="mc sel" id="mc-five" onclick="selMode('five')">
+        <div class="mci">🔤</div>
+        <div class="mct">5-ასოიანი</div>
+        <div class="mcd">კლასიკური სიტყვობანა</div>
+      </div>
+      <div class="mc" id="mc-rand" onclick="selMode('random')">
+        <div class="mci">🎲</div>
+        <div class="mct">შემთხვევითი</div>
+        <div class="mcd">4–10 ასო, ნებისმიერი სიტყვა</div>
+      </div>
+    </div>
+    <div class="setup-fields">
+      <label>შენი სახელი</label>
+      <input type="text" id="inp-name" placeholder="მაგ: სანდრო" maxlength="20"/>
+    </div>
+    <div class="setup-actions">
+      <button class="btn btn-blitz" onclick="createRoom()">⚡ ოთახის შექმნა და ლინკის მიღება</button>
+    </div>
+    <div class="setup-note">მიიღებ ლინკს გასაზიარებლად. თამაში იწყება მხოლოდ მაშინ, როდესაც დააჭერ "თამაშის დაწყება"-ს.</div>
+  </div>
+</div>
+
+<!-- ══════════════ LOBBY ══════════════ -->
+<div class="screen" id="s-lobby">
+  <div class="hdr">
+    <div class="hdr-logo"><span class="ico">⚡</span><div><div class="nm">ბლიცი</div><div class="sb">ლობი</div></div></div>
+    <div class="hdr-right">
+      <span class="room-id-badge" id="room-badge">—</span>
+      <button class="pill-btn" onclick="leaveRoom()">გასვლა</button>
+    </div>
+  </div>
+  <div class="lobby-top">
+    <button class="btn btn-green" onclick="copyLink()" style="margin-bottom:0;flex:1">📋 ლინკის კოპირება</button>
+    <button class="btn" onclick="shareLink()" style="margin-bottom:0;flex:1">📤 გაზიარება</button>
+  </div>
+  <div class="lobby-link-row">
+    <div class="link-box" id="lobby-link-box">—</div>
+  </div>
+  <div class="players-header">
+    <span>მოთამაშეები</span>
+    <span id="player-count">0 ოთახში</span>
+  </div>
+  <div class="players-list" id="players-list"></div>
+  <div class="lobby-footer">
+    <button class="btn btn-blitz" id="start-btn" onclick="hostStartGame()" disabled style="opacity:.4;pointer-events:none">
+      ⚡ თამაშის დაწყება
+    </button>
+    <div class="start-note" id="start-note">საჭიროა მინიმუმ 2 მოთამაშე…</div>
+  </div>
+</div>
+
+<!-- ══════════════ GAME ══════════════ -->
+<div class="screen" id="s-game">
+  <div class="hdr">
+    <div class="hdr-logo"><span class="ico">⚡</span><div><div class="nm">ბლიცი</div><div class="sb" id="g-mode-lbl">5-ასოიანი</div></div></div>
+    <div class="room-id-badge" id="g-room-badge">—</div>
+  </div>
+  <div class="game-topbar">
+    <div class="timer-pill" id="timer-pill">
+      <span>⏱</span><span class="tv" id="timer-val">5:00</span>
+    </div>
+    <div class="prog-pills">
+      <div class="prog-dot cur" id="pd0"></div>
+      <div class="prog-dot" id="pd1"></div>
+      <div class="prog-dot" id="pd2"></div>
+      <span style="font-size:11px;color:var(--muted);margin-left:2px" id="prog-lbl">1/3</span>
+    </div>
+    <div class="pts-pill">⚡ <span id="live-pts">0</span></div>
+  </div>
+  <div class="word-label" id="word-lbl">სიტყვა 1 / 3</div>
+  <div id="board-wrap"><div id="blitz-board"></div></div>
+  <div class="lb-strip" id="lb-strip"></div>
+  <div id="blitz-kb"></div>
+</div>
+
+<!-- ══════════════ RESULT ══════════════ -->
+<div class="screen" id="s-result">
+  <div class="hdr">
+    <div class="hdr-logo"><span class="ico">⚡</span><div><div class="nm">ბლიცი</div><div class="sb">შედეგები</div></div></div>
+    <a href="index.html" class="pill-btn">დღის სიტყვა</a>
+  </div>
+  <div class="result-scroll" id="result-scroll">
+    <div class="r-title" id="r-title">⚡ შედეგები</div>
+    <div class="r-sub" id="r-sub"></div>
+    <div class="winner-card" id="winner-card" style="display:none"></div>
+    <div class="my-score-hero">
+      <div class="msh-pts" id="my-pts">0</div>
+      <div class="msh-lbl">შენი ქულა</div>
+    </div>
+    <div class="breakdown-title">დეტალური შედეგი</div>
+    <div id="bd-rows"></div>
+    <div class="time-row">
+      <span class="tr-lbl">⏱ დროის ბონუსი</span>
+      <span class="tr-pts" id="time-bonus-lbl">+0 ქულა</span>
+    </div>
+    <div class="lb-title">🏆 ლიდერბორდი</div>
+    <div id="lb-rows"></div>
+    <div class="waiting-note pulse" id="waiting-note" style="display:none">⏳ ელოდება სხვა მოთამაშეებს…</div>
+    <button class="btn btn-green" onclick="shareResult()" style="margin-top:8px">📤 შედეგის გაზიარება</button>
+    <button class="btn" onclick="window.location.href='index.html'">🏠 დღის სიტყვაზე დაბრუნება</button>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, set, get, update, push, onValue, off, serverTimestamp }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+// ── FIREBASE ──
+const app = initializeApp({
+  apiKey:"AIzaSyDUwQUWDHXtHtxRq6RcZcbId3z-kzrAwwY",
+  authDomain:"sityvobana-2a717.firebaseapp.com",
+  databaseURL:"https://sityvobana-2a717-default-rtdb.firebaseio.com",
+  projectId:"sityvobana-2a717",
+  storageBucket:"sityvobana-2a717.firebasestorage.app",
+  messagingSenderId:"654904298229",
+  appId:"1:654904298229:web:6d6e54a5681edd5975d3bc"
+});
+const db = getDatabase(app);
+
+// ── WORD POOLS ──
+const W5 = [
+  "სახლი","წყალი","ვარდი","ღვინო","ლობია","ყველი","ვაშლი","ლექსი","ცეკვა","გული",
+  "სული","ახალი","ძველი","შავი","თეთრი","წითელ","ყვითე","მწვანე","ლურჯი","ნისლი",
+  "წვიმა","თოვლი","სიცხე","ქარი","კლდე","ქვიშა","ფოთლი","ტოტი","ფესვი",
+  "მუხა","ნაძვი","ირმი","ჩიტი","ლომი","მგელი","დათვი","მელა","კატა","ძაღლი",
+  "ცხენი","თევზი","ყვავი","გველი","ბანკი","ფული","ქუჩა","სკოლა","კარი","სარკე",
+  "სკამი","წიგნი","ქუდი","ბარათ","სიყვა","ოჯახი","ბებია","ცოლი","ქმარი","შვილი",
+  "ბიჭი","კაცი","ქალი","ბევრი","ხუთი","ყავა","ჩაი","წვენი","ლუდი","პური",
+  "მწვადი","ყაბაბ","სევდა","ამაყი","ლამაზ","ძლიერ","სუსტი","სწრაფ","ნელი","ლოცვა",
+  "ჯვარი","ხატი","სიმღე","სურათ","ნიკა","ლაშა","ზაზა","გელა","თამარ","ნინო",
+  "ლელა","თვალი","ყური","კბილი","ხელი","ფეხი","მხარი","ზურგი","მუხლი","გოგო",
+].filter(w=>[...w].length===5);
+
+const WRAND = [
+  ...W5,
+  "კატა","ძაღლ","ირემ","მელა","ბიჭი","გოგო","ქარი","მიწა",
+  "სახლები","ხელები","ფეხები","თვალები","ყურები","კბილები","მეგობარ","ოჯახები",
+  "სიყვარულ","სიხარულ","სიმღერა","სიცხელე","ბედნიერ","ლამაზები",
+  "ბედნიერი","ქვეყანაზ","ოჯახებში","სიყვარულ",
+].filter(w=>[...w].length>=4&&/^[\u10D0-\u10FF]+$/.test(w));
+
+// ── KEYBOARD ──
+const KB=[
+  ["ქ","წ","ჭ","ე","რ","ღ","ტ","თ","ყ","უ","ი","ო","პ"],
+  ["ა","ს","შ","დ","ფ","გ","ჰ","ჯ","ჟ","კ","ლ"],
+  ["ENTER","ზ","ძ","ხ","ც","ჩ","ვ","ბ","ნ","მ","⌫"]
+];
+const L2G={q:'ქ',w:'წ',e:'ე',r:'რ',t:'ტ',y:'ყ',u:'უ',i:'ი',o:'ო',p:'პ',a:'ა',s:'ს',d:'დ',f:'ფ',g:'გ',h:'ჰ',j:'ჯ',k:'კ',l:'ლ',z:'ზ',x:'ხ',c:'ც',v:'ვ',b:'ბ',n:'ნ',m:'მ',W:'ჭ',R:'ღ',T:'თ',S:'შ',J:'ჟ',C:'ჩ',Z:'ძ'};
+
+// ── STATE ──
+let roomId=null, myId=null, myName='', isHost=false, blitzMode='five';
+let roomRef=null, roomListener=null;
+let words=[], currentWI=0, currentRow=0, currentCol=0, currentGuess=[];
+let revealIP=false, wordDone=false, gameStarted=false;
+let timerIv=null, secondsLeft=300, startedAt=null;
+let keyColors={};
+let wordResults=[{solved:false,guesses:0},{solved:false,guesses:0},{solved:false,guesses:0}];
+let myScore=null;
+
+// ── UTILS ──
+function uid(){return Math.random().toString(36).slice(2,9);}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+let toastT;
+function toast(msg,dur=2200){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),dur);}
+function pickWords(mode,n=3){const pool=mode==='five'?W5:WRAND;const sh=[...pool].sort(()=>Math.random()-.5);return sh.slice(0,n);}
+
+// ── SETUP ──
+window.selMode=function(m){blitzMode=m;document.getElementById('mc-five').classList.toggle('sel',m==='five');document.getElementById('mc-rand').classList.toggle('sel',m==='random');};
+
+window.createRoom=async function(){
+  const name=document.getElementById('inp-name').value.trim();
+  if(!name){toast('შეიყვანე შენი სახელი');return;}
+  myName=name; isHost=true; myId=uid(); roomId=uid();
+  const picked=pickWords(blitzMode);
+  roomRef=ref(db,`blitz/${roomId}`);
+  await set(roomRef,{
+    mode:blitzMode, words:picked, status:'lobby',
+    hostId:myId, createdAt:Date.now(),
+    players:{[myId]:{name:myName,'სტუმარი → 'მასპინძელი'
+  });
+  words=picked;
+  enterLobby();
+};
+
+window.leaveRoom=function(){
+  if(roomRef&&roomListener){off(roomRef,'value',roomListener);roomListener=null;}
+  showScreen('s-setup');
+};
+
+// ── LOBBY ──
+function enterLobby(){
+  const link=`${location.origin}${location.pathname}?room=${roomId}`;
+  window._link=link;
+  document.getElementById('lobby-link-box').textContent=link;
+  document.getElementById('room-badge').textContent=`#${roomId.slice(0,5).toUpperCase()}`;
+  document.getElementById('g-room-badge').textContent=`#${roomId.slice(0,5).toUpperCase()}`;
+  showScreen('s-lobby');
+  listenRoom();
+}
+
+window.copyLink=function(){navigator.clipboard.writeText(window._link||'');toast('ლინკი კოპირებულია 📋');};
+window.shareLink=function(){if(navigator.share)navigator.share({title:'⚡ ბლიც სიტყვობანა!',url:window._link}).catch(()=>{});else{navigator.clipboard.writeText(window._link);toast('კოპირებულია');}};
+
+function listenRoom(){
+  if(roomListener){off(roomRef,'value',roomListener);roomListener=null;}
+  roomListener=onValue(roomRef,snap=>{
+    const d=snap.val(); if(!d) return;
+    words=d.words||words;
+    const players=d.players||{};
+    const plist=Object.entries(players);
+    const count=plist.length;
+
+    // Update lobby
+    document.getElementById('player-count').textContent=`${count} ოთახში`;
+    renderLobbyPlayers(players);
+
+    // Start button logic (host only, need ≥2 players)
+    if(isHost){
+      const canStart=count>=2;
+      const btn=document.getElementById('start-btn');
+      const note=document.getElementById('start-note');
+      btn.disabled=!canStart;
+      btn.style.opacity=canStart?'1':'0.4';
+      btn.style.pointerEvents=canStart?'auto':'none';
+      note.textContent=canStart?`${count} მოთამაშე მზადაა — დაიწყე თამაში!`:'საჭიროა მინიმუმ 2 მოთამაშე…';
+    }
+
+    // Game started
+    if(d.status==='playing'&&!gameStarted){
+      gameStarted=true;
+      words=d.words;
+      blitzMode=d.mode;
+      // Sync timer start
+      const srvStart=d.startedAt||Date.now();
+      const elapsed=Math.floor((Date.now()-srvStart)/1000);
+      secondsLeft=Math.max(0,300-elapsed);
+      startGame();
+    }
+
+    // Update live leaderboard during game
+    if(gameStarted) renderLbStrip(players);
+
+    // Update result leaderboard
+    if(document.getElementById('s-result').classList.contains('active')){
+      renderResultLb(players);
+    }
+  });
+}
+
+function renderLobbyPlayers(players){
+  const el=document.getElementById('players-list');
+  el.innerHTML='';
+  Object.entries(players).sort((a,b)=>a[1].joinedAt-b[1].joinedAt).forEach(([id,p])=>{
+    const row=document.createElement('div');
+    row.className='player-row'+(p.isHost?' is-host':'');
+    const initial=(p.name||'?')[0].toUpperCase();
+    let badges='';
+    if(p.isHost) badges+=`<span class="pr-badge host">მასპინძელი</span>`;
+    if(id===myId) badges+=`<span class="pr-badge you">You</span>`;
+    row.innerHTML=`<div class="pr-avatar">${initial}</div><div class="pr-name">${p.name||'?'}</div>${badges}`;
+    el.appendChild(row);
+  });
+}
+
+window.hostStartGame=async function(){
+  if(!isHost) return;
+  const snap=await get(roomRef);
+  const d=snap.val();
+  if(!d||Object.keys(d.players||{}).length<2){toast('საჭიროა მინიმუმ 2 მოთამაშე');return;}
+  await update(roomRef,{status:'playing',startedAt:Date.now()});
+};
+
+// ── GAME ──
+function startGame(){
+  wordResults=[{solved:false,guesses:0},{solved:false,guesses:0},{solved:false,guesses:0}];
+  keyColors={}; currentWI=0; currentRow=0; currentCol=0; currentGuess=[];
+  wordDone=false; startedAt=Date.now();
+  document.getElementById('g-mode-lbl').textContent=blitzMode==='five'?'5-ასოიანი':'შემთხვევითი';
+  buildBoard(words[0]);
+  buildKB();
+  renderLbStrip({});
+  updateProg();
+  showScreen('s-game');
+  timerIv=setInterval(tickTimer,1000);
+}
+
+function tickTimer(){
+  secondsLeft--;
+  const m=Math.floor(secondsLeft/60);
+  const s=secondsLeft%60;
+  document.getElementById('timer-val').textContent=`${m}:${String(s).padStart(2,'0')}`;
+  document.getElementById('timer-pill').classList.toggle('danger',secondsLeft<=30);
+  if(secondsLeft<=0){clearInterval(timerIv);endGame();}
+}
+
+function buildBoard(word){
+  const wlen=[...word].length;
+  const maxW=Math.min(window.innerWidth,520)-20;
+  const ts=Math.min(52,Math.floor((maxW-(wlen-1)*5)/wlen));
+  document.documentElement.style.setProperty('--ts',ts+'px');
+  const board=document.getElementById('blitz-board');
+  board.innerHTML='';
+  board.style.gridTemplateRows=`repeat(6,${ts}px)`;
+  for(let r=0;r<6;r++){
+    const row=document.createElement('div');row.className='brow';row.id=`br${r}`;
+    for(let c=0;c<wlen;c++){
+      const t=document.createElement('div');t.className='bt';t.id=`bt${r}-${c}`;row.appendChild(t);
+    }
+    board.appendChild(row);
+  }
+  currentRow=0;currentCol=0;currentGuess=[];wordDone=false;
+  document.getElementById('word-lbl').textContent=`სიტყვა ${currentWI+1} / 3`;
+}
+
+function buildKB(){
+  const kb=document.getElementById('blitz-kb');kb.innerHTML='';
+  KB.forEach(row=>{
+    const re=document.createElement('div');re.className='kbrow';
+    row.forEach(k=>{
+      const b=document.createElement('button');
+      if(k==='ENTER'){b.className='key ekey';b.textContent='შეყვანა';b.id='bk-ENTER';}
+      else if(k==='⌫'){b.className='key dkey';b.textContent='⌫';b.id='bk-DEL';}
+      else{b.className='key';b.textContent=k;b.id='bk-'+k;}
+      b.onclick=()=>handleKey(k);re.appendChild(b);
+    });
+    kb.appendChild(re);
+  });
+}
+
+function handleKey(k){
+  if(wordDone||revealIP) return;
+  if(k==='⌫'||k==='Backspace') del();
+  else if(k==='ENTER'||k==='Enter') submit();
+  else if(/^[\u10D0-\u10FF]$/.test(k)) add(k);
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.ctrlKey||e.metaKey||e.altKey) return;
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+  if(!document.getElementById('s-game').classList.contains('active')) return;
+  const k=e.key;
+  if(k==='Backspace'){e.preventDefault();handleKey('⌫');return;}
+  if(k==='Enter'){e.preventDefault();handleKey('ENTER');return;}
+  if(/^[\u10D0-\u10FF]$/.test(k)){handleKey(k);return;}
+  const g=L2G[k]; if(g) handleKey(g);
+});
+
+function add(l){
+  const wlen=[...words[currentWI]].length;
+  if(currentCol>=wlen) return;
+  const t=document.getElementById(`bt${currentRow}-${currentCol}`);
+  t.textContent=l;t.classList.add('filled');currentGuess.push(l);currentCol++;
+}
+function del(){
+  if(currentCol<=0) return;
+  currentCol--;currentGuess.pop();
+  const t=document.getElementById(`bt${currentRow}-${currentCol}`);
+  t.textContent='';t.classList.remove('filled');
+}
+function submit(){
+  const word=words[currentWI];
+  const wlen=[...word].length;
+  if(currentCol<wlen){shakeRow(currentRow);toast(`${wlen} ასო გჭირდება`);return;}
+  const guess=currentGuess.join('');
+
+  // Validate: must exist in the word pool
+  const pool = blitzMode==='five' ? new Set(W5) : new Set(WRAND);
+  if(guess !== word && !pool.has(guess)){
+    shakeRow(currentRow);
+    toast('სიტყვა ვერ მოიძებნა');
+    return;
+  }
+
+  const result=evalGuess(guess,word);
+  wordResults[currentWI].guesses++;
+  revealRow(currentRow,result,()=>{
+    const won=result.every(r=>r==='correct');
+    if(won){
+      wordResults[currentWI].solved=true;
+      flashSolved();
+      updateProg();
+      pushProgress();
+      setTimeout(()=>{
+        currentWI++;
+        if(currentWI>=3){endGame();}
+        else{buildBoard(words[currentWI]);resetKB();}
+      },900);
+    } else if(currentRow>=5){
+      toast([...word].join('·'),2500);
+      setTimeout(()=>{
+        currentWI++;
+        if(currentWI>=3) endGame();
+        else{buildBoard(words[currentWI]);resetKB();}
+      },2600);
+    } else {currentRow++;currentGuess=[];currentCol=0;}
+  });
+}
+
+function evalGuess(guess,target){
+  const tA=[...target],gA=[...guess];
+  const res=Array(tA.length).fill('absent'),used=Array(tA.length).fill(false);
+  gA.forEach((l,i)=>{if(l===tA[i]){res[i]='correct';used[i]=true;}});
+  gA.forEach((l,i)=>{if(res[i]==='correct') return;for(let j=0;j<tA.length;j++){if(!used[j]&&l===tA[j]){res[i]='present';used[j]=true;break;}}});
+  return res;
+}
+
+function revealRow(ri,result,cb){
+  revealIP=true;const delay=310;
+  result.forEach((cls,i)=>{
+    setTimeout(()=>{
+      const t=document.getElementById(`bt${ri}-${i}`);
+      t.classList.add('reveal');
+      setTimeout(()=>{
+        t.classList.remove('filled');t.classList.add(cls);
+        updateKC([...currentGuess][i]||[...words[currentWI]][i],cls);
+      },delay/2);
+      if(i===result.length-1) setTimeout(()=>{revealIP=false;cb();},delay);
+    },i*delay);
+  });
+}
+function shakeRow(ri){document.querySelectorAll(`#br${ri} .bt`).forEach(t=>{t.classList.add('shake');setTimeout(()=>t.classList.remove('shake'),350);});}
+function flashSolved(){const el=document.createElement('div');el.className='sf';el.innerHTML='<span>✓</span>';document.body.appendChild(el);setTimeout(()=>el.remove(),900);}
+function updateKC(l,cls){const p={correct:3,present:2,absent:1};if(!keyColors[l]||p[cls]>p[keyColors[l]]){keyColors[l]=cls;const b=document.getElementById('bk-'+l);if(b){b.classList.remove('correct','present','absent');b.classList.add(cls);}}}
+function resetKB(){keyColors={};document.querySelectorAll('#blitz-kb .key').forEach(b=>b.classList.remove('correct','present','absent'));}
+function updateProg(){
+  for(let i=0;i<3;i++){const d=document.getElementById(`pd${i}`);if(!d)continue;d.classList.remove('done','cur');if(wordResults[i].solved)d.classList.add('done');else if(i===currentWI)d.classList.add('cur');}
+  document.getElementById('prog-lbl').textContent=`${Math.min(currentWI+1,3)}/3`;
+  document.getElementById('live-pts').textContent=calcScore().total;
+}
+
+function pushProgress(){
+  if(!roomId||!myId) return;
+  update(ref(db,`blitz/${roomId}/players/${myId}`),{solved:wordResults.filter(w=>w.solved).length});
+}
+
+// ── LIVE LB STRIP ──
+function renderLbStrip(players){
+  const strip=document.getElementById('lb-strip');
+  strip.innerHTML='';
+  Object.entries(players).forEach(([id,p])=>{
+    const chip=document.createElement('div');
+    chip.className='lb-chip'+(id===myId?' is-me':'');
+    const solved=p.solved||0;
+    const dots=[0,1,2].map(i=>`<div class="lc-dot${i<solved?' done':''}"></div>`).join('');
+    const pts=id===myId?calcScore().total:(p.score!==null&&p.score!==undefined?p.score:'?');
+    chip.innerHTML=`<div class="lc-name">${p.name||'?'}</div><div class="lc-dots">${dots}</div><div class="lc-pts">${pts}</div>`;
+    strip.appendChild(chip);
+  });
+}
+
+// ── SCORING ──
+function calcScore(){
+  let wordPts=0;
+  const breakdown=words.map((w,i)=>{
+    const r=wordResults[i];
+    if(!r.solved) return{solved:false,pts:0,guesses:r.guesses,word:w};
+    const pts=Math.max(1,7-r.guesses); // 1 guess=6pts, 6 guesses=1pt
+    wordPts+=pts; return{solved:true,pts,guesses:r.guesses,word:w};
+  });
+  const elapsed=startedAt?Math.floor((Date.now()-startedAt)/1000):300;
+  const left=Math.max(0,300-elapsed);
+  let tb=0;
+  if(left>=240)tb=5; else if(left>=180)tb=4; else if(left>=120)tb=3; else if(left>=60)tb=2; else if(left>0)tb=1;
+  return{total:wordPts+tb,wordPts,timeBonus:tb,breakdown};
+}
+
+// ── END GAME ──
+function endGame(){
+  clearInterval(timerIv); wordDone=true;
+  const sc=calcScore(); myScore=sc.total;
+  update(ref(db,`blitz/${roomId}/players/${myId}`),{score:sc.total,done:true,solved:wordResults.filter(w=>w.solved).length});
+  showResultScreen(sc);
+}
+
+// ── RESULT ──
+function showResultScreen(sc){
+  document.getElementById('my-pts').textContent=sc.total;
+  const solved=sc.breakdown.filter(b=>b.solved).length;
+  document.getElementById('r-title').textContent=solved===3?'🎉 სამივე გამოიცანი!':solved>0?`⚡ ${solved}/3 სიტყვა!`:'😔 სცადე მეტი!';
+  document.getElementById('r-sub').textContent=`${sc.wordPts} სიტყვის ქულა + ${sc.timeBonus} დროის ბონუსი`;
+  document.getElementById('time-bonus-lbl').textContent=`+${sc.timeBonus} ქულა`;
+  const brows=document.getElementById('bd-rows'); brows.innerHTML='';
+  sc.breakdown.forEach(b=>{
+    const row=document.createElement('div');row.className='bd-row'+(b.solved?'':' unsolved');
+    row.innerHTML=`<div><div class="bd-word">${[...b.word].join(' ')}</div><div class="bd-detail">${b.solved?`${b.guesses} მცდელობა`:'ვერ გამოიცნო'}</div></div><div class="bd-pts">${b.solved?'+'+b.pts:'0'}</div>`;
+    brows.appendChild(row);
+  });
+  showScreen('s-result');
+  document.getElementById('waiting-note').style.display='block';
+  // Keep listening for all players to finish
+  listenRoom();
+}
+
+function renderResultLb(players){
+  const plist=Object.entries(players);
+  const allDone=plist.every(([,p])=>p.done);
+  document.getElementById('waiting-note').style.display=allDone?'none':'block';
+
+  const sorted=plist.sort((a,b)=>(b[1].score||0)-(a[1].score||0));
+  const lbEl=document.getElementById('lb-rows'); lbEl.innerHTML='';
+  const rankEmoji=['👑','🥈','🥉'];
+  sorted.forEach(([id,p],idx)=>{
+    const row=document.createElement('div');
+    row.className='lb-row'+(idx===0?' rank1':'')+(id===myId?' is-me':'');
+    const dots=[0,1,2].map(i=>`<div class="lb-dot${i<(p.solved||0)?' done':''}"></div>`).join('');
+    const scoreDisp=p.score!==null&&p.score!==undefined?p.score:(p.done?0:'…');
+    row.innerHTML=`<div class="lb-rank">${rankEmoji[idx]||idx+1}</div><div class="lb-name">${p.name||'?'}${id===myId?' (შენ)':''}</div><div class="lb-dots">${dots}</div><div class="lb-score${p.done?'':' lb-waiting'}">${scoreDisp}${p.done?'':' ⏳'}</div>`;
+    lbEl.appendChild(row);
+  });
+
+  // Winner card
+  if(allDone&&myScore!==null){
+    const top=sorted[0];
+    const wcard=document.getElementById('winner-card');
+    wcard.style.display='block';
+    if(top[0]===myId){wcard.className='winner-card wc-you';wcard.textContent='👑 შენ გაიმარჯვე!';}
+    else if(sorted.findIndex(([,p])=>p.score===myScore&&sorted[0][1].score===myScore)>-1){wcard.className='winner-card wc-tie';wcard.textContent='🤝 ფრე!';}
+    else{wcard.className='winner-card wc-other';wcard.textContent=`👑 ${top[1].name} გაიმარჯვა!`;}
+  }
+}
+
+window.shareResult=function(){
+  if(!myScore&&myScore!==0) return;
+  const sc=calcScore();
+  const lines=sc.breakdown.map(b=>`${b.solved?'✅':'❌'} ${b.word}${b.solved?` (${b.guesses}g)`:''}` ).join('\n');
+  const text=`⚡ ბლიც სიტყვობანა!\nქულა: ${sc.total}\n\n${lines}\n\nთამაში: ${location.origin}/blitz.html`;
+  if(navigator.share) navigator.share({text}).catch(()=>{});
+  else{navigator.clipboard.writeText(text);toast('კოპირებულია 📋');}
+};
+
+// ── INIT ──
+(async function(){
+  const p=new URLSearchParams(location.search);
+  const rp=p.get('room');
+  if(!rp){showScreen('s-setup');return;}
+
+  // Joining an existing room
+  roomId=rp; myId=uid(); isHost=false;
+  roomRef=ref(db,`blitz/${roomId}`);
+  const snap=await get(roomRef);
+  if(!snap.exists()){toast('ოთახი ვერ მოიძებნა');showScreen('s-setup');return;}
+  const d=snap.val();
+  if(d.status==='playing'){toast('თამაში უკვე დაწყებულია');showScreen('s-setup');return;}
+  words=d.words; blitzMode=d.mode;
+
+  // Show name prompt over setup screen
+  document.querySelector('.setup-hero .big').textContent='⚡ შემოუერთდი ბლიცს!';
+  document.querySelector('.setup-hero .sub').textContent='შეიყვანე სახელი ოთახში შესასვლელად';
+  document.getElementById('mc-five').style.display='none';
+  document.getElementById('mc-rand').style.display='none';
+  const startBtn=document.querySelector('.setup-actions .btn-blitz');
+  startBtn.textContent='⚡ ოთახში შესვლა';
+  startBtn.onclick=async()=>{
+    const name=document.getElementById('inp-name').value.trim();
+    if(!name){toast('შეიყვანე შენი სახელი');return;}
+    myName=name;
+    await update(ref(db,`blitz/${roomId}/players/${myId}`),{name,isHost:false,joinedAt:Date.now(),solved:0,score:null,done:false});
+    window._link=`${location.origin}${location.pathname}?room=${roomId}`;
+    document.getElementById('lobby-link-box').textContent=window._link;
+    document.getElementById('room-badge').textContent=`#${roomId.slice(0,5).toUpperCase()}`;
+    document.getElementById('g-room-badge').textContent=`#${roomId.slice(0,5).toUpperCase()}`;
+    // Hide start btn for non-host
+    document.getElementById('start-btn').style.display='none';
+    document.getElementById('start-note').textContent='ელოდება მასპინძლის სიგნალს…';
+    showScreen('s-lobby');
+    listenRoom();
+  };
+  showScreen('s-setup');
+})();
+</script>
+</body>
+</html>

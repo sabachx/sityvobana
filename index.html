@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f0e17" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="სიტყვობანა" />
+  <title>სიტყვობანა</title>
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    :root {
+      --bg: #0f0e17;
+      --bg2: #1a1a2e;
+      --surface: #1e1e3a;
+      --surface2: #252545;
+      --border: #3a3a5c;
+      --text: #fffffe;
+      --text-dim: #a7a9be;
+      --text-muted: #666680;
+      --accent: #e8c547;
+      --accent2: #ff8906;
+      --green: #2dc653;
+      --yellow: #e8c547;
+      --grey: #3a3a5c;
+      --grey-used: #2a2a45;
+      --radius: 8px;
+      --tile-size: min(62px, calc((100vw - 56px) / 5));
+      --gap: 5px;
+      --kb-gap: 4px;
+      --kb-h: 44px;
+      --kb-fs: 16px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    html,body { height:100%; overflow:hidden; }
+    body {
+      background:var(--bg); color:var(--text);
+      font-family:system-ui,-apple-system,sans-serif;
+      display:flex; flex-direction:column; align-items:center;
+      overflow:hidden;
+      padding-bottom:env(safe-area-inset-bottom);
+    }
+    body::before {
+      content:''; position:fixed; inset:0;
+      background:radial-gradient(ellipse at 30% 20%,rgba(232,197,71,.05) 0%,transparent 50%),
+                 radial-gradient(ellipse at 70% 80%,rgba(45,198,83,.03) 0%,transparent 50%);
+      pointer-events:none; z-index:0;
+    }
+
+    /* HEADER */
+    header {
+      width:100%; max-width:500px;
+      padding:10px 12px 8px;
+      display:flex; align-items:center; justify-content:space-between;
+      border-bottom:1px solid var(--border);
+      flex-shrink:0; z-index:10; position:relative;
+    }
+    .header-logo .ka { font-size:16px; font-weight:700; color:var(--accent); letter-spacing:1px; line-height:1; display:block; }
+    .header-logo .en { font-size:9px; color:var(--text-muted); letter-spacing:3px; text-transform:uppercase; margin-top:2px; display:block; }
+    .header-actions { display:flex; gap:6px; align-items:center; }
+    .icon-btn {
+      background:var(--surface); border:1px solid var(--border); color:var(--text-dim);
+      width:34px; height:34px; border-radius:50%; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      font-size:15px; transition:all .2s; flex-shrink:0;
+    }
+    .icon-btn:hover { background:var(--surface2); color:var(--text); border-color:var(--accent); }
+    .hint-btn { border-color:rgba(232,197,71,.4); }
+    .hint-btn.used { opacity:.3; pointer-events:none; }
+    .user-btn {
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      border:2px solid transparent; color:var(--bg);
+      width:34px; height:34px; border-radius:50%; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      font-size:14px; font-weight:700; transition:all .2s; flex-shrink:0;
+    }
+    .user-btn:hover { transform:scale(1.06); }
+    .user-btn.signed-in { background:linear-gradient(135deg,var(--green),#1da348); }
+
+    /* STREAK BAR */
+    #streak-bar {
+      width:100%; max-width:500px;
+      padding:5px 12px;
+      display:flex; gap:10px; justify-content:center;
+      flex-shrink:0; z-index:10;
+    }
+    .stat-pill {
+      display:flex; align-items:center; gap:5px;
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:20px; padding:3px 10px;
+      font-size:11px; color:var(--text-dim);
+    }
+    .stat-pill .val { font-size:13px; font-weight:700; color:var(--accent); }
+
+    .signin-mini-btn {
+      display:inline-flex; align-items:center; gap:5px;
+      background:var(--surface); border:1px solid var(--border);
+      color:var(--text-dim); border-radius:20px;
+      padding:4px 10px; font-size:11px; font-weight:600;
+      cursor:pointer; transition:all .2s; white-space:nowrap;
+    }
+    .signin-mini-btn:hover { background:var(--surface2); border-color:var(--accent); color:var(--text); }
+
+    /* TOAST */
+    #toast {
+      position:fixed; top:68px; left:50%;
+      transform:translateX(-50%) translateY(-8px);
+      background:var(--text); color:var(--bg);
+      padding:8px 16px; border-radius:20px;
+      font-weight:600; font-size:13px;
+      z-index:1000; opacity:0; transition:all .25s;
+      pointer-events:none; white-space:nowrap;
+      max-width:88vw; text-align:center;
+    }
+    #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+    /* BOARD */
+    #board-wrap {
+      flex:1; display:flex; align-items:center; justify-content:center;
+      padding:6px 0 4px; min-height:0; z-index:5;
+    }
+    #board { display:grid; gap:var(--gap); }
+    .row { display:grid; grid-template-columns:repeat(5,var(--tile-size)); gap:var(--gap); }
+    .tile {
+      width:var(--tile-size); height:var(--tile-size);
+      border:2px solid var(--border); border-radius:6px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:calc(var(--tile-size) * .42); font-weight:700;
+      color:var(--text); background:var(--surface);
+      transition:border-color .1s;
+    }
+    .tile.filled  { border-color:var(--text-muted); animation:pop .1s ease; }
+    .tile.correct { background:var(--green);  border-color:var(--green);  color:#fff; }
+    .tile.present { background:var(--yellow); border-color:var(--yellow); color:var(--bg); }
+    .tile.absent  { background:var(--grey);   border-color:var(--grey);   color:var(--text-dim); }
+    .tile.reveal  { animation:flip .45s ease forwards; }
+    .tile.shake   { animation:shake .35s ease; }
+    .tile.win-bounce { animation:bounce .4s ease; }
+    @keyframes pop    { 0%{transform:scale(1)} 50%{transform:scale(1.12)} 100%{transform:scale(1)} }
+    @keyframes flip   { 0%{transform:rotateX(0)} 50%{transform:rotateX(-90deg)} 100%{transform:rotateX(0)} }
+    @keyframes shake  { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)} }
+    @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+
+    /* KEYBOARD */
+    #keyboard {
+      width:100%; max-width:500px;
+      padding:0 5px calc(6px + env(safe-area-inset-bottom));
+      flex-shrink:0; z-index:10;
+    }
+    .kb-row { display:flex; justify-content:center; gap:var(--kb-gap); margin-bottom:var(--kb-gap); }
+    .key {
+      height:var(--kb-h); min-width:0; padding:0 2px;
+      border-radius:6px; border:1px solid transparent;
+      background:var(--surface2); color:var(--text);
+      font-size:var(--kb-fs); font-weight:600;
+      cursor:pointer; display:flex; align-items:center; justify-content:center;
+      transition:background .12s,transform .1s;
+      user-select:none; -webkit-user-select:none;
+      flex:1; touch-action:manipulation;
+    }
+    .key:active { transform:scale(.91); background:var(--border); }
+    .enter-key { flex:1.8; font-size:10.5px; letter-spacing:.3px; border:1px solid var(--border); white-space:nowrap; }
+    .del-key   { flex:1.3; font-size:17px; border:1px solid var(--border); }
+    .key.correct { background:var(--green);    color:#fff;      border-color:var(--green); }
+    .key.present { background:var(--yellow);   color:var(--bg); border-color:var(--yellow); }
+    .key.absent  { background:var(--grey-used);color:var(--text-muted); }
+
+    /* CHALLENGE BANNER */
+    #challenge-banner {
+      width:100%; max-width:500px; padding:7px 12px;
+      background:linear-gradient(135deg,rgba(232,197,71,.12),rgba(255,137,6,.08));
+      border-bottom:1px solid rgba(232,197,71,.25);
+      display:none; align-items:center; gap:8px;
+      font-size:12px; color:var(--text-dim);
+      flex-shrink:0; z-index:10;
+    }
+    #challenge-banner.visible { display:flex; }
+    #challenge-banner .from { color:var(--accent); font-weight:700; }
+
+    /* MODALS */
+    .modal-overlay {
+      position:fixed; inset:0;
+      background:rgba(8,8,18,.9); backdrop-filter:blur(8px);
+      z-index:200; display:flex; align-items:center; justify-content:center;
+      padding:12px; opacity:0; pointer-events:none; transition:opacity .25s;
+    }
+    .modal-overlay.open { opacity:1; pointer-events:all; }
+    .modal {
+      background:var(--bg2); border:1px solid var(--border);
+      border-radius:16px; padding:22px 18px;
+      width:100%; max-width:370px; max-height:92vh;
+      overflow-y:auto; transform:translateY(16px);
+      transition:transform .25s; position:relative;
+    }
+    .modal-overlay.open .modal { transform:translateY(0); }
+    .modal-close {
+      position:absolute; top:12px; right:12px;
+      background:var(--surface); border:1px solid var(--border);
+      color:var(--text-dim); width:28px; height:28px;
+      border-radius:50%; cursor:pointer; font-size:14px;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .modal h2 { font-size:17px; margin-bottom:14px; color:var(--accent); letter-spacing:1px; }
+    .modal p  { color:var(--text-dim); font-size:12px; line-height:1.6; margin-bottom:10px; }
+
+    /* BUTTONS */
+    .btn {
+      display:flex; align-items:center; justify-content:center; gap:7px;
+      width:100%; padding:11px;
+      border-radius:var(--radius); border:1px solid var(--border);
+      background:var(--surface); color:var(--text);
+      font-size:13px; font-weight:600; cursor:pointer;
+      transition:all .2s; margin-bottom:8px; text-decoration:none;
+    }
+    .btn:hover { background:var(--surface2); border-color:var(--accent); }
+    .btn-primary { background:var(--accent); color:var(--bg); border-color:var(--accent); }
+    .btn-primary:hover { background:#f0d060; }
+    .btn-green { background:var(--green); color:#fff; border-color:var(--green); }
+    .divider { display:flex; align-items:center; gap:8px; color:var(--text-muted); font-size:11px; margin:10px 0; }
+    .divider::before,.divider::after { content:''; flex:1; height:1px; background:var(--border); }
+    input[type=text],input[type=email],input[type=password] {
+      width:100%; background:var(--surface); border:1px solid var(--border);
+      color:var(--text); padding:10px 12px; border-radius:var(--radius);
+      font-size:13px; margin-bottom:8px; outline:none; transition:border-color .2s;
+    }
+    input:focus { border-color:var(--accent); }
+    input::placeholder { color:var(--text-muted); }
+    label { font-size:11px; color:var(--text-muted); margin-bottom:3px; display:block; }
+
+    /* RESULT MODAL */
+    .result-word { text-align:center; font-size:32px; font-weight:700; color:var(--accent); letter-spacing:4px; margin-bottom:2px; }
+    .result-sub  { text-align:center; font-size:11px; color:var(--text-muted); margin-bottom:14px; }
+    #next-word-timer { text-align:center; font-size:11px; color:var(--text-muted); margin-bottom:12px; }
+    #next-word-timer span { color:var(--accent); font-weight:700; font-size:14px; }
+    .result-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:12px; }
+    .result-stat { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:7px 4px; text-align:center; }
+    .result-stat .n { font-size:20px; font-weight:700; color:var(--accent); }
+    .result-stat .l { font-size:9px; color:var(--text-muted); margin-top:2px; }
+
+    /* DISTRIBUTION CHART */
+    .dist-chart { margin-bottom:14px; }
+    .dist-chart h3 { font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; text-align:center; }
+    .dist-row { display:flex; align-items:center; gap:7px; margin-bottom:4px; }
+    .dist-label { font-size:11px; font-weight:700; color:var(--text-dim); width:12px; text-align:center; flex-shrink:0; }
+    .dist-bar-wrap { flex:1; background:var(--surface); border-radius:3px; height:20px; overflow:hidden; }
+    .dist-bar {
+      height:100%; min-width:20px;
+      background:var(--surface2); border-radius:3px;
+      display:flex; align-items:center; justify-content:flex-end;
+      padding-right:6px; font-size:10px; font-weight:700; color:var(--text-dim);
+      transition:width .6s ease;
+    }
+    .dist-bar.highlight { background:var(--green); color:#fff; }
+
+    /* CHALLENGE MODAL TABS */
+    .chal-tabs { display:flex; gap:5px; margin-bottom:12px; }
+    .chal-tab {
+      flex:1; padding:7px 4px; border-radius:var(--radius);
+      border:1px solid var(--border); background:var(--surface);
+      color:var(--text-dim); font-size:11px; font-weight:600;
+      cursor:pointer; text-align:center; transition:all .2s;
+    }
+    .chal-tab.active { background:var(--accent); color:var(--bg); border-color:var(--accent); }
+    .chal-panel { display:none; }
+    .chal-panel.active { display:block; }
+    .chal-input-wrap { display:flex; gap:6px; margin-bottom:8px; }
+    .chal-input-wrap input { margin-bottom:0; flex:1; }
+    .chal-input-wrap button {
+      background:var(--accent); color:var(--bg); border:none;
+      border-radius:var(--radius); padding:0 12px;
+      font-weight:700; cursor:pointer; font-size:12px; white-space:nowrap;
+    }
+    .chal-link {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); padding:8px 10px;
+      font-size:11px; color:var(--text-dim); word-break:break-all;
+      display:none; margin-bottom:8px;
+    }
+    .chal-link.visible { display:block; }
+
+    /* HOW TO PLAY */
+    .how-row { display:flex; gap:5px; margin-bottom:10px; }
+    .how-tile {
+      width:34px; height:34px; border-radius:5px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:17px; font-weight:700;
+      border:2px solid var(--border); background:var(--surface); color:var(--text);
+    }
+    .how-tile.correct { background:var(--green);  border-color:var(--green);  color:#fff; }
+    .how-tile.present { background:var(--yellow); border-color:var(--yellow); color:var(--bg); }
+    .how-tile.absent  { background:var(--grey);   border-color:var(--grey);   color:var(--text-dim); }
+    .how-desc { font-size:12px; color:var(--text-dim); margin-bottom:3px; }
+    .how-desc span { color:var(--text); font-weight:600; }
+    .shortcut-grid { display:grid; grid-template-columns:1fr 1fr; gap:3px 12px; margin-top:6px; }
+    .shortcut-row { font-size:11px; color:var(--text-dim); padding:2px 0; }
+    .shortcut-row b { color:var(--accent); }
+
+    /* AUTH TABS */
+    .tabs { display:flex; gap:6px; margin-bottom:12px; }
+    .tab { flex:1; padding:7px; border-radius:var(--radius); border:1px solid var(--border); background:var(--surface); color:var(--text-dim); font-size:12px; font-weight:600; cursor:pointer; text-align:center; transition:all .2s; }
+    .tab.active { background:var(--accent); color:var(--bg); border-color:var(--accent); }
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
+
+    /* SUGGEST */
+    .suggest-wrap { margin-top:6px; padding-top:12px; border-top:1px solid var(--border); }
+    .suggest-wrap h3 { font-size:10px; color:var(--text-muted); margin-bottom:7px; letter-spacing:1px; text-transform:uppercase; }
+
+    ::-webkit-scrollbar { width:3px; }
+    ::-webkit-scrollbar-track { background:var(--bg2); }
+    ::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+    /* RESPONSIVE */
+    @media (max-height:780px) { :root{ --kb-h:40px; --kb-fs:15px; } #streak-bar{padding:4px 12px;} }
+    @media (max-height:680px) { :root{ --kb-h:36px; --kb-fs:14px; --kb-gap:3px; } #board-wrap{padding:3px 0;} }
+    @media (max-height:620px) { :root{ --kb-h:32px; --kb-fs:13px; --kb-gap:2px; } }
+    @media (max-width:400px)  { :root{ --kb-fs:14px; --kb-gap:3px; } #keyboard{padding:0 3px calc(4px + env(safe-area-inset-bottom));} }
+    @media (max-width:350px)  { :root{ --kb-h:38px; --kb-fs:12px; --kb-gap:2px; } .icon-btn,.user-btn{width:30px;height:30px;font-size:12px;} .header-actions{gap:4px;} }
+  </style>
+</head>
+<body>
+
+<div id="challenge-banner">
+  <span>⚔️</span>
+  <span><span class="from" id="challenge-from">Someone</span> გიგზავნის გამოწვევას!</span>
+</div>
+
+<header>
+  <div class="header-logo">
+    <span class="ka">სიტყვობანა</span>
+    
+  </div>
+  <div class="header-actions">
+    <button class="icon-btn" onclick="openModal('how-modal')" title="როგორ ვითამაშოთ">❓</button>
+    <button class="icon-btn hint-btn" id="hint-btn" onclick="useHint()" title="მინიშნება">💡</button>
+    <button class="icon-btn" onclick="openModal('challenge-modal')" title="გამოიწვიე მეგობარი">⚔️</button>
+    <button class="icon-btn" onclick="openModal('suggest-modal')" title="დაამატე სიტყვა">✉️</button>
+    <div class="user-btn" id="user-avatar" onclick="openModal('auth-modal')" title="პროფილი">
+      <span id="user-avatar-inner">👤</span>
+    </div>
+  </div>
+</header>
+
+<div id="streak-bar">
+  <!-- Shown when logged in -->
+  <div id="stats-pills" style="display:none;gap:10px;justify-content:center;width:100%;">
+    <div class="stat-pill"><span>🔥</span><span>სტრიქი:</span><span class="val" id="stat-streak">0</span></div>
+    <div class="stat-pill"><span>🏆</span><span>საუკეთესო:</span><span class="val" id="stat-best">0</span></div>
+    <div class="stat-pill"><span>🎯</span><span>ნათამაშები:</span><span class="val" id="stat-played">0</span></div>
+  </div>
+  <!-- Shown when logged out -->
+  <div id="signin-bar" style="display:flex;gap:6px;align-items:center;width:100%;justify-content:center;flex-wrap:wrap;">
+    <span style="font-size:11px;color:var(--text-muted);">სტრიქის შესანახად:</span>
+    <button class="signin-mini-btn" onclick="signInGoogle()">
+      <svg width="13" height="13" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Google
+    </button>
+    <button class="signin-mini-btn" onclick="signInApple()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+      Apple
+    </button>
+    <button class="signin-mini-btn" onclick="openModal('auth-modal')">✉️ Email</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<div id="board-wrap"><div id="board"></div></div>
+
+<div id="keyboard"></div>
+
+<!-- HOW TO PLAY -->
+<div class="modal-overlay" id="how-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('how-modal')">✕</button>
+    <h2>როგორ ვითამაშოთ</h2>
+    <p>გამოიცანი <strong>5-ასოიანი</strong> ქართული სიტყვა 6 მცდელობაში.</p>
+    <div class="how-row">
+      <div class="how-tile absent">თ</div><div class="how-tile present">ვ</div><div class="how-tile present">ა</div><div class="how-tile correct">ლ</div><div class="how-tile correct">ი</div>
+    </div>
+    <p class="how-desc"><span>ლ</span>, <span>ი</span> — სწორი ადგილი 🟩 · <span>ვ</span>, <span>ა</span> — სიტყვაშია, სხვა ადგილას 🟨 · <span>თ</span> — სიტყვაში არ არის ⬛</p>
+    <div class="how-row">
+      <div class="how-tile correct">ვ</div><div class="how-tile correct">ა</div><div class="how-tile correct">შ</div><div class="how-tile correct">ლ</div><div class="how-tile correct">ი</div>
+    </div>
+    <p class="how-desc">ყველა ასო სწორ ადგილასაა 🟩</p>
+    <p style="margin-top:10px;font-size:10px;color:var(--text-muted)">ყოველდღე ახალი სიტყვა · New word every midnight</p>
+    <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
+      <p style="font-size:10px;color:var(--text-muted);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase">⌨️ Laptop keyboard shortcuts</p>
+      <div class="shortcut-grid">
+        <div class="shortcut-row"><b>Shift+W</b> → ჭ</div>
+        <div class="shortcut-row"><b>Shift+R</b> → ღ</div>
+        <div class="shortcut-row"><b>Shift+T</b> → თ</div>
+        <div class="shortcut-row"><b>Shift+S</b> → შ</div>
+        <div class="shortcut-row"><b>Shift+J</b> → ჟ</div>
+        <div class="shortcut-row"><b>Shift+C</b> → ჩ</div>
+        <div class="shortcut-row"><b>Shift+Z</b> → ძ</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH -->
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('auth-modal')">✕</button>
+    <h2 id="auth-title">შესვლა</h2>
+    <div id="auth-signed-out">
+      <p>შედი სისტემაში სტრიქის შესანახად ყველა მოწყობილობაზე.</p>
+      <button class="btn" onclick="signInGoogle()">
+        <svg width="15" height="15" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Google-ით შესვლა
+      </button>
+      <button class="btn" onclick="signInApple()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+        Apple-ით შესვლა
+      </button>
+      <div class="divider">ან</div>
+      <div class="tabs" id="auth-tabs">
+        <div class="tab active" onclick="switchAuthTab('login')">შესვლა</div>
+        <div class="tab" onclick="switchAuthTab('register')">რეგისტრაცია</div>
+      </div>
+      <div class="tab-content active" id="tab-login">
+        <label>ელ-ფოსტა</label><input type="email" id="login-email" placeholder="you@example.com" />
+        <label>პაროლი</label><input type="password" id="login-pass" placeholder="••••••••" />
+        <button class="btn btn-primary" onclick="signInEmail()">შესვლა</button>
+      </div>
+      <div class="tab-content" id="tab-register">
+        <label>სახელი</label><input type="text" id="reg-name" placeholder="შენი სახელი" />
+        <label>ელ-ფოსტა</label><input type="email" id="reg-email" placeholder="you@example.com" />
+        <label>პაროლი</label><input type="password" id="reg-pass" placeholder="••••••••" />
+        <button class="btn btn-primary" onclick="registerEmail()">ანგარიშის შექმნა</button>
+      </div>
+      <p style="font-size:10px;color:var(--text-muted);text-align:center;margin-top:6px">სტრიქი ინახება ადგილობრივადაც ამ მოწყობილობაზე 🔒</p>
+    </div>
+    <div id="auth-signed-in" style="display:none">
+      <div style="text-align:center;margin-bottom:14px">
+        <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--bg);margin:0 auto 8px"><span id="profile-initial">?</span></div>
+        <div style="font-size:14px;font-weight:700" id="profile-name">User</div>
+        <div style="font-size:11px;color:var(--text-muted)" id="profile-email"></div>
+      </div>
+      <div class="result-stats">
+        <div class="result-stat"><div class="n" id="ps-streak">0</div><div class="l">🔥 სტრიქი</div></div>
+        <div class="result-stat"><div class="n" id="ps-best">0</div><div class="l">🏆 საუკეთესო</div></div>
+        <div class="result-stat"><div class="n" id="ps-played">0</div><div class="l">🎯 ნათამაშები</div></div>
+      </div>
+      <button class="btn" onclick="signOut()">გასვლა</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div class="modal-overlay" id="result-modal">
+  <div class="modal">
+    <h2 id="result-title">🎉 გაიმარჯვე!</h2>
+    <div class="result-word" id="result-word"></div>
+    <div class="result-sub" id="result-sub"></div>
+    <div id="next-word-timer">შემდეგი სიტყვა: <span id="countdown">00:00:00</span></div>
+    <div class="dist-chart">
+      <h3>📊 გამოცნობის დისტრიბუცია</h3>
+      <div id="dist-bars"></div>
+    </div>
+    <div class="result-stats">
+      <div class="result-stat"><div class="n" id="rs-streak">0</div><div class="l">🔥 სტრიქი</div></div>
+      <div class="result-stat"><div class="n" id="rs-best">0</div><div class="l">🏆 საუკეთესო</div></div>
+      <div class="result-stat"><div class="n" id="rs-played">0</div><div class="l">🎯 ნათამაშები</div></div>
+    </div>
+    <button class="btn btn-green" onclick="shareResult()">📤 გააზიარე</button>
+    <button class="btn" onclick="openModal('challenge-modal');closeModal('result-modal')">⚔️ გამოიწვიე მეგობარი</button>
+    <div class="suggest-wrap">
+      <h3>💡 დაამატე სიტყვა</h3>
+      <input type="text" id="suggest-from-result" placeholder="სიტყვა (5 ასო)" maxlength="10" />
+      <button class="btn btn-primary" onclick="submitSuggestion('suggest-from-result')">გაგზავნა</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHALLENGE -->
+<div class="modal-overlay" id="challenge-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('challenge-modal')">✕</button>
+    <h2>⚔️ გამოიწვიე მეგობარი</h2>
+    <div class="chal-tabs">
+      <div class="chal-tab active" onclick="switchChalTab('custom')">✍️ თავისუფალი სიტყვა</div>
+      <div class="chal-tab" onclick="switchChalTab('daily')">📅 დღის სიტყვა</div>
+      <div class="chal-tab" onclick="switchChalTab('blitz')" style="color:var(--accent2)">⚡ ბლიცი</div>
+    </div>
+    <!-- Custom -->
+    <div class="chal-panel active" id="cpanel-custom">
+      <p>შეიყვანე ნებისმიერი ქართული სიტყვა (4-10 ასო). მეგობარი გამოიცნობს მას საათობრივი შეზღუდვის გარეშე.</p>
+      <div class="chal-input-wrap">
+        <input type="text" id="chal-word-input" placeholder="სიტყვა" maxlength="10" />
+        <button onclick="genChallenge('custom')">შექმნა</button>
+      </div>
+      <div class="chal-link" id="chal-link-custom"></div>
+      <button class="btn btn-green" id="copy-custom" onclick="copyLink('chal-link-custom')" style="display:none">📋 ლინკის კოპირება</button>
+      <button class="btn" id="share-custom" onclick="shareLink('chal-link-custom','სიტყვობანა – გამოწვევა!')" style="display:none">📤 გაზიარება</button>
+    </div>
+    <!-- Daily -->
+    <div class="chal-panel" id="cpanel-daily">
+      <p>გამოიწვიე მეგობარი <strong>დღევანდელი სიტყვის</strong> გამოსაცნობად. შეადარეთ შედეგები!</p>
+      <button class="btn btn-primary" onclick="genChallenge('daily')">🗓️ დღის გამოწვევის ლინკი</button>
+      <div class="chal-link" id="chal-link-daily"></div>
+      <button class="btn btn-green" id="copy-daily" onclick="copyLink('chal-link-daily')" style="display:none">📋 ლინკის კოპირება</button>
+      <button class="btn" id="share-daily" onclick="shareLink('chal-link-daily','სიტყვობანა – დღის გამოწვევა!')" style="display:none">📤 გაზიარება</button>
+    </div>
+    <!-- Blitz -->
+    <div class="chal-panel" id="cpanel-blitz">
+      <p style="margin-bottom:14px">⚡ <strong>ბლიც რეჟიმი</strong> — 3 სიტყვა, 5 წუთი, ყველა თამაშობს ბრმად. მეტი ქულა იმარჯვებს!</p>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:12px;font-size:12px;color:var(--text-dim);line-height:1.8">
+        🔤 აირჩიე 5-ასოიანი ან შემთხვევითი სიტყვები<br>
+        ⏱ ერთი 5-წუთიანი საათი სამივე სიტყვისთვის<br>
+        🏆 ქულები: ნაკლები მცდელობა + დროის ბონუსი<br>
+        📊 ბოლოს ხედავ ყველა მოთამაშის შედეგს
+      </div>
+      <a href="blitz.html" class="btn" style="background:var(--accent2);color:#fff;border-color:var(--accent2);text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px">
+        ⚡ ბლიც სიტყვობანა
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- SUGGEST -->
+<div class="modal-overlay" id="suggest-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('suggest-modal')">✕</button>
+    <h2>✉️ დაამატე სიტყვა</h2>
+    <p>გვეხმარე სიტყვების სიის გაზრდაში! შემოგვთავაზე 5-ასოიანი ქართული სიტყვა.</p>
+    <label>ქართული სიტყვა (5 ასო)</label>
+    <input type="text" id="suggest-word" placeholder="მაგ: სახლი..." maxlength="10" />
+    <label>შენი სახელი (სურვილისამებრ)</label>
+    <input type="text" id="suggest-name" placeholder="სახელი" />
+    <button class="btn btn-primary" onclick="submitSuggestion('suggest-word')">გაგზავნა</button>
+    <p style="font-size:10px;color:var(--text-muted);margin-top:6px">სიტყვები განიხილება ქართველი მკვლევარების მიერ დამატებამდე.</p>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, push } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+const _fbApp = initializeApp({
+  apiKey:"AIzaSyDUwQUWDHXtHtxRq6RcZcbId3z-kzrAwwY",
+  authDomain:"sityvobana-2a717.firebaseapp.com",
+  databaseURL:"https://sityvobana-2a717-default-rtdb.firebaseio.com",
+  projectId:"sityvobana-2a717",
+  storageBucket:"sityvobana-2a717.firebasestorage.app",
+  messagingSenderId:"654904298229",
+  appId:"1:654904298229:web:6d6e54a5681edd5975d3bc"
+});
+const _db = getDatabase(_fbApp);
+
+// ── submitSuggestion lives here where Firebase is in scope ──
+window.submitSuggestion = async function(id) {
+  const inp = document.getElementById(id);
+  const word = inp.value.trim();
+  if ([...word].length < 4) { showToast('სიტყვა ძალიან მოკლეა'); return; }
+  if (!/^[\u10D0-\u10FF]+$/.test(word)) { showToast('გთხოვთ შეიყვანოთ ქართული სიტყვა'); return; }
+  try {
+    await push(ref(_db, 'suggestions'), {
+      word,
+      date: new Date().toISOString(),
+      status: 'pending'
+    });
+    inp.value = '';
+    showToast('გმადლობთ 🙏');
+  } catch(e) {
+    console.error('Firebase error:', e);
+    // fallback to localStorage
+    const s = JSON.parse(localStorage.getItem('sitqva_suggestions') || '[]');
+    s.push({ word, date: new Date().toISOString() });
+    localStorage.setItem('sitqva_suggestions', JSON.stringify(s));
+    inp.value = '';
+    showToast('გმადლობთ 🙏');
+  }
+};
+</script>
+<script>
+// ── WORD API ──
+// Words are served from a secure GitHub Pages API.
+// The client NEVER receives the full word list — only today's word.
+// Set this to your GitHub Pages URL once deployed:
+const API_BASE = 'https://sabachx.github.io/sityvobana-api';
+
+// Tiny emergency fallback (only used if API is unreachable)
+const FALLBACK_WORD = "სახლი";
+const FALLBACK_VALID = new Set(["სახლი","წყალი","ვარდი","ღვინო","ლობია","ყველი","ვაშლი","ლექსი","ცეკვა","გული","სული","ახალი","ძველი","კატა","ძაღლი","ცხენი","თევზი","ყვავი","გველი","ბანკი","ფული","ქუჩა","სკოლა","კარი","სარკე","სკამი","წიგნი","ქუდი","ბარათ","სიყვა","ოჯახი","ბებია","ცოლი","ქმარი","შვილი","ბიჭი","კაცი","ქალი","ბევრი","ხუთი","ყავა","ჩაი","წვენი","ლუდი","პური","მწვადი","ყაბაბ","სევდა","ამაყი","ლამაზ","ძლიერ","სუსტი","სწრაფ","ნელი","ლოცვა","ჯვარი","ხატი","სიმღე","სურათ","ნიკა","ლაშა","ზაზა","გელა","თამარ","ნინო","ლელა","თვალი","ყური","კბილი","ხელი","ფეხი","მხარი","ზურგი","მუხლი","გოგო","სამი","ოთხი","ექვსი","შვიდი","ღმერთ","ტაძარ","ხალხი","ქვეყნ","პასუხ","გუნდი","ბურთი","ექიმი","წამალ","ძილი","ჯანი","კინო","ფილმი"]);
+
+let VALID_WORDS = FALLBACK_VALID;
+let todayIsSpecial = false;
+
+async function loadWordsFromAPI() {
+  try {
+    const res = await fetch(`${API_BASE}/daily.json?v=${Date.now()}`);
+    if (!res.ok) throw new Error('daily.json not reachable');
+
+    const daily = await res.json();
+    if (!daily.word || !/^[\u10D0-\u10FF]+$/.test(daily.word)) throw new Error('invalid word');
+
+    targetWord    = daily.word;
+    wordLength    = [...daily.word].length;
+    todayIsSpecial = !!daily.special;
+
+    // Show special day badge if applicable
+    if (todayIsSpecial && daily.special_label) {
+      showSpecialBadge(daily.special_label);
+    }
+
+    // Cache for offline use
+    localStorage.setItem('sitqva_cached_word', JSON.stringify({
+      word: daily.word,
+      length: wordLength,
+      special: todayIsSpecial,
+      special_label: daily.special_label || null,
+      date: new Date().toISOString().slice(0, 10)
+    }));
+
+  } catch(e) {
+    // Try local cache
+    try {
+      const cached = JSON.parse(localStorage.getItem('sitqva_cached_word') || 'null');
+      const today  = new Date().toISOString().slice(0, 10);
+      if (cached && cached.date === today && cached.word) {
+        targetWord     = cached.word;
+        wordLength     = [...cached.word].length;
+        todayIsSpecial = !!cached.special;
+        if (todayIsSpecial && cached.special_label) showSpecialBadge(cached.special_label);
+        showToast('ოფლაინ რეჟიმი');
+        return;
+      }
+    } catch(e2) {}
+    // Full fallback
+    targetWord = FALLBACK_WORD;
+    wordLength = 5;
+    showToast('API მიუწვდომელია');
+  }
+}
+
+function showSpecialBadge(label) {
+  // Remove any existing badge
+  const existing = document.getElementById('special-badge');
+  if (existing) existing.remove();
+
+  const badge = document.createElement('div');
+  badge.id = 'special-badge';
+  badge.style.cssText = `
+    width:100%;max-width:500px;padding:7px 14px;
+    background:linear-gradient(135deg,rgba(232,197,71,.18),rgba(255,165,0,.12));
+    border-bottom:1px solid rgba(232,197,71,.35);
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    font-size:12px;font-weight:700;color:#e8c547;letter-spacing:.5px;
+    flex-shrink:0;z-index:10;
+  `;
+  badge.textContent = label;
+
+  // Insert after streak bar
+  const streakBar = document.getElementById('streak-bar');
+  streakBar.insertAdjacentElement('afterend', badge);
+}
+
+// ── KEYBOARD ──
+const KB_ROWS = [
+  ["ქ","წ","ჭ","ე","რ","ღ","ტ","თ","ყ","უ","ი","ო","პ"],
+  ["ა","ს","შ","დ","ფ","გ","ჰ","ჯ","ჟ","კ","ლ"],
+  ["ENTER","ზ","ძ","ხ","ც","ჩ","ვ","ბ","ნ","მ","⌫"]
+];
+
+// Latin → Georgian (normal keys + Shift combos for the 7 extras)
+const L2G = {
+  q:'ქ',w:'წ',e:'ე',r:'რ',t:'ტ',y:'ყ',u:'უ',i:'ი',o:'ო',p:'პ',
+  a:'ა',s:'ს',d:'დ',f:'ფ',g:'გ',h:'ჰ',j:'ჯ',k:'კ',l:'ლ',
+  z:'ზ',x:'ხ',c:'ც',v:'ვ',b:'ბ',n:'ნ',m:'მ',
+  W:'ჭ', R:'ღ', T:'თ', S:'შ', J:'ჟ', C:'ჩ', Z:'ძ'
+};
+
+// ── STATE ──
+let targetWord="", currentRow=0, currentCol=0, currentGuess=[], gameOver=false, guesses=[], revealInProgress=false, isChallenge=false, wordLength=5;
+const state = { streak:0, best:0, played:0, distribution:{1:0,2:0,3:0,4:0,5:0,6:0}, user:null };
+
+// ── INIT ──
+async function init() {
+  loadState();
+  // targetWord and wordLength are set inside loadWordsFromAPI
+  targetWord = ''; wordLength = 5;
+  document.getElementById('board-wrap').style.opacity = '0.4';
+  await loadWordsFromAPI();
+  document.getElementById('board-wrap').style.opacity = '1';
+  checkChallengeMode(); // may override targetWord for challenge links
+  applyWordLength();
+  buildBoard();
+  buildKeyboard();
+  updateStats();
+  checkTodayPlayed();
+}
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem('sitqva_state')||'{}');
+    state.streak = s.streak||0; state.best = s.best||0; state.played = s.played||0;
+    state.distribution = s.distribution||{1:0,2:0,3:0,4:0,5:0,6:0};
+    state.user = s.user||null;
+  } catch(e){}
+  updateUserUI();
+}
+function saveState() { localStorage.setItem('sitqva_state',JSON.stringify(state)); }
+
+function checkChallengeMode() {
+  const p = new URLSearchParams(location.search);
+  const cw = p.get('c'), from = p.get('from')||'Someone';
+  if (cw) {
+    try {
+      const decoded = decodeURIComponent(atob(cw));
+      const len = [...decoded].length;
+      if (len>=4 && len<=10 && /^[\u10D0-\u10FF]+$/.test(decoded)) {
+        isChallenge=true; targetWord=decoded; wordLength=len;
+        document.getElementById('challenge-from').textContent=decodeURIComponent(from);
+        document.getElementById('challenge-banner').classList.add('visible');
+        applyWordLength();
+        return;
+      }
+    } catch(e){}
+  }
+  setDailyWord();
+}
+function applyWordLength() {
+  document.documentElement.style.setProperty('--tile-size', `min(62px, calc((100vw - 56px) / ${wordLength}))`);
+}
+function setDailyWord() {
+  // Word already loaded into targetWord by loadWordsFromAPI()
+  // This function is only called as fallback if challenge mode didn't apply
+  if (!targetWord) { targetWord = FALLBACK_WORD; wordLength = 5; }
+}
+function todayKey() { const d=new Date(); return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; }
+function checkTodayPlayed() {
+  if (isChallenge) return;
+  try {
+    const saved = JSON.parse(localStorage.getItem('sitqva_today_'+todayKey())||'null');
+    if (!saved) return;
+    guesses=saved.guesses||[]; gameOver=saved.gameOver||false; restoreBoard(saved);
+  } catch(e){}
+}
+function saveTodayProgress() {
+  if (isChallenge) return;
+  localStorage.setItem('sitqva_today_'+todayKey(), JSON.stringify({guesses,gameOver,currentRow}));
+}
+
+// ── BOARD ──
+function buildBoard() {
+  const b=document.getElementById('board'); b.innerHTML='';
+  const maxGuesses = wordLength + 1;
+  for(let r=0;r<maxGuesses;r++){
+    const row=document.createElement('div'); row.className='row'; row.id='row-'+r;
+    row.style.gridTemplateColumns=`repeat(${wordLength},var(--tile-size))`;
+    for(let c=0;c<wordLength;c++){
+      const t=document.createElement('div'); t.className='tile'; t.id=`tile-${r}-${c}`; row.appendChild(t);
+    }
+    b.appendChild(row);
+  }
+  b.style.gridTemplateRows=`repeat(${maxGuesses},var(--tile-size))`;
+}
+function restoreBoard(data) {
+  (data.guesses||[]).forEach((guess,ri)=>{
+    const res=evaluateGuess(guess,targetWord);
+    [...guess].forEach((l,ci)=>{
+      const t=document.getElementById(`tile-${ri}-${ci}`);
+      t.textContent=l; t.classList.add(res[ci]); updateKeyColor(l,res[ci]);
+    });
+    currentRow=ri+1;
+  });
+  if(data.gameOver){ gameOver=true; const won=data.guesses.length>0&&data.guesses[data.guesses.length-1]===targetWord; if(!won) setTimeout(()=>showResult(false),300); }
+}
+
+// ── KEYBOARD ──
+const keyColors={};
+function buildKeyboard() {
+  const kb=document.getElementById('keyboard'); kb.innerHTML='';
+  KB_ROWS.forEach(row=>{
+    const rowEl=document.createElement('div'); rowEl.className='kb-row';
+    row.forEach(key=>{
+      const btn=document.createElement('button');
+      if(key==='ENTER'){ btn.className='key enter-key'; btn.textContent='შეყვანა'; btn.id='key-ENTER'; }
+      else if(key==='⌫'){ btn.className='key del-key'; btn.textContent='⌫'; btn.id='key-DEL'; }
+      else { btn.className='key'; btn.textContent=key; btn.id='key-'+key; }
+      btn.onclick=()=>handleKey(key);
+      rowEl.appendChild(btn);
+    });
+    kb.appendChild(rowEl);
+  });
+}
+function updateKeyColor(letter,cls) {
+  const p={correct:3,present:2,absent:1};
+  if(!keyColors[letter]||p[cls]>p[keyColors[letter]]){
+    keyColors[letter]=cls;
+    const btn=document.getElementById('key-'+letter);
+    if(btn){btn.classList.remove('correct','present','absent');btn.classList.add(cls);}
+  }
+}
+
+// ── INPUT ──
+function handleKey(key) {
+  if(gameOver||revealInProgress) return;
+  if(key==='⌫'||key==='Backspace') deleteLetter();
+  else if(key==='ENTER'||key==='Enter') submitGuess();
+  else if(/^[\u10D0-\u10FF]$/.test(key)) addLetter(key);
+}
+document.addEventListener('keydown',e=>{
+  if(e.ctrlKey||e.metaKey||e.altKey) return;
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+  const k=e.key;
+  if(k==='Backspace'||k==='Delete'){e.preventDefault();handleKey('⌫');return;}
+  if(k==='Enter'){e.preventDefault();handleKey('ENTER');return;}
+  if(/^[\u10D0-\u10FF]$/.test(k)){handleKey(k);return;}
+  const geo=L2G[k]; if(geo) handleKey(geo);
+});
+function addLetter(l) {
+  if(currentCol>=wordLength) return;
+  const t=document.getElementById(`tile-${currentRow}-${currentCol}`);
+  t.textContent=l; t.classList.add('filled'); currentGuess.push(l); currentCol++;
+}
+function deleteLetter() {
+  if(currentCol<=0) return;
+  currentCol--; currentGuess.pop();
+  const t=document.getElementById(`tile-${currentRow}-${currentCol}`);
+  t.textContent=''; t.classList.remove('filled');
+}
+function submitGuess() {
+  if(currentCol<wordLength){shakeRow(currentRow);showToast(`${wordLength} ასო გჭირდება!`);return;}
+  const guess=currentGuess.join('');
+
+  // For custom challenges with non-5-letter words, only validate against target
+  // For standard 5-letter games, check against VALID_WORDS dictionary
+  if(wordLength===5){
+    if(guess !== targetWord && !VALID_WORDS.has(guess)){
+      shakeRow(currentRow);
+      showToast('სიტყვა ვერ მოიძებნა!', 2000);
+      return;
+    }
+  }
+
+  const result=evaluateGuess(guess,targetWord);
+  guesses.push(guess);
+  const maxGuesses = wordLength + 1;
+  revealRow(currentRow,result,()=>{
+    const won=result.every(r=>r==='correct');
+    currentRow++; currentGuess=[]; currentCol=0;
+    if(won){
+      gameOver=true; const att=currentRow;
+      state.streak++; state.best=Math.max(state.best,state.streak); state.played++;
+      state.distribution[att]=(state.distribution[att]||0)+1;
+      saveState(); updateStats(); saveTodayProgress();
+      winBounce(currentRow-1); setTimeout(()=>showResult(true,att),1600);
+    } else if(currentRow>=maxGuesses){
+      gameOver=true; state.streak=0; state.played++;
+      saveState(); updateStats(); saveTodayProgress();
+      showToast(targetWord); setTimeout(()=>showResult(false),2000);
+    } else { saveTodayProgress(); }
+  });
+}
+function evaluateGuess(guess,target) {
+  const tA=[...target], gA=[...guess], len=tA.length;
+  const res=Array(len).fill('absent'), used=Array(len).fill(false);
+  gA.forEach((l,i)=>{if(l===tA[i]){res[i]='correct';used[i]=true;}});
+  gA.forEach((l,i)=>{
+    if(res[i]==='correct') return;
+    for(let j=0;j<len;j++){if(!used[j]&&l===tA[j]){res[i]='present';used[j]=true;break;}}
+  });
+  return res;
+}
+
+// ── ANIMATIONS ──
+function revealRow(ri,result,cb) {
+  revealInProgress=true; const delay=330;
+  result.forEach((cls,i)=>{
+    setTimeout(()=>{
+      const t=document.getElementById(`tile-${ri}-${i}`);
+      t.classList.add('reveal');
+      setTimeout(()=>{t.classList.remove('filled');t.classList.add(cls);updateKeyColor([...guesses[ri]][i],cls);},delay/2);
+      if(i===result.length-1) setTimeout(()=>{revealInProgress=false;cb();},delay);
+    },i*delay);
+  });
+}
+function shakeRow(ri) {
+  document.querySelectorAll(`#row-${ri} .tile`).forEach(t=>{t.classList.add('shake');setTimeout(()=>t.classList.remove('shake'),350);});
+}
+function winBounce(ri) {
+  for(let c=0;c<wordLength;c++) setTimeout(()=>{const t=document.getElementById(`tile-${ri}-${c}`);t.classList.add('win-bounce');setTimeout(()=>t.classList.remove('win-bounce'),400);},c*90);
+}
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg,dur=2200){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+// ── STATS ──
+function updateStats(){
+  ['streak','best','played'].forEach(k=>{
+    const s=document.getElementById('stat-'+k); if(s) s.textContent=state[k];
+    const r=document.getElementById('rs-'+k);   if(r) r.textContent=state[k];
+    const p=document.getElementById('ps-'+k);   if(p) p.textContent=state[k];
+  });
+  // Only show stats pills if logged in
+  const statsPills=document.getElementById('stats-pills');
+  const signinBar=document.getElementById('signin-bar');
+  if(statsPills && signinBar){
+    if(state.user){ statsPills.style.display='flex'; signinBar.style.display='none'; }
+    else           { statsPills.style.display='none'; signinBar.style.display='flex'; }
+  }
+}
+
+// ── DISTRIBUTION CHART ──
+function renderDistribution(lastAtt){
+  const c=document.getElementById('dist-bars'); c.innerHTML='';
+  const dist=state.distribution, maxV=Math.max(1,...Object.values(dist));
+  for(let i=1;i<=6;i++){
+    const count=dist[i]||0, pct=Math.round((count/maxV)*100);
+    const isLast=(i===lastAtt&&gameOver&&guesses.length>0&&guesses[guesses.length-1]===targetWord);
+    const row=document.createElement('div'); row.className='dist-row';
+    const lbl=document.createElement('div'); lbl.className='dist-label'; lbl.textContent=i;
+    const wrap=document.createElement('div'); wrap.className='dist-bar-wrap';
+    const bar=document.createElement('div'); bar.className='dist-bar'+(isLast?' highlight':'');
+    bar.style.width=Math.max(20,pct)+'%'; bar.textContent=count;
+    wrap.appendChild(bar); row.appendChild(lbl); row.appendChild(wrap); c.appendChild(row);
+  }
+}
+
+// ── RESULT ──
+function showResult(won,attempts){
+  document.getElementById('result-title').textContent=won?'🎉 გაიმარჯვე!':'😔 სცადე ხვალ!';
+  document.getElementById('result-word').textContent=targetWord;
+  document.getElementById('result-sub').textContent=won?`გამოიცანი ${attempts} მცდელობაში`:'სიტყვა იყო:';
+  renderDistribution(won?attempts:0); updateStats(); startCountdown(); openModal('result-modal');
+}
+function shareResult(){
+  const won=guesses.length>0&&guesses[guesses.length-1]===targetWord;
+  const map={correct:'🟩',present:'🟨',absent:'⬛'};
+  let grid=''; guesses.forEach(g=>{grid+=evaluateGuess(g,targetWord).map(r=>map[r]).join('')+'\n';});
+  const text=`სიტყვობანა\n${won?guesses.length:'X'}/6\n\n${grid.trim()}\n\n${location.origin}`;
+  if(navigator.share) navigator.share({text}).catch(()=>{});
+  else{navigator.clipboard.writeText(text);showToast('კოპირებულია 📋');}
+}
+
+// ── COUNTDOWN ──
+function startCountdown(){
+  if(isChallenge){document.getElementById('next-word-timer').style.display='none';return;}
+  function tick(){
+    const now=new Date(),mn=new Date(now); mn.setHours(24,0,0,0);
+    const d=mn-now;
+    const h=String(Math.floor(d/3600000)).padStart(2,'0');
+    const m=String(Math.floor((d%3600000)/60000)).padStart(2,'0');
+    const s=String(Math.floor((d%60000)/1000)).padStart(2,'0');
+    const el=document.getElementById('countdown'); if(el) el.textContent=`${h}:${m}:${s}`;
+  }
+  tick(); setInterval(tick,1000);
+}
+
+// ── CHALLENGE ──
+function switchChalTab(type){
+  document.querySelectorAll('.chal-tab').forEach((t,i)=>t.classList.toggle('active',(type==='custom'&&i===0)||(type==='daily'&&i===1)||(type==='blitz'&&i===2)));
+  document.getElementById('cpanel-custom').classList.toggle('active',type==='custom');
+  document.getElementById('cpanel-daily').classList.toggle('active',type==='daily');
+  document.getElementById('cpanel-blitz').classList.toggle('active',type==='blitz');
+}
+function genChallenge(type){
+  const fromName=state.user?encodeURIComponent(state.user.name):'friend';
+  let word,linkEl,copyBtn,shareBtn;
+  if(type==='custom'){
+    const inp=document.getElementById('chal-word-input');
+    word=inp.value.trim();
+    const len=[...word].length;
+    if(len<4||len>10||!/^[\u10D0-\u10FF]+$/.test(word)){showToast('4-10 ქართული ასო შეიყვანე!');return;}
+    linkEl=document.getElementById('chal-link-custom');
+    copyBtn=document.getElementById('copy-custom'); shareBtn=document.getElementById('share-custom');
+  } else {
+    word=targetWord;
+    linkEl=document.getElementById('chal-link-daily');
+    copyBtn=document.getElementById('copy-daily'); shareBtn=document.getElementById('share-daily');
+  }
+  const url=`${location.origin}${location.pathname}?c=${btoa(encodeURIComponent(word))}&mode=${type}&from=${fromName}`;
+  linkEl.textContent=url; linkEl.classList.add('visible');
+  copyBtn.style.display='flex'; shareBtn.style.display='flex';
+}
+function copyLink(id){navigator.clipboard.writeText(document.getElementById(id).textContent);showToast('კოპირებულია 📋');}
+function shareLink(id,title){
+  const url=document.getElementById(id).textContent;
+  if(navigator.share) navigator.share({title,url}).catch(()=>{});
+  else{navigator.clipboard.writeText(url);showToast('კოპირებულია 📋');}
+}
+
+// ── HINT ──
+let hintsUsed=0;
+function useHint(){
+  if(gameOver||revealInProgress) return;
+  if(hintsUsed>=2){showToast('მინიშნებები ამოიწურა 😅');return;}
+  const tA=[...targetWord], conf=new Set();
+  guesses.forEach(g=>[...g].forEach((l,i)=>{if(l===tA[i])conf.add(i);}));
+  const avail=Array.from({length:wordLength},(_,i)=>i).filter(i=>!conf.has(i));
+  if(!avail.length){showToast('ყველა ადგილი ცნობილია 🎯');return;}
+  const pos=avail[Math.floor(Math.random()*avail.length)];
+  const ordinals=['1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th'];
+  showToast(`💡 ${ordinals[pos]||pos+1} letter: "${tA[pos]}"`,3000);
+  hintsUsed++; if(hintsUsed>=2) document.getElementById('hint-btn').classList.add('used');
+}
+
+// ── AUTH ──
+function signInGoogle(){setUser({name:'Google User',email:'google@user.com',initial:'G'});closeModal('auth-modal');showToast('კეთილი იყოს შემოსვლა 👋');}
+function signInApple(){setUser({name:'Apple User',email:'apple@user.com',initial:'🍎'});closeModal('auth-modal');showToast('კეთილი იყოს შემოსვლა 👋');}
+function signInEmail(){
+  const email=document.getElementById('login-email').value, pass=document.getElementById('login-pass').value;
+  if(!email||!pass){showToast('გთხოვთ შეავსოთ ყველა ველი');return;}
+  setUser({name:email.split('@')[0],email,initial:email[0].toUpperCase()});closeModal('auth-modal');showToast('კეთილი იყოს შემოსვლა 👋');
+}
+function registerEmail(){
+  const name=document.getElementById('reg-name').value,email=document.getElementById('reg-email').value,pass=document.getElementById('reg-pass').value;
+  if(!name||!email||!pass){showToast('გთხოვთ შეავსოთ ყველა ველი');return;}
+  setUser({name,email,initial:name[0].toUpperCase()});closeModal('auth-modal');showToast('კეთილი იყოს, '+name+' 🎉');
+}
+function setUser(u){state.user=u;saveState();updateUserUI();updateStats();}
+function signOut(){state.user=null;saveState();updateUserUI();closeModal('auth-modal');showToast('გამოხვედი სისტემიდან');}
+function updateUserUI(){
+  const av=document.getElementById('user-avatar'),inner=document.getElementById('user-avatar-inner'),si=document.getElementById('auth-signed-in'),so=document.getElementById('auth-signed-out');
+  const statsPills=document.getElementById('stats-pills'), signinBar=document.getElementById('signin-bar');
+  if(state.user){
+    inner.textContent=state.user.initial||'?'; av.classList.add('signed-in');
+    document.getElementById('profile-initial').textContent=state.user.initial||'?';
+    document.getElementById('profile-name').textContent=state.user.name;
+    document.getElementById('profile-email').textContent=state.user.email;
+    si.style.display='block';so.style.display='none';
+    document.getElementById('auth-title').textContent='პროფილი';
+    statsPills.style.display='flex'; signinBar.style.display='none';
+  } else {
+    inner.textContent='👤'; av.classList.remove('signed-in');
+    si.style.display='none';so.style.display='block';
+    document.getElementById('auth-title').textContent='შესვლა';
+    statsPills.style.display='none'; signinBar.style.display='flex';
+  }
+}
+function switchAuthTab(tab){
+  document.querySelectorAll('#auth-tabs .tab').forEach((t,i)=>t.classList.toggle('active',(tab==='login'&&i===0)||(tab==='register'&&i===1)));
+  document.getElementById('tab-login').classList.toggle('active',tab==='login');
+  document.getElementById('tab-register').classList.toggle('active',tab==='register');
+}
+
+// ── MODALS ──
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+
+// ── START ──
+init();
+if(!localStorage.getItem('sitqva_visited')){localStorage.setItem('sitqva_visited','1');setTimeout(()=>openModal('how-modal'),700);}
+</script>
+</body>
+</html>
