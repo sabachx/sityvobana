@@ -537,7 +537,8 @@
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getDatabase, ref, push } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+import { getDatabase, ref, push, get, query, orderByChild, equalTo }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 
 const _fbApp = initializeApp({
   apiKey:"AIzaSyDUwQUWDHXtHtxRq6RcZcbId3z-kzrAwwY",
@@ -550,7 +551,24 @@ const _fbApp = initializeApp({
 });
 const _db = getDatabase(_fbApp);
 
-// ── submitSuggestion lives here where Firebase is in scope ──
+// ── WORD VALIDATION against Firebase ──
+// Checks if a word exists in /words without exposing the full list
+window.isValidWord = async function(word) {
+  try {
+    // Always allow the target word itself
+    if (word === window._targetWord) return true;
+    // Query Firebase for this specific word
+    const q = query(ref(_db, 'words'), orderByChild('word'), equalTo(word));
+    const snap = await get(q);
+    return snap.exists();
+  } catch(e) {
+    // If Firebase unreachable, allow the guess (fail open)
+    console.warn('Validation Firebase error:', e);
+    return true;
+  }
+};
+
+// ── SUBMIT SUGGESTION ──
 window.submitSuggestion = async function(id) {
   const inp = document.getElementById(id);
   const word = inp.value.trim();
@@ -566,7 +584,6 @@ window.submitSuggestion = async function(id) {
     showToast('გმადლობთ 🙏');
   } catch(e) {
     console.error('Firebase error:', e);
-    // fallback to localStorage
     const s = JSON.parse(localStorage.getItem('sitqva_suggestions') || '[]');
     s.push({ word, date: new Date().toISOString() });
     localStorage.setItem('sitqva_suggestions', JSON.stringify(s));
@@ -582,11 +599,9 @@ window.submitSuggestion = async function(id) {
 // Set this to your GitHub Pages URL once deployed:
 const API_BASE = 'https://sabachx.github.io/sityvobana-api';
 
-// Tiny emergency fallback (only used if API is unreachable)
+// Emergency fallback word only used if API is completely unreachable
 const FALLBACK_WORD = "სახლი";
-const FALLBACK_VALID = new Set(["სახლი","წყალი","ვარდი","ღვინო","ლობია","ყველი","ვაშლი","ლექსი","ცეკვა","გული","სული","ახალი","ძველი","კატა","ძაღლი","ცხენი","თევზი","ყვავი","გველი","ბანკი","ფული","ქუჩა","სკოლა","კარი","სარკე","სკამი","წიგნი","ქუდი","ბარათ","სიყვა","ოჯახი","ბებია","ცოლი","ქმარი","შვილი","ბიჭი","კაცი","ქალი","ბევრი","ხუთი","ყავა","ჩაი","წვენი","ლუდი","პური","მწვადი","ყაბაბ","სევდა","ამაყი","ლამაზ","ძლიერ","სუსტი","სწრაფ","ნელი","ლოცვა","ჯვარი","ხატი","სიმღე","სურათ","ნიკა","ლაშა","ზაზა","გელა","თამარ","ნინო","ლელა","თვალი","ყური","კბილი","ხელი","ფეხი","მხარი","ზურგი","მუხლი","გოგო","სამი","ოთხი","ექვსი","შვიდი","ღმერთ","ტაძარ","ხალხი","ქვეყნ","პასუხ","გუნდი","ბურთი","ექიმი","წამალ","ძილი","ჯანი","კინო","ფილმი"]);
 
-let VALID_WORDS = FALLBACK_VALID;
 let todayIsSpecial = false;
 
 async function loadWordsFromAPI() {
@@ -676,6 +691,9 @@ const L2G = {
 // ── STATE ──
 let targetWord="", currentRow=0, currentCol=0, currentGuess=[], gameOver=false, guesses=[], revealInProgress=false, isChallenge=false, wordLength=5;
 const state = { streak:0, best:0, played:0, distribution:{1:0,2:0,3:0,4:0,5:0,6:0}, user:null };
+
+// Expose targetWord to window so Firebase validation module can access it
+Object.defineProperty(window, '_targetWord', { get: () => targetWord });
 
 // ── INIT ──
 async function init() {
@@ -822,16 +840,16 @@ function deleteLetter() {
   const t=document.getElementById(`tile-${currentRow}-${currentCol}`);
   t.textContent=''; t.classList.remove('filled');
 }
-function submitGuess() {
-  if(currentCol<wordLength){shakeRow(currentRow);showToast(`${wordLength} ასო გჭირდება!`);return;}
+async function submitGuess() {
+  if(currentCol<wordLength){shakeRow(currentRow);showToast(`${wordLength} ასო გჭირდება`);return;}
   const guess=currentGuess.join('');
 
-  // For custom challenges with non-5-letter words, only validate against target
-  // For standard 5-letter games, check against VALID_WORDS dictionary
-  if(wordLength===5){
-    if(guess !== targetWord && !VALID_WORDS.has(guess)){
+  // Validate against Firebase (all word lengths for daily, skip for challenges)
+  if(!isChallenge) {
+    const valid = await window.isValidWord(guess);
+    if(!valid) {
       shakeRow(currentRow);
-      showToast('სიტყვა ვერ მოიძებნა!', 2000);
+      showToast('სიტყვა ვერ მოიძებნა');
       return;
     }
   }
