@@ -555,16 +555,13 @@ const _db = getDatabase(_fbApp);
 // Checks if a word exists in /words without exposing the full list
 window.isValidWord = async function(word) {
   try {
-    // Always allow the target word itself
     if (word === window._targetWord) return true;
-    // Query Firebase for this specific word
     const q = query(ref(_db, 'words'), orderByChild('word'), equalTo(word));
     const snap = await get(q);
     return snap.exists();
   } catch(e) {
-    // If Firebase unreachable, allow the guess (fail open)
     console.warn('Validation Firebase error:', e);
-    return true;
+    return true; // fail open so offline play still works
   }
 };
 
@@ -574,19 +571,37 @@ window.submitSuggestion = async function(id) {
   const word = inp.value.trim();
   if ([...word].length < 4) { showToast('სიტყვა ძალიან მოკლეა'); return; }
   if (!/^[\u10D0-\u10FF]+$/.test(word)) { showToast('გთხოვთ შეიყვანოთ ქართული სიტყვა'); return; }
+
   try {
+    // Check if word already exists in /words database
+    const wordsQ = query(ref(_db, 'words'), orderByChild('word'), equalTo(word));
+    const wordsSnap = await get(wordsQ);
+    if (wordsSnap.exists()) {
+      inp.value = '';
+      showToast('მადლობა სიტყვის გამოგზავნისთვის 🙏');
+      return;
+    }
+
+    // Check if word already suggested (any status)
+    const suggQ = query(ref(_db, 'suggestions'), orderByChild('word'), equalTo(word));
+    const suggSnap = await get(suggQ);
+    if (suggSnap.exists()) {
+      inp.value = '';
+      showToast('მადლობა სიტყვის გამოგზავნისთვის 🙏');
+      return;
+    }
+
+    // All clear — add as pending, waits for admin approval
     await push(ref(_db, 'suggestions'), {
       word,
       date: new Date().toISOString(),
       status: 'pending'
     });
     inp.value = '';
-    showToast('გმადლობთ 🙏');
+    showToast('მადლობა სიტყვის გამოგზავნისთვის 🙏');
+
   } catch(e) {
     console.error('Firebase error:', e);
-    const s = JSON.parse(localStorage.getItem('sitqva_suggestions') || '[]');
-    s.push({ word, date: new Date().toISOString() });
-    localStorage.setItem('sitqva_suggestions', JSON.stringify(s));
     inp.value = '';
     showToast('გმადლობთ 🙏');
   }
@@ -844,7 +859,7 @@ async function submitGuess() {
   if(currentCol<wordLength){shakeRow(currentRow);showToast(`${wordLength} ასო გჭირდება`);return;}
   const guess=currentGuess.join('');
 
-  // Validate against Firebase (all word lengths for daily, skip for challenges)
+  // Validate against Firebase — skip for challenge mode
   if(!isChallenge) {
     const valid = await window.isValidWord(guess);
     if(!valid) {
