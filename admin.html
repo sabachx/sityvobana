@@ -287,7 +287,18 @@
         <button class="filter-btn" onclick="filterWords('other',this)">სხვა სიგრძე (ბლიცი)</button>
         <input class="search-input" id="word-search" placeholder="ძებნა..." oninput="renderWords()"/>
       </div>
-      <div id="word-count" style="font-size:12px;color:var(--muted);margin-bottom:10px;"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);cursor:pointer;">
+            <input type="checkbox" id="select-all-words" onchange="toggleSelectAll(this.checked)" style="width:14px;height:14px;cursor:pointer;accent-color:var(--red)"/>
+            ყველას მონიშვნა
+          </label>
+          <span id="word-count" style="font-size:12px;color:var(--muted);"></span>
+        </div>
+        <button id="bulk-delete-btn" onclick="bulkDeleteWords()" style="display:none;background:rgba(229,83,83,.15);color:var(--red);border:1px solid rgba(229,83,83,.3);padding:6px 14px;border-radius:var(--radius);font-size:12px;font-weight:600;cursor:pointer;">
+          🗑 მონიშნულების წაშლა (<span id="selected-count">0</span>)
+        </button>
+      </div>
       <div id="word-list"><div class="loading"><span class="spin">⏳</span> იტვირთება...</div></div>
     </div>
 
@@ -494,6 +505,8 @@ window.renderWords = function() {
     .sort((a,b) => (a[1].word||'').localeCompare(b[1].word||''));
 
   document.getElementById('word-count').textContent = `${entries.length} სიტყვა`;
+  document.getElementById('select-all-words').checked = false;
+  updateBulkDeleteBtn();
 
   if (!entries.length) {
     list.innerHTML = '<div class="empty">სიტყვა არ მოიძებნა. დაამატე პირველი სიტყვა ზემოდან.</div>';
@@ -503,6 +516,7 @@ window.renderWords = function() {
   list.innerHTML = `
     <table class="word-table">
       <thead><tr>
+        <th style="width:32px"></th>
         <th>სიტყვა</th><th>სიგრძე</th><th>გამოყენება</th><th>წყარო</th><th>თარიღი</th><th></th>
       </tr></thead>
       <tbody>
@@ -511,13 +525,21 @@ window.renderWords = function() {
           const usage = len === 5 ? '<span class="word-type wt-daily">📅 დღის/ბლიცი</span>'
                       : len === 6 ? '<span class="word-type wt-valid">⭐ განსაკ/ბლიცი</span>'
                       : '<span class="word-type">🎲 ბლიცი</span>';
-          return `<tr>
-            <td class="word-ka">${w.word||'—'}</td>
+          return `<tr id="row-${id}">
+            <td><input type="checkbox" class="word-cb" data-id="${id}" onchange="updateBulkDeleteBtn()" style="width:14px;height:14px;cursor:pointer;accent-color:var(--red)"/></td>
+            <td><span class="word-ka" id="word-display-${id}">${w.word||'—'}</span>
+                <input type="text" id="word-edit-${id}" value="${w.word||''}" 
+                  style="display:none;background:var(--surface2);border:1px solid var(--accent);color:var(--text);padding:4px 8px;border-radius:4px;font-size:14px;width:100px;"
+                  onkeydown="if(event.key==='Enter')saveWordEdit('${id}');if(event.key==='Escape')cancelWordEdit('${id}')"/>
+            </td>
             <td style="font-size:13px;color:var(--dim)">${len}</td>
             <td>${usage}</td>
             <td style="font-size:11px;color:var(--muted)">${w.source||'manual'}</td>
             <td style="font-size:11px;color:var(--muted)">${formatDate(w.addedAt)}</td>
-            <td><button class="del-word-btn" onclick="deleteWord('${id}','${w.word}')" title="წაშლა">🗑</button></td>
+            <td style="display:flex;gap:4px;">
+              <button class="del-word-btn" onclick="startWordEdit('${id}')" title="რედაქტირება" style="color:var(--accent)">✏️</button>
+              <button class="del-word-btn" onclick="deleteWord('${id}','${w.word}')" title="წაშლა">🗑</button>
+            </td>
           </tr>`;
         }).join('')}
       </tbody>
@@ -622,6 +644,72 @@ window.filterWords = function(f, btn) {
   document.querySelectorAll('#tab-words .filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderWords();
+};
+
+// ── SELECT ALL ──
+window.toggleSelectAll = function(checked) {
+  document.querySelectorAll('.word-cb').forEach(cb => cb.checked = checked);
+  updateBulkDeleteBtn();
+};
+
+function updateBulkDeleteBtn() {
+  const selected = document.querySelectorAll('.word-cb:checked').length;
+  const btn = document.getElementById('bulk-delete-btn');
+  document.getElementById('selected-count').textContent = selected;
+  btn.style.display = selected > 0 ? 'block' : 'none';
+}
+
+// ── BULK DELETE ──
+window.bulkDeleteWords = async function() {
+  const selected = [...document.querySelectorAll('.word-cb:checked')];
+  if (!selected.length) return;
+  if (!confirm(`წაშალო ${selected.length} სიტყვა?`)) return;
+
+  let deleted = 0;
+  for (const cb of selected) {
+    const id = cb.dataset.id;
+    try {
+      await remove(ref(db, `words/${id}`));
+      deleted++;
+    } catch(e) { console.error('delete error', id, e); }
+  }
+  toast(`${deleted} სიტყვა წაშლილია`);
+  document.getElementById('select-all-words').checked = false;
+  updateBulkDeleteBtn();
+};
+
+// ── INLINE EDIT ──
+window.startWordEdit = function(id) {
+  document.getElementById('word-display-' + id).style.display = 'none';
+  const inp = document.getElementById('word-edit-' + id);
+  inp.style.display = 'inline-block';
+  inp.focus();
+  inp.select();
+};
+
+window.cancelWordEdit = function(id) {
+  document.getElementById('word-display-' + id).style.display = 'inline';
+  document.getElementById('word-edit-' + id).style.display = 'none';
+};
+
+window.saveWordEdit = async function(id) {
+  const inp = document.getElementById('word-edit-' + id);
+  const newWord = inp.value.trim();
+  if (!newWord) { cancelWordEdit(id); return; }
+  if (!/^[\u10D0-\u10FF]+$/.test(newWord)) { toast('მხოლოდ ქართული ასოები'); return; }
+  if ([...newWord].length < 2) { toast('მინიმუმ 2 ასო'); return; }
+
+  try {
+    await update(ref(db, `words/${id}`), {
+      word: newWord,
+      length: [...newWord].length
+    });
+    document.getElementById('word-display-' + id).textContent = newWord;
+    cancelWordEdit(id);
+    toast(`"${newWord}" განახლდა ✓`);
+  } catch(e) {
+    toast(`შეცდომა: ${e.message}`);
+  }
 };
 
 // ── STATS ──
