@@ -552,7 +552,6 @@ const _fbApp = initializeApp({
 const _db = getDatabase(_fbApp);
 
 // ── WORD VALIDATION against Firebase ──
-// Checks if a word exists in /words without exposing the full list
 window.isValidWord = async function(word) {
   try {
     if (word === window._targetWord) return true;
@@ -560,10 +559,13 @@ window.isValidWord = async function(word) {
     const snap = await get(q);
     return snap.exists();
   } catch(e) {
-    console.warn('Validation Firebase error:', e);
-    return true; // fail open so offline play still works
+    console.warn('Validation error:', e);
+    return true; // fail open
   }
 };
+
+// Signal that Firebase module is ready
+window._firebaseReady = true;
 
 // ── SUBMIT SUGGESTION ──
 window.submitSuggestion = async function(id) {
@@ -573,7 +575,7 @@ window.submitSuggestion = async function(id) {
   if (!/^[\u10D0-\u10FF]+$/.test(word)) { showToast('გთხოვთ შეიყვანოთ ქართული სიტყვა'); return; }
 
   try {
-    // Check if word already exists in /words database
+    // Check if word already exists in /words
     const wordsQ = query(ref(_db, 'words'), orderByChild('word'), equalTo(word));
     const wordsSnap = await get(wordsQ);
     if (wordsSnap.exists()) {
@@ -581,8 +583,7 @@ window.submitSuggestion = async function(id) {
       showToast('მადლობა სიტყვის გამოგზავნისთვის 🙏');
       return;
     }
-
-    // Check if word already suggested (any status)
+    // Check if already suggested
     const suggQ = query(ref(_db, 'suggestions'), orderByChild('word'), equalTo(word));
     const suggSnap = await get(suggQ);
     if (suggSnap.exists()) {
@@ -590,8 +591,7 @@ window.submitSuggestion = async function(id) {
       showToast('მადლობა სიტყვის გამოგზავნისთვის 🙏');
       return;
     }
-
-    // All clear — add as pending, waits for admin approval
+    // Add as pending
     await push(ref(_db, 'suggestions'), {
       word,
       date: new Date().toISOString(),
@@ -599,11 +599,10 @@ window.submitSuggestion = async function(id) {
     });
     inp.value = '';
     showToast('მადლობა სიტყვის გამოგზავნისთვის 🙏');
-
   } catch(e) {
     console.error('Firebase error:', e);
     inp.value = '';
-    showToast('გმადლობთ 🙏');
+    showToast('მადლობა სიტყვის გამოგზავნისთვის 🙏');
   }
 };
 </script>
@@ -861,11 +860,19 @@ async function submitGuess() {
 
   // Validate against Firebase — skip for challenge mode
   if(!isChallenge) {
-    const valid = await window.isValidWord(guess);
-    if(!valid) {
-      shakeRow(currentRow);
-      showToast('სიტყვა ვერ მოიძებნა');
-      return;
+    // Basic check: must be Georgian letters only
+    if(!/^[\u10D0-\u10FF]+$/.test(guess)) {
+      shakeRow(currentRow); showToast('სიტყვა ვერ მოიძებნა'); return;
+    }
+    // Firebase check: word must exist in database
+    if(guess !== targetWord) {
+      if(window._firebaseReady && typeof window.isValidWord === 'function') {
+        const valid = await window.isValidWord(guess);
+        if(!valid) { shakeRow(currentRow); showToast('სიტყვა ვერ მოიძებნა'); return; }
+      } else {
+        // Firebase module not ready yet — block the guess, ask to retry
+        shakeRow(currentRow); showToast('კავშირი მიმდინარეობს, სცადე ისევ'); return;
+      }
     }
   }
 
