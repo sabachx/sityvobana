@@ -465,7 +465,7 @@
       <div class="result-stat"><div class="n" id="rs-best">0</div><div class="l">🏆 საუკეთესო</div></div>
       <div class="result-stat"><div class="n" id="rs-played">0</div><div class="l">🎯 ნათამაშები</div></div>
     </div>
-    <button class="btn btn-green" onclick="shareResult()">📤 გააზიარე</button>
+    <button class="btn btn-green" onclick="shareResult()" id="share-btn-daily">📤 გააზიარე</button>
 
     <!-- Daily mode buttons -->
     <div id="result-daily-btns">
@@ -479,6 +479,7 @@
 
     <!-- Free play mode buttons -->
     <div id="result-freeplay-btns" style="display:none;">
+      <button class="btn btn-green" onclick="nextFreePlay();closeModal('result-modal')">🎮 გააგრძელე თამაში</button>
       <button class="btn" onclick="openModal('challenge-modal');closeModal('result-modal')">⚔️ გამოიწვიე მეგობარი</button>
 
       <!-- გამოგვიგზავნე სიტყვა -->
@@ -489,7 +490,7 @@
         <button class="btn btn-primary" onclick="submitSuggestion('suggest-freeplay-word')">გაგზავნა</button>
       </div>
 
-      <button class="btn btn-green" onclick="nextFreePlay();closeModal('result-modal')" style="margin-top:6px;">🎮 გააგრძელე თამაში</button>
+      <button class="btn" onclick="shareResult()" style="background:var(--accent);color:var(--bg);border-color:var(--accent);margin-top:6px;">📤 გააზიარე</button>
     </div>
   </div>
 </div>
