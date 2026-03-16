@@ -753,6 +753,7 @@ const L2G = {
 // ── STATE ──
 let targetWord="", currentRow=0, currentCol=0, currentGuess=[], gameOver=false, guesses=[], revealInProgress=false, isChallenge=false, wordLength=5, isFreePlay=false, isSubmitting=false;
 const state = { streak:0, best:0, played:0, distribution:{1:0,2:0,3:0,4:0,5:0,6:0}, user:null };
+const freeState = { streak:0, best:0, played:0 };
 
 // Expose targetWord to window so Firebase validation module can access it
 Object.defineProperty(window, '_targetWord', { get: () => targetWord });
@@ -778,10 +779,13 @@ function loadState() {
     state.streak = s.streak||0; state.best = s.best||0; state.played = s.played||0;
     state.distribution = s.distribution||{1:0,2:0,3:0,4:0,5:0,6:0};
     state.user = s.user||null;
+    const fs = JSON.parse(localStorage.getItem('sitqva_free_state')||'{}');
+    freeState.streak = fs.streak||0; freeState.best = fs.best||0; freeState.played = fs.played||0;
   } catch(e){}
   updateUserUI();
 }
 function saveState() { localStorage.setItem('sitqva_state',JSON.stringify(state)); }
+function saveFreeState() { localStorage.setItem('sitqva_free_state',JSON.stringify(freeState)); }
 
 function checkChallengeMode() {
   const p = new URLSearchParams(location.search);
@@ -932,13 +936,26 @@ async function submitGuess() {
     isSubmitting=false;
     if(won){
       gameOver=true; const att=currentRow;
-      state.streak++; state.best=Math.max(state.best,state.streak); state.played++;
-      state.distribution[att]=(state.distribution[att]||0)+1;
-      saveState(); updateStats(); saveTodayProgress();
+      if(isFreePlay) {
+        freeState.streak++; freeState.best=Math.max(freeState.best,freeState.streak); freeState.played++;
+        saveFreeState();
+      } else {
+        state.streak++; state.best=Math.max(state.best,state.streak); state.played++;
+        state.distribution[att]=(state.distribution[att]||0)+1;
+        saveState(); saveTodayProgress();
+      }
+      updateStats();
       winBounce(currentRow-1); setTimeout(()=>showResult(true,att),1600);
     } else if(currentRow>=maxGuesses){
-      gameOver=true; state.streak=0; state.played++;
-      saveState(); updateStats(); saveTodayProgress();
+      gameOver=true;
+      if(isFreePlay) {
+        freeState.streak=0; freeState.played++;
+        saveFreeState();
+      } else {
+        state.streak=0; state.played++;
+        saveState(); saveTodayProgress();
+      }
+      updateStats();
       showToast(targetWord); setTimeout(()=>showResult(false),2000);
     } else { saveTodayProgress(); }
   });
@@ -982,10 +999,11 @@ function showToast(msg,dur=2200){
 
 // ── STATS ──
 function updateStats(){
+  const st = isFreePlay ? freeState : state;
   ['streak','best','played'].forEach(k=>{
-    const s=document.getElementById('stat-'+k); if(s) s.textContent=state[k];
-    const r=document.getElementById('rs-'+k);   if(r) r.textContent=state[k];
-    const p=document.getElementById('ps-'+k);   if(p) p.textContent=state[k];
+    const s=document.getElementById('stat-'+k); if(s) s.textContent=st[k];
+    const r=document.getElementById('rs-'+k);   if(r) r.textContent=st[k];
+    const p=document.getElementById('ps-'+k);   if(p) p.textContent=st[k];
   });
   // Only show stats pills if logged in
   const statsPills=document.getElementById('stats-pills');
@@ -1112,6 +1130,7 @@ function updateModeBar() {
     label.textContent = '📅 დღის სიტყვა';
     btn.textContent   = '🎮 თავისუფალი თამაში';
   }
+  updateStats();
 }
 
 function switchGameMode() {
