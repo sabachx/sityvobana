@@ -7,7 +7,7 @@
   <title>სიტყვობანა</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Tenor+Sans&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wdth,wght@87.5,300;87.5,400;87.5,500;87.5,700;87.5,900&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg:     #0f0e17;
@@ -22,17 +22,13 @@
       --yellow: #c9963a;
       --radius: 6px;
     }
-
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-
-    html, body {
-      height: 100%; overflow: hidden;
-    }
-
+    html, body { height: 100%; overflow: hidden; }
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: 'Tenor Sans', sans-serif;
+      font-family: 'Noto Sans Georgian', sans-serif;
+      font-weight: 400;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -41,8 +37,6 @@
       padding-bottom: calc(24px + env(safe-area-inset-bottom));
       position: relative;
     }
-
-    /* subtle bg glow */
     body::before {
       content: '';
       position: fixed; inset: 0; pointer-events: none;
@@ -50,32 +44,18 @@
         radial-gradient(ellipse at 20% 50%, rgba(232,197,71,.07) 0%, transparent 55%),
         radial-gradient(ellipse at 80% 50%, rgba(45,198,83,.04) 0%, transparent 55%);
     }
-
-    /* ── LOGO ── */
     .logo {
-      font-family: 'Cormorant Garamond', serif;
-      font-weight: 300;
-      font-size: clamp(52px, 12vw, 88px);
+      font-family: 'Noto Sans Georgian', sans-serif;
+      font-weight: 900;
+      font-variation-settings: 'wdth' 87.5;
+      font-size: clamp(44px, 11vw, 80px);
       color: var(--gold);
-      letter-spacing: 6px;
+      letter-spacing: 4px;
       line-height: 1;
       text-align: center;
       opacity: 0;
       animation: fadeUp .7s .1s ease forwards;
     }
-
-    .logo-sub {
-      font-size: 10px;
-      letter-spacing: 5px;
-      text-transform: uppercase;
-      color: var(--muted);
-      text-align: center;
-      margin-top: 6px;
-      opacity: 0;
-      animation: fadeUp .7s .25s ease forwards;
-    }
-
-    /* ── DIVIDER ── */
     .divider {
       width: 40px; height: 1px;
       background: linear-gradient(to right, transparent, var(--gold2), transparent);
@@ -83,21 +63,17 @@
       opacity: 0;
       animation: fadeUp .7s .35s ease forwards;
     }
-
-    /* ── TAGLINE ── */
     .tagline {
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-      font-size: clamp(15px, 3vw, 18px);
+      font-family: 'Noto Sans Georgian', sans-serif;
+      font-weight: 300;
+      font-size: clamp(13px, 3vw, 16px);
       color: var(--dim);
       text-align: center;
       max-width: 320px;
-      line-height: 1.5;
+      line-height: 1.6;
       opacity: 0;
       animation: fadeUp .7s .45s ease forwards;
     }
-
-    /* ── DEMO TILES ── */
     .tiles {
       display: flex;
       gap: 7px;
@@ -110,8 +86,8 @@
       border-radius: 5px;
       border: 1px solid var(--border);
       display: flex; align-items: center; justify-content: center;
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 22px; font-weight: 600;
+      font-family: 'Noto Sans Georgian', sans-serif;
+      font-size: 20px; font-weight: 700;
       color: var(--text);
       animation: tileFlip .45s ease both;
     }
@@ -124,8 +100,6 @@
       from { transform: rotateX(-90deg); opacity: 0; }
       to   { transform: rotateX(0);      opacity: 1; }
     }
-
-    /* ── BUTTONS ── */
     .buttons {
       display: flex;
       flex-direction: column;
@@ -136,18 +110,16 @@
       opacity: 0;
       animation: fadeUp .6s 1.5s ease forwards;
     }
-
     .btn {
       display: flex; align-items: center; justify-content: center;
       width: 100%; padding: 14px 20px;
       border-radius: var(--radius);
-      font-family: 'Tenor Sans', sans-serif;
+      font-family: 'Noto Sans Georgian', sans-serif;
       font-size: 12px; font-weight: 700;
-      letter-spacing: 2.5px; text-transform: uppercase;
+      letter-spacing: 1.5px; text-transform: uppercase;
       cursor: pointer; transition: all .2s;
       text-decoration: none; border: none;
     }
-
     .btn-play {
       background: var(--gold);
       color: #0f0e17;
@@ -161,24 +133,20 @@
     }
     .btn-play:hover::after { transform: translateX(0); }
     .btn-play span { position: relative; z-index: 1; }
-
     .btn-login {
       background: transparent;
       border: 1px solid var(--border);
       color: var(--text);
     }
     .btn-login:hover { border-color: var(--gold); color: var(--gold); }
-
     .btn-subscribe {
       background: transparent;
       border: 1px solid transparent;
       color: var(--muted);
-      font-size: 11px; letter-spacing: 1.5px;
+      font-size: 11px; letter-spacing: 1px;
       padding: 8px;
     }
     .btn-subscribe:hover { color: var(--dim); }
-
-    /* ── SUBSCRIBE INLINE ── */
     .subscribe-wrap {
       width: 100%; max-width: 300px;
       display: none;
@@ -187,7 +155,6 @@
       margin-top: 32px;
     }
     .subscribe-wrap.open { display: block; }
-
     .sub-row {
       display: flex;
       border: 1px solid var(--border);
@@ -200,16 +167,16 @@
       flex: 1; padding: 12px 14px;
       background: var(--surface);
       border: none; outline: none;
-      font-family: 'Tenor Sans', sans-serif;
+      font-family: 'Noto Sans Georgian', sans-serif;
       font-size: 13px; color: var(--text);
     }
     .sub-input::placeholder { color: var(--muted); }
     .sub-btn {
       padding: 12px 14px;
       background: var(--gold); border: none;
-      font-family: 'Tenor Sans', sans-serif;
+      font-family: 'Noto Sans Georgian', sans-serif;
       font-size: 10px; font-weight: 700;
-      letter-spacing: 1.5px; text-transform: uppercase;
+      letter-spacing: 1px; text-transform: uppercase;
       color: #0f0e17; cursor: pointer;
       transition: background .2s; white-space: nowrap;
     }
@@ -224,14 +191,12 @@
       text-align: center; font-size: 10px;
       color: var(--muted); margin-top: 8px; letter-spacing: .5px;
     }
-
-    /* ── FOOTER ── */
     .footer {
       position: fixed; bottom: 0; left: 0; right: 0;
       padding: 12px 24px calc(12px + env(safe-area-inset-bottom));
       display: flex; align-items: center; justify-content: center;
       gap: 16px;
-      font-size: 10px; color: var(--muted); letter-spacing: 1px;
+      font-size: 10px; color: var(--muted); letter-spacing: .5px;
       border-top: 1px solid rgba(58,58,92,.5);
       background: var(--bg);
       opacity: 0;
@@ -240,8 +205,6 @@
     .footer a { color: var(--muted); text-decoration: none; }
     .footer a:hover { color: var(--gold); }
     .footer-dot { color: var(--border); }
-
-    /* ── TOAST ── */
     #toast {
       position: fixed; top: 24px; left: 50%;
       transform: translateX(-50%) translateY(-10px);
@@ -253,22 +216,18 @@
       z-index: 999;
     }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(18px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-
-    /* when subscribe is open, hide the button rows */
     body.sub-open .buttons { display: none; }
     body.sub-open .subscribe-wrap { display: block; }
-
     @media (max-height: 600px) {
-      .logo { font-size: 44px; }
+      .logo { font-size: 40px; }
       .divider { margin: 14px auto; }
       .tiles { margin-top: 16px; }
       .buttons, .subscribe-wrap { margin-top: 20px; }
-      .tile { width: 36px; height: 36px; font-size: 18px; }
+      .tile { width: 36px; height: 36px; font-size: 17px; }
     }
   </style>
 </head>
@@ -276,15 +235,10 @@
 
 <div id="toast"></div>
 
-<!-- LOGO -->
 <div class="logo">სიტყვობანა</div>
-
 <div class="divider"></div>
-
-<!-- TAGLINE -->
 <p class="tagline">გამოიცანი დამალული ქართული სიტყვა ექვს მცდელობაში — ყოველდღე ახალი გამოწვევა.</p>
 
-<!-- DEMO TILES -->
 <div class="tiles">
   <div class="tile">ს</div>
   <div class="tile">ხ</div>
@@ -293,7 +247,6 @@
   <div class="tile">ი</div>
 </div>
 
-<!-- BUTTONS -->
 <div class="buttons">
   <a href="index.html" class="btn btn-play"><span>▶ &nbsp;ითამაშე</span></a>
   <a href="index.html?freeplay=1" class="btn btn-login" style="border-color:rgba(232,197,71,.3);color:var(--gold)">🎮 &nbsp;თავისუფალი თამაში</a>
@@ -301,7 +254,6 @@
   <button class="btn btn-subscribe" onclick="openSubscribe()">✉ &nbsp;გამოიწერე</button>
 </div>
 
-<!-- SUBSCRIBE PANEL -->
 <div class="subscribe-wrap" id="sub-wrap">
   <div class="sub-row" id="sub-form">
     <input class="sub-input" type="email" id="sub-email" placeholder="შენი@ელფოსტა.com" />
@@ -312,16 +264,15 @@
   <button class="btn btn-subscribe" style="margin-top:6px" onclick="closeSubscribe()">← უკან</button>
 </div>
 
-<!-- FOOTER -->
 <div class="footer">
   <a href="#">როგორ ვითამაშოთ</a>
   <span class="footer-dot">·</span>
-  <a href="/cdn-cgi/l/email-protection#7f171a1313103f0c160b0e091e51181a">კონტაქტი</a>
+  <a href="mailto:hello@sitqva.ge">კონტაქტი</a>
   <span class="footer-dot">·</span>
   <span>© 2025 სიტყვობანა</span>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 function openSubscribe() {
   document.body.classList.add('sub-open');
   setTimeout(() => document.getElementById('sub-email').focus(), 50);
@@ -329,7 +280,6 @@ function openSubscribe() {
 function closeSubscribe() {
   document.body.classList.remove('sub-open');
 }
-
 function handleSubscribe() {
   const email = document.getElementById('sub-email').value.trim();
   if (!email || !email.includes('@')) { showToast('გთხოვთ შეიყვანოთ სწორი ელ-ფოსტა'); return; }
@@ -340,7 +290,16 @@ function handleSubscribe() {
   document.getElementById('sub-ok').style.display = 'block';
 }
 document.getElementById('sub-email').addEventListener('keydown', e => { if (e.key === 'Enter') handleSubscribe(); });
-
 function showLogin(e) {
   e.preventDefault();
-  showToast('შესვლა მალე დაემატება — ა�
+  showToast('შესვლა მალე დაემატება — ახლა სტუმრად ითამაშე');
+}
+let tt;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>
