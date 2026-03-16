@@ -244,9 +244,8 @@
     <!-- SUGGESTIONS TAB -->
     <div class="tab-panel active" id="tab-suggestions">
       <div class="filter-bar">
-        <button class="filter-btn active" onclick="filterSugg('all',this)">ყველა</button>
-        <button class="filter-btn" onclick="filterSugg('pending',this)">განსახილველი</button>
-        <button class="filter-btn" onclick="filterSugg('approved',this)">დამტკიცებული</button>
+        <button class="filter-btn active" onclick="filterSugg('pending',this)">განსახილველი</button>
+        <button class="filter-btn" onclick="filterSugg('approved',this)">დადასტურებული</button>
         <button class="filter-btn" onclick="filterSugg('rejected',this)">უარყოფილი</button>
         <input class="search-input" id="sugg-search" placeholder="ძებნა..." oninput="renderSuggestions()"/>
       </div>
@@ -347,7 +346,7 @@ const db  = getDatabase(app);
 // ── STATE ──
 let allSuggestions = {};
 let allWords = {};
-let suggFilter = 'all';
+let suggFilter = 'pending';
 let wordFilter = 'all';
 
 // ── LOGIN ──
@@ -406,7 +405,7 @@ window.renderSuggestions = function() {
   const search = (document.getElementById('sugg-search')?.value || '').trim().toLowerCase();
   const list = document.getElementById('sugg-list');
   const entries = Object.entries(allSuggestions)
-    .filter(([,s]) => suggFilter === 'all' || s.status === suggFilter)
+    .filter(([,s]) => s.status === suggFilter)
     .filter(([,s]) => !search || (s.word||'').toLowerCase().includes(search))
     .sort((a,b) => (b[1].date||'').localeCompare(a[1].date||''));
 
@@ -414,7 +413,8 @@ window.renderSuggestions = function() {
   document.getElementById('pending-badge').textContent = pendingCount > 0 ? ` (${pendingCount})` : '';
 
   if (!entries.length) {
-    list.innerHTML = '<div class="empty">შეთავაზება არ მოიძებნა</div>';
+    const labels = {pending:'განსახილველი', approved:'დადასტურებული', rejected:'უარყოფილი'};
+    list.innerHTML = `<div class="empty">${labels[suggFilter]||''} შეთავაზება არ არის</div>`;
     return;
   }
 
@@ -751,7 +751,7 @@ function formatDate(iso) {
   catch(e) { return iso.slice(0,10); }
 }
 function statusLabel(s) {
-  return {pending:'განსახილველი', approved:'დამტკიცებული', rejected:'უარყოფილი'}[s] || 'განსახილველი';
+  return {pending:'განსახილველი', approved:'დადასტურებული', rejected:'უარყოფილი'}[s] || 'განსახილველი';
 }
 
 let toastT;

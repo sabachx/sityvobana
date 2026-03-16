@@ -323,7 +323,7 @@
 
 <div id="challenge-banner">
   <span>⚔️</span>
-  <span><span class="from" id="challenge-from">Someone</span> გიგზავნის გამოწვევას!</span>
+  <span><span class="from" id="challenge-from">მეგობარი</span>-მ გამოგიწვია!</span>
 </div>
 
 <header>
@@ -453,8 +453,8 @@
 <div class="modal-overlay" id="result-modal">
   <div class="modal">
     <h2 id="result-title">🎉 გაიმარჯვე!</h2>
-    <div class="result-word" id="result-word"></div>
     <div class="result-sub" id="result-sub"></div>
+    <div class="result-word" id="result-word"></div>
     <div id="next-word-timer">შემდეგი სიტყვა: <span id="countdown">00:00:00</span></div>
     <div class="dist-chart">
       <h3>📊 გამოცნობის დისტრიბუცია</h3>
@@ -466,11 +466,30 @@
       <div class="result-stat"><div class="n" id="rs-played">0</div><div class="l">🎯 ნათამაშები</div></div>
     </div>
     <button class="btn btn-green" onclick="shareResult()">📤 გააზიარე</button>
-    <button class="btn" onclick="openModal('challenge-modal');closeModal('result-modal')">⚔️ გამოიწვიე მეგობარი</button>
-    <div class="suggest-wrap">
-      <h3>💡 დაამატე სიტყვა</h3>
-      <input type="text" id="suggest-from-result" placeholder="სიტყვა (5 ასო)" maxlength="10" />
-      <button class="btn btn-primary" onclick="submitSuggestion('suggest-from-result')">გაგზავნა</button>
+
+    <!-- Daily mode buttons -->
+    <div id="result-daily-btns">
+      <button class="btn" onclick="openModal('challenge-modal');closeModal('result-modal')">⚔️ გამოიწვიე მეგობარი</button>
+      <div class="suggest-wrap">
+        <h3>💡 დაამატე სიტყვა</h3>
+        <input type="text" id="suggest-from-result" placeholder="სიტყვა (5 ასო)" maxlength="10" />
+        <button class="btn btn-primary" onclick="submitSuggestion('suggest-from-result')">გაგზავნა</button>
+      </div>
+    </div>
+
+    <!-- Free play mode buttons -->
+    <div id="result-freeplay-btns" style="display:none;">
+      <button class="btn" onclick="openModal('challenge-modal');closeModal('result-modal')">⚔️ გამოიწვიე მეგობარი</button>
+
+      <!-- გამოგვიგზავნე სიტყვა -->
+      <button class="btn" id="suggest-toggle-btn" onclick="toggleResultSuggest()">✉️ გამოგვიგზავნე სიტყვა</button>
+      <div id="result-suggest-panel" style="display:none;margin-top:6px;">
+        <input type="text" id="suggest-freeplay-word" placeholder="5-ასოიანი სიტყვა" maxlength="10"
+          style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 13px;border-radius:var(--radius);font-size:14px;margin-bottom:6px;outline:none;"/>
+        <button class="btn btn-primary" onclick="submitSuggestion('suggest-freeplay-word')">გაგზავნა</button>
+      </div>
+
+      <button class="btn btn-green" onclick="nextFreePlay();closeModal('result-modal')" style="margin-top:6px;">🎮 გააგრძელე თამაში</button>
     </div>
   </div>
 </div>
@@ -567,6 +586,12 @@ window.isValidWord = async function(word) {
 // Signal that Firebase module is ready
 window._firebaseReady = true;
 
+// Expose words getter for free play
+window._fbGetWords = async function() {
+  const snap = await get(ref(_db, 'words'));
+  return snap.val();
+};
+
 // ── SUBMIT SUGGESTION ──
 window.submitSuggestion = async function(id) {
   const inp = document.getElementById(id);
@@ -605,6 +630,17 @@ window.submitSuggestion = async function(id) {
     showToast('მადლობა სიტყვის გამოგზავნისთვის 🙏');
   }
 };
+</script>
+<script>
+// ── FIRST VISIT REDIRECT ── runs immediately before anything else
+(function() {
+  const params = new URLSearchParams(location.search);
+  const isSpecialEntry = params.get('c') || params.get('freeplay');
+  if(!localStorage.getItem('sitqva_visited') && !isSpecialEntry) {
+    localStorage.setItem('sitqva_visited', '1');
+    window.location.replace('landing.html');
+  }
+})();
 </script>
 <script>
 // ── WORD API ──
@@ -703,7 +739,7 @@ const L2G = {
 };
 
 // ── STATE ──
-let targetWord="", currentRow=0, currentCol=0, currentGuess=[], gameOver=false, guesses=[], revealInProgress=false, isChallenge=false, wordLength=5;
+let targetWord="", currentRow=0, currentCol=0, currentGuess=[], gameOver=false, guesses=[], revealInProgress=false, isChallenge=false, wordLength=5, isFreePlay=false;
 const state = { streak:0, best:0, played:0, distribution:{1:0,2:0,3:0,4:0,5:0,6:0}, user:null };
 
 // Expose targetWord to window so Firebase validation module can access it
@@ -858,19 +894,16 @@ async function submitGuess() {
   if(currentCol<wordLength){shakeRow(currentRow);showToast(`${wordLength} ასო გჭირდება`);return;}
   const guess=currentGuess.join('');
 
-  // Validate against Firebase — skip for challenge mode
-  if(!isChallenge) {
-    // Basic check: must be Georgian letters only
+  // Validate against Firebase for daily AND free play (not for challenges)
+  if(!isChallenge || isFreePlay) {
     if(!/^[\u10D0-\u10FF]+$/.test(guess)) {
       shakeRow(currentRow); showToast('სიტყვა ვერ მოიძებნა'); return;
     }
-    // Firebase check: word must exist in database
     if(guess !== targetWord) {
       if(window._firebaseReady && typeof window.isValidWord === 'function') {
         const valid = await window.isValidWord(guess);
         if(!valid) { shakeRow(currentRow); showToast('სიტყვა ვერ მოიძებნა'); return; }
       } else {
-        // Firebase module not ready yet — block the guess, ask to retry
         shakeRow(currentRow); showToast('კავშირი მიმდინარეობს, სცადე ისევ'); return;
       }
     }
@@ -968,7 +1001,24 @@ function renderDistribution(lastAtt){
 function showResult(won,attempts){
   document.getElementById('result-title').textContent=won?'🎉 გაიმარჯვე!':'😔 სცადე ხვალ!';
   document.getElementById('result-word').textContent=targetWord;
-  document.getElementById('result-sub').textContent=won?`გამოიცანი ${attempts} მცდელობაში`:'სიტყვა იყო:';
+  document.getElementById('result-sub').textContent=won?`გამოიცანი ${attempts} მცდელობაში`:'დღის სიტყვაა:';
+
+  // Show correct button set
+  const dailyBtns = document.getElementById('result-daily-btns');
+  const freeBtns  = document.getElementById('result-freeplay-btns');
+  if(isFreePlay) {
+    dailyBtns.style.display = 'none';
+    freeBtns.style.display  = 'block';
+    document.getElementById('next-word-timer').style.display = 'none';
+  } else {
+    dailyBtns.style.display = 'block';
+    freeBtns.style.display  = 'none';
+  }
+
+  // Reset suggest panel
+  const panel = document.getElementById('result-suggest-panel');
+  if(panel) panel.style.display = 'none';
+
   renderDistribution(won?attempts:0); updateStats(); startCountdown(); openModal('result-modal');
 }
 function shareResult(){
@@ -978,6 +1028,45 @@ function shareResult(){
   const text=`სიტყვობანა\n${won?guesses.length:'X'}/6\n\n${grid.trim()}\n\n${location.origin}`;
   if(navigator.share) navigator.share({text}).catch(()=>{});
   else{navigator.clipboard.writeText(text);showToast('კოპირებულია 📋');}
+}
+
+// ── FREE PLAY ──
+function toggleResultSuggest() {
+  const panel = document.getElementById('result-suggest-panel');
+  const btn   = document.getElementById('suggest-toggle-btn');
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  if(!isOpen) setTimeout(()=>document.getElementById('suggest-freeplay-word').focus(), 50);
+}
+
+async function startFreePlay() {
+  isFreePlay = true;
+  isChallenge = true; // skip daily save logic
+  gameOver = false; guesses = []; currentRow = 0; currentCol = 0; currentGuess = [];
+  wordLength = 5;
+  // Reset key colors
+  Object.keys(keyColors).forEach(k => delete keyColors[k]);
+  document.querySelectorAll('#keyboard .key').forEach(k => k.classList.remove('correct','present','absent'));
+  // Pick random word from Firebase
+  try {
+    if(window._fbGetWords) {
+      const snap = await window._fbGetWords();
+      if(snap) {
+        const words = Object.values(snap)
+          .map(w => w.word)
+          .filter(w => w && [...w].length === 5 && /^[\u10D0-\u10FF]+$/.test(w) && w !== targetWord);
+        if(words.length > 0) {
+          targetWord = words[Math.floor(Math.random() * words.length)];
+        }
+      }
+    }
+  } catch(e) { console.warn('Free play word error:', e); }
+  applyWordLength();
+  buildBoard();
+}
+
+function nextFreePlay() {
+  startFreePlay();
 }
 
 // ── COUNTDOWN ──
@@ -1002,7 +1091,24 @@ function switchChalTab(type){
   document.getElementById('cpanel-blitz').classList.toggle('active',type==='blitz');
 }
 function genChallenge(type){
-  const fromName=state.user?encodeURIComponent(state.user.name):'friend';
+  // Get name from account, saved preference, or prompt
+  let fromName;
+  if(state.user) {
+    fromName = encodeURIComponent(state.user.name);
+  } else {
+    const saved = localStorage.getItem('sitqva_challenger_name');
+    if(saved) {
+      fromName = encodeURIComponent(saved);
+    } else {
+      const entered = prompt('შენი სახელი:');
+      if(entered && entered.trim()) {
+        localStorage.setItem('sitqva_challenger_name', entered.trim());
+        fromName = encodeURIComponent(entered.trim());
+      } else {
+        fromName = encodeURIComponent('მეგობარი');
+      }
+    }
+  }
   let word,linkEl,copyBtn,shareBtn;
   if(type==='custom'){
     const inp=document.getElementById('chal-word-input');
@@ -1088,7 +1194,11 @@ document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click
 
 // ── START ──
 init();
-if(!localStorage.getItem('sitqva_visited')){localStorage.setItem('sitqva_visited','1');setTimeout(()=>openModal('how-modal'),700);}
+
+// Handle freeplay param from landing page
+if(new URLSearchParams(location.search).get('freeplay')) {
+  setTimeout(()=>startFreePlay(), 900);
+}
 </script>
 </body>
 </html>

@@ -296,6 +296,7 @@
 <!-- BUTTONS -->
 <div class="buttons">
   <a href="index.html" class="btn btn-play"><span>▶ &nbsp;ითამაშე</span></a>
+  <a href="index.html?freeplay=1" class="btn btn-login" style="border-color:rgba(232,197,71,.3);color:var(--gold)">🎮 &nbsp;თავისუფალი თამაში</a>
   <a href="#" class="btn btn-login" onclick="showLogin(event)">შესვლა</a>
   <button class="btn btn-subscribe" onclick="openSubscribe()">✉ &nbsp;გამოიწერე</button>
 </div>
@@ -315,12 +316,12 @@
 <div class="footer">
   <a href="#">როგორ ვითამაშოთ</a>
   <span class="footer-dot">·</span>
-  <a href="mailto:hello@sitqva.ge">კონტაქტი</a>
+  <a href="/cdn-cgi/l/email-protection#7f171a1313103f0c160b0e091e51181a">კონტაქტი</a>
   <span class="footer-dot">·</span>
   <span>© 2025 სიტყვობანა</span>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 function openSubscribe() {
   document.body.classList.add('sub-open');
   setTimeout(() => document.getElementById('sub-email').focus(), 50);
@@ -342,10 +343,4 @@ document.getElementById('sub-email').addEventListener('keydown', e => { if (e.ke
 
 function showLogin(e) {
   e.preventDefault();
-  showToast('შესვლა მალე დაემატება — ახლა სტუმრად ითამაშე');
-}
-
-let tt;
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.tex
+  showToast('შესვლა მალე დაემატება — ა�
