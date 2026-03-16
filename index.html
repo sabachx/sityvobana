@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="სიტყვობანა" />
   <title>სიტყვობანა</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23e8c547'/%3E%3Ctext x='16' y='23' text-anchor='middle' font-family='sans-serif' font-weight='900' font-size='20' fill='%230f0e17'%3Eს%3C/text%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%232dc653'/%3E%3Ctext x='16' y='23' text-anchor='middle' font-family='sans-serif' font-weight='900' font-size='20' fill='%23ffffff'%3Eს%3C/text%3E%3C/svg%3E">
   <link rel="manifest" href="manifest.json" />
   <style>
     :root {
@@ -57,7 +57,7 @@
       border-bottom:1px solid var(--border);
       flex-shrink:0; z-index:10; position:relative;
     }
-    .header-logo .ka { font-size:16px; font-weight:700; color:var(--accent); letter-spacing:1px; line-height:1; display:block; }
+    .header-logo .ka { font-size:16px; font-weight:700; color:var(--text); letter-spacing:1px; line-height:1; display:block; }
     .header-logo .en { font-size:9px; color:var(--text-muted); letter-spacing:3px; text-transform:uppercase; margin-top:2px; display:block; }
     .header-actions { display:flex; gap:6px; align-items:center; }
     .icon-btn {
@@ -466,11 +466,11 @@
       <div class="result-stat"><div class="n" id="rs-best">0</div><div class="l">🏆 საუკეთესო</div></div>
       <div class="result-stat"><div class="n" id="rs-played">0</div><div class="l">🎯 ნათამაშები</div></div>
     </div>
-    <button class="btn btn-green" onclick="shareResult()" id="share-btn-daily">📤 გააზიარე</button>
-
     <!-- Daily mode buttons -->
     <div id="result-daily-btns">
+      <button class="btn btn-green" onclick="shareResult()">📤 გААზიარე</button>
       <button class="btn" onclick="openModal('challenge-modal');closeModal('result-modal')">⚔️ გამოიწვიე მეგობარი</button>
+      <button class="btn" onclick="closeModal('result-modal');startFreePlay()" style="border-color:rgba(45,198,83,.35);color:var(--green)">🎮 თავისუფალი თამაში</button>
       <div class="suggest-wrap">
         <h3>💡 დაამატე სიტყვა</h3>
         <input type="text" id="suggest-from-result" placeholder="სიტყვა (5 ასო)" maxlength="10" />
@@ -480,22 +480,19 @@
 
     <!-- Free play mode buttons -->
     <div id="result-freeplay-btns" style="display:none;">
-      <button class="btn btn-green" onclick="nextFreePlay();closeModal('result-modal')">🎮 გააგრძელე თამაში</button>
+      <button class="btn btn-green" onclick="nextFreePlay();closeModal('result-modal')">🎮 გААგრძელე თამაში</button>
       <button class="btn" onclick="openModal('challenge-modal');closeModal('result-modal')">⚔️ გამოიწვიე მეგობარი</button>
-
-      <!-- გამოგვიგზავნე სიტყვა -->
-      <button class="btn" id="suggest-toggle-btn" onclick="toggleResultSuggest()">✉️ გამოგვიგზავნე სიტყვა</button>
+      <button class="btn" id="suggest-toggle-btn" onclick="toggleResultSuggest()">✉️ დაამატე სიტყვა</button>
       <div id="result-suggest-panel" style="display:none;margin-top:6px;">
         <input type="text" id="suggest-freeplay-word" placeholder="5-ასოიანი სიტყვა" maxlength="10"
           style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 13px;border-radius:var(--radius);font-size:14px;margin-bottom:6px;outline:none;"/>
         <button class="btn btn-primary" onclick="submitSuggestion('suggest-freeplay-word')">გაგზავნა</button>
       </div>
-
-      <button class="btn" onclick="shareResult()" style="background:var(--accent);color:var(--bg);border-color:var(--accent);margin-top:6px;">📤 გააზიარე</button>
+      <button class="btn" onclick="closeModal('result-modal');switchToDaily()" style="border-color:rgba(45,198,83,.35);color:var(--green)">📅 დღის სიტყვა</button>
+      <button class="btn" onclick="shareResult()" style="background:var(--accent);color:var(--bg);border-color:var(--accent);">📤 გААზიარე</button>
     </div>
   </div>
 </div>
-
 <!-- CHALLENGE -->
 <div class="modal-overlay" id="challenge-modal">
   <div class="modal">
@@ -887,7 +884,7 @@ function addLetter(l) {
   t.textContent=l; t.classList.add('filled'); currentGuess.push(l); currentCol++;
 }
 function deleteLetter() {
-  if(currentCol<=0) return;
+  if(currentCol<=0 || revealInProgress) return;
   currentCol--; currentGuess.pop();
   const t=document.getElementById(`tile-${currentRow}-${currentCol}`);
   t.textContent=''; t.classList.remove('filled');
@@ -919,7 +916,7 @@ async function submitGuess() {
   revealRow(currentRow,result,()=>{
     const won=result.every(r=>r==='correct');
     currentRow++; currentGuess=[]; currentCol=0;
-    isSubmitting = false;
+    isSubmitting=false;
     if(won){
       gameOver=true; const att=currentRow;
       state.streak++; state.best=Math.max(state.best,state.streak); state.played++;

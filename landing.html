@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#0f0e17" />
   <title>სიტყვობანა</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23e8c547'/%3E%3Ctext x='16' y='23' text-anchor='middle' font-family='sans-serif' font-weight='900' font-size='20' fill='%230f0e17'%3Eს%3C/text%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%232dc653'/%3E%3Ctext x='16' y='23' text-anchor='middle' font-family='sans-serif' font-weight='900' font-size='20' fill='%23ffffff'%3Eს%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Tenor+Sans&display=swap" rel="stylesheet">
@@ -56,8 +56,8 @@
     /* ── LOGO TILES ── */
     .logo-tiles {
       display: flex;
-      gap: 5px;
-      flex-wrap: wrap;
+      gap: 4px;
+      flex-wrap: nowrap;
       justify-content: center;
       max-width: 340px;
       opacity: 0;
@@ -88,11 +88,8 @@
     .logo-tile:nth-child(9)  { animation-delay: .71s; }
     .logo-tile:nth-child(10) { animation-delay: .78s; }
     /* ს — icon tile: slightly brighter/gold border */
-    .logo-tile-icon {
-      background: var(--gold);
-      border-color: var(--gold);
-      color: #0f0e17;
-    }
+    /* ს icon tile — same size as others, green */
+    .logo-tile-icon { /* identical to .logo-tile */ }
 
     /* ── DIVIDER ── */
     .divider {
@@ -139,8 +136,8 @@
     .tile:nth-child(3) { animation-delay: 1.4s; }
     .tile:nth-child(4) { animation-delay: 1.5s; }
     .tile:nth-child(5) { animation-delay: 1.6s; }
-    /* ს — gold icon tile in demo */
-    .tile-icon { background: var(--gold) !important; border-color: var(--gold) !important; color: #0f0e17 !important; }
+    /* ს — green icon tile in demo */
+    .tile-icon { background: var(--green) !important; border-color: var(--green) !important; color: #fff !important; }
     /* ვ — yellow present tile */
     .tile-yellow { background: var(--yellow) !important; border-color: var(--yellow) !important; color: #fff !important; }
     @keyframes tileFlip {
@@ -377,4 +374,4 @@ document.getElementById('sub-email').addEventListener('keydown', e => { if (e.ke
 
 function showLogin(e) {
   e.preventDefault();
-  showToast('შესვლა მალე დაემატება — ა�
+  showToast('შესვლა მალე დაემატება — ა
