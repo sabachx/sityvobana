@@ -5,9 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#0f0e17" />
   <title>სიტყვობანა</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23e8c547'/%3E%3Ctext x='16' y='23' text-anchor='middle' font-family='sans-serif' font-weight='900' font-size='20' fill='%230f0e17'%3Eს%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wdth,wght@87.5,300;87.5,400;87.5,500;87.5,700;87.5,900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Tenor+Sans&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg:     #0f0e17;
@@ -22,13 +23,17 @@
       --yellow: #c9963a;
       --radius: 6px;
     }
+
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-    html, body { height: 100%; overflow: hidden; }
+
+    html, body {
+      height: 100%; overflow: hidden;
+    }
+
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: 'Noto Sans Georgian', sans-serif;
-      font-weight: 400;
+      font-family: 'Tenor Sans', sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -37,6 +42,8 @@
       padding-bottom: calc(24px + env(safe-area-inset-bottom));
       position: relative;
     }
+
+    /* subtle bg glow */
     body::before {
       content: '';
       position: fixed; inset: 0; pointer-events: none;
@@ -44,42 +51,78 @@
         radial-gradient(ellipse at 20% 50%, rgba(232,197,71,.07) 0%, transparent 55%),
         radial-gradient(ellipse at 80% 50%, rgba(45,198,83,.04) 0%, transparent 55%);
     }
-    .logo {
-      font-family: 'Noto Sans Georgian', sans-serif;
-      font-weight: 900;
-      font-variation-settings: 'wdth' 87.5;
-      font-size: clamp(44px, 11vw, 80px);
-      color: var(--gold);
-      letter-spacing: 4px;
-      line-height: 1;
-      text-align: center;
+
+    /* ── LOGO ── */
+    /* ── LOGO TILES ── */
+    .logo-tiles {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 340px;
       opacity: 0;
       animation: fadeUp .7s .1s ease forwards;
     }
+    .logo-tile {
+      width: clamp(28px, 8vw, 40px);
+      height: clamp(28px, 8vw, 40px);
+      border-radius: 5px;
+      background: var(--green);
+      border: 1px solid var(--green);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Noto Sans Georgian', sans-serif;
+      font-size: clamp(14px, 4vw, 21px);
+      font-weight: 900;
+      font-variation-settings: 'wdth' 87.5;
+      color: #fff;
+      animation: tileFlip .4s ease both;
+    }
+    .logo-tile:nth-child(1)  { animation-delay: .15s; }
+    .logo-tile:nth-child(2)  { animation-delay: .22s; }
+    .logo-tile:nth-child(3)  { animation-delay: .29s; }
+    .logo-tile:nth-child(4)  { animation-delay: .36s; }
+    .logo-tile:nth-child(5)  { animation-delay: .43s; }
+    .logo-tile:nth-child(6)  { animation-delay: .50s; }
+    .logo-tile:nth-child(7)  { animation-delay: .57s; }
+    .logo-tile:nth-child(8)  { animation-delay: .64s; }
+    .logo-tile:nth-child(9)  { animation-delay: .71s; }
+    .logo-tile:nth-child(10) { animation-delay: .78s; }
+    /* ს — icon tile: slightly brighter/gold border */
+    .logo-tile-icon {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: #0f0e17;
+    }
+
+    /* ── DIVIDER ── */
     .divider {
       width: 40px; height: 1px;
       background: linear-gradient(to right, transparent, var(--gold2), transparent);
-      margin: 24px auto;
+      margin: 20px auto;
       opacity: 0;
-      animation: fadeUp .7s .35s ease forwards;
+      animation: fadeUp .7s .9s ease forwards;
     }
+
+    /* ── TAGLINE ── */
     .tagline {
       font-family: 'Noto Sans Georgian', sans-serif;
       font-weight: 300;
-      font-size: clamp(13px, 3vw, 16px);
+      font-size: clamp(12px, 2.8vw, 15px);
       color: var(--dim);
       text-align: center;
-      max-width: 320px;
+      max-width: 300px;
       line-height: 1.6;
       opacity: 0;
-      animation: fadeUp .7s .45s ease forwards;
+      animation: fadeUp .7s 1.0s ease forwards;
     }
+
+    /* ── DEMO TILES ── */
     .tiles {
       display: flex;
       gap: 7px;
-      margin: 28px auto 0;
+      margin: 20px auto 0;
       opacity: 0;
-      animation: fadeUp .6s .6s ease forwards;
+      animation: fadeUp .6s 1.1s ease forwards;
     }
     .tile {
       width: 44px; height: 44px;
@@ -91,15 +134,21 @@
       color: var(--text);
       animation: tileFlip .45s ease both;
     }
-    .tile:nth-child(1) { animation-delay: .75s; }
-    .tile:nth-child(2) { animation-delay: .9s;  background: var(--green);  border-color: var(--green);  color: #fff; }
-    .tile:nth-child(3) { animation-delay: 1.05s; }
-    .tile:nth-child(4) { animation-delay: 1.2s; background: var(--yellow); border-color: var(--yellow); color: #fff; }
-    .tile:nth-child(5) { animation-delay: 1.35s; }
+    .tile:nth-child(1) { animation-delay: 1.2s; }
+    .tile:nth-child(2) { animation-delay: 1.3s; }
+    .tile:nth-child(3) { animation-delay: 1.4s; }
+    .tile:nth-child(4) { animation-delay: 1.5s; }
+    .tile:nth-child(5) { animation-delay: 1.6s; }
+    /* ს — gold icon tile in demo */
+    .tile-icon { background: var(--gold) !important; border-color: var(--gold) !important; color: #0f0e17 !important; }
+    /* ვ — yellow present tile */
+    .tile-yellow { background: var(--yellow) !important; border-color: var(--yellow) !important; color: #fff !important; }
     @keyframes tileFlip {
       from { transform: rotateX(-90deg); opacity: 0; }
       to   { transform: rotateX(0);      opacity: 1; }
     }
+
+    /* ── BUTTONS ── */
     .buttons {
       display: flex;
       flex-direction: column;
@@ -108,18 +157,20 @@
       max-width: 300px;
       margin-top: 32px;
       opacity: 0;
-      animation: fadeUp .6s 1.5s ease forwards;
+      animation: fadeUp .6s 1.8s ease forwards;
     }
+
     .btn {
       display: flex; align-items: center; justify-content: center;
       width: 100%; padding: 14px 20px;
       border-radius: var(--radius);
-      font-family: 'Noto Sans Georgian', sans-serif;
+      font-family: 'Tenor Sans', sans-serif;
       font-size: 12px; font-weight: 700;
-      letter-spacing: 1.5px; text-transform: uppercase;
+      letter-spacing: 2.5px; text-transform: uppercase;
       cursor: pointer; transition: all .2s;
       text-decoration: none; border: none;
     }
+
     .btn-play {
       background: var(--gold);
       color: #0f0e17;
@@ -133,20 +184,24 @@
     }
     .btn-play:hover::after { transform: translateX(0); }
     .btn-play span { position: relative; z-index: 1; }
+
     .btn-login {
       background: transparent;
       border: 1px solid var(--border);
       color: var(--text);
     }
     .btn-login:hover { border-color: var(--gold); color: var(--gold); }
+
     .btn-subscribe {
       background: transparent;
       border: 1px solid transparent;
       color: var(--muted);
-      font-size: 11px; letter-spacing: 1px;
+      font-size: 11px; letter-spacing: 1.5px;
       padding: 8px;
     }
     .btn-subscribe:hover { color: var(--dim); }
+
+    /* ── SUBSCRIBE INLINE ── */
     .subscribe-wrap {
       width: 100%; max-width: 300px;
       display: none;
@@ -155,6 +210,7 @@
       margin-top: 32px;
     }
     .subscribe-wrap.open { display: block; }
+
     .sub-row {
       display: flex;
       border: 1px solid var(--border);
@@ -167,16 +223,16 @@
       flex: 1; padding: 12px 14px;
       background: var(--surface);
       border: none; outline: none;
-      font-family: 'Noto Sans Georgian', sans-serif;
+      font-family: 'Tenor Sans', sans-serif;
       font-size: 13px; color: var(--text);
     }
     .sub-input::placeholder { color: var(--muted); }
     .sub-btn {
       padding: 12px 14px;
       background: var(--gold); border: none;
-      font-family: 'Noto Sans Georgian', sans-serif;
+      font-family: 'Tenor Sans', sans-serif;
       font-size: 10px; font-weight: 700;
-      letter-spacing: 1px; text-transform: uppercase;
+      letter-spacing: 1.5px; text-transform: uppercase;
       color: #0f0e17; cursor: pointer;
       transition: background .2s; white-space: nowrap;
     }
@@ -191,12 +247,14 @@
       text-align: center; font-size: 10px;
       color: var(--muted); margin-top: 8px; letter-spacing: .5px;
     }
+
+    /* ── FOOTER ── */
     .footer {
       position: fixed; bottom: 0; left: 0; right: 0;
       padding: 12px 24px calc(12px + env(safe-area-inset-bottom));
       display: flex; align-items: center; justify-content: center;
       gap: 16px;
-      font-size: 10px; color: var(--muted); letter-spacing: .5px;
+      font-size: 10px; color: var(--muted); letter-spacing: 1px;
       border-top: 1px solid rgba(58,58,92,.5);
       background: var(--bg);
       opacity: 0;
@@ -205,6 +263,8 @@
     .footer a { color: var(--muted); text-decoration: none; }
     .footer a:hover { color: var(--gold); }
     .footer-dot { color: var(--border); }
+
+    /* ── TOAST ── */
     #toast {
       position: fixed; top: 24px; left: 50%;
       transform: translateX(-50%) translateY(-10px);
@@ -216,18 +276,22 @@
       z-index: 999;
     }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(18px); }
       to   { opacity: 1; transform: translateY(0); }
     }
+
+    /* when subscribe is open, hide the button rows */
     body.sub-open .buttons { display: none; }
     body.sub-open .subscribe-wrap { display: block; }
+
     @media (max-height: 600px) {
-      .logo { font-size: 40px; }
+      .logo { font-size: 44px; }
       .divider { margin: 14px auto; }
       .tiles { margin-top: 16px; }
       .buttons, .subscribe-wrap { margin-top: 20px; }
-      .tile { width: 36px; height: 36px; font-size: 17px; }
+      .tile { width: 36px; height: 36px; font-size: 18px; }
     }
   </style>
 </head>
@@ -235,18 +299,35 @@
 
 <div id="toast"></div>
 
-<div class="logo">სიტყვობანა</div>
+<!-- LOGO — სიტყვობანა spelled in green tiles -->
+<div class="logo-tiles" id="logo-tiles">
+  <div class="logo-tile logo-tile-icon">ს</div>
+  <div class="logo-tile">ი</div>
+  <div class="logo-tile">ტ</div>
+  <div class="logo-tile">ყ</div>
+  <div class="logo-tile">ვ</div>
+  <div class="logo-tile">ო</div>
+  <div class="logo-tile">ბ</div>
+  <div class="logo-tile">ა</div>
+  <div class="logo-tile">ნ</div>
+  <div class="logo-tile">ა</div>
+</div>
+
 <div class="divider"></div>
+
+<!-- TAGLINE -->
 <p class="tagline">გამოიცანი დამალული ქართული სიტყვა ექვს მცდელობაში — ყოველდღე ახალი გამოწვევა.</p>
 
+<!-- DEMO TILES — ს green (icon letter), ვ yellow -->
 <div class="tiles">
-  <div class="tile">ს</div>
+  <div class="tile tile-icon">ს</div>
   <div class="tile">ხ</div>
   <div class="tile">ი</div>
-  <div class="tile">ვ</div>
+  <div class="tile tile-yellow">ვ</div>
   <div class="tile">ი</div>
 </div>
 
+<!-- BUTTONS -->
 <div class="buttons">
   <a href="index.html" class="btn btn-play"><span>▶ &nbsp;ითამაშე</span></a>
   <a href="index.html?freeplay=1" class="btn btn-login" style="border-color:rgba(232,197,71,.3);color:var(--gold)">🎮 &nbsp;თავისუფალი თამაში</a>
@@ -254,6 +335,7 @@
   <button class="btn btn-subscribe" onclick="openSubscribe()">✉ &nbsp;გამოიწერე</button>
 </div>
 
+<!-- SUBSCRIBE PANEL -->
 <div class="subscribe-wrap" id="sub-wrap">
   <div class="sub-row" id="sub-form">
     <input class="sub-input" type="email" id="sub-email" placeholder="შენი@ელფოსტა.com" />
@@ -264,15 +346,16 @@
   <button class="btn btn-subscribe" style="margin-top:6px" onclick="closeSubscribe()">← უკან</button>
 </div>
 
+<!-- FOOTER -->
 <div class="footer">
   <a href="#">როგორ ვითამაშოთ</a>
   <span class="footer-dot">·</span>
-  <a href="mailto:hello@sitqva.ge">კონტაქტი</a>
+  <a href="/cdn-cgi/l/email-protection#7f171a1313103f0c160b0e091e51181a">კონტაქტი</a>
   <span class="footer-dot">·</span>
   <span>© 2025 სიტყვობანა</span>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 function openSubscribe() {
   document.body.classList.add('sub-open');
   setTimeout(() => document.getElementById('sub-email').focus(), 50);
@@ -280,6 +363,7 @@ function openSubscribe() {
 function closeSubscribe() {
   document.body.classList.remove('sub-open');
 }
+
 function handleSubscribe() {
   const email = document.getElementById('sub-email').value.trim();
   if (!email || !email.includes('@')) { showToast('გთხოვთ შეიყვანოთ სწორი ელ-ფოსტა'); return; }
@@ -290,16 +374,7 @@ function handleSubscribe() {
   document.getElementById('sub-ok').style.display = 'block';
 }
 document.getElementById('sub-email').addEventListener('keydown', e => { if (e.key === 'Enter') handleSubscribe(); });
+
 function showLogin(e) {
   e.preventDefault();
-  showToast('შესვლა მალე დაემატება — ახლა სტუმრად ითამაშე');
-}
-let tt;
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2800);
-}
-</script>
-</body>
-</html>
+  showToast('შესვლა მალე დაემატება — ა�

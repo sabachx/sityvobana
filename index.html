@@ -8,6 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="სიტყვობანა" />
   <title>სიტყვობანა</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23e8c547'/%3E%3Ctext x='16' y='23' text-anchor='middle' font-family='sans-serif' font-weight='900' font-size='20' fill='%230f0e17'%3Eს%3C/text%3E%3C/svg%3E">
   <link rel="manifest" href="manifest.json" />
   <style>
     :root {
@@ -104,7 +105,7 @@
 
     /* TOAST */
     #toast {
-      position:fixed; top:68px; left:50%;
+      position:fixed; top:12px; left:50%;
       transform:translateX(-50%) translateY(-8px);
       background:var(--text); color:var(--bg);
       padding:8px 16px; border-radius:20px;
@@ -141,33 +142,6 @@
     @keyframes flip   { 0%{transform:rotateX(0)} 50%{transform:rotateX(-90deg)} 100%{transform:rotateX(0)} }
     @keyframes shake  { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)} }
     @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-
-    /* MODE INDICATOR */
-    #mode-bar {
-      width:100%; max-width:500px;
-      display:flex; align-items:center; justify-content:space-between;
-      padding:4px 12px; flex-shrink:0;
-    }
-    .mode-label {
-      font-size:10px; font-weight:600; letter-spacing:1.5px;
-      text-transform:uppercase; color:var(--text-muted);
-    }
-    .mode-switch-btn {
-      font-size:10px; font-weight:600; letter-spacing:.5px;
-      color:var(--accent); background:transparent;
-      border:1px solid rgba(99,179,237,.3); border-radius:20px;
-      padding:3px 10px; cursor:pointer; transition:all .2s;
-    }
-    .mode-switch-btn:hover { background:rgba(99,179,237,.1); }
-
-    /* MOBILE KEYBOARD — hidden input trick */
-    #mobile-input {
-      position:fixed; opacity:0; pointer-events:none;
-      width:1px; height:1px; top:50%; left:50%;
-      transform:translate(-50%,-50%);
-      font-size:16px; /* prevents iOS zoom */
-      border:none; outline:none; background:transparent;
-    }
 
     /* KEYBOARD */
     #keyboard {
@@ -393,13 +367,6 @@
 
 <div id="toast"></div>
 
-<input id="mobile-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" />
-
-<div id="mode-bar">
-  <span class="mode-label" id="mode-label">📅 დღის სიტყვა</span>
-  <button class="mode-switch-btn" id="mode-switch-btn" onclick="switchGameMode()">🎮 თავისუფალი თამაში</button>
-</div>
-
 <div id="board-wrap"><div id="board"></div></div>
 
 <div id="keyboard"></div>
@@ -499,12 +466,11 @@
       <div class="result-stat"><div class="n" id="rs-best">0</div><div class="l">🏆 საუკეთესო</div></div>
       <div class="result-stat"><div class="n" id="rs-played">0</div><div class="l">🎯 ნათამაშები</div></div>
     </div>
+    <button class="btn btn-green" onclick="shareResult()" id="share-btn-daily">📤 გააზიარე</button>
 
     <!-- Daily mode buttons -->
     <div id="result-daily-btns">
-      <button class="btn btn-green" onclick="shareResult()">📤 გААზიარე</button>
       <button class="btn" onclick="openModal('challenge-modal');closeModal('result-modal')">⚔️ გამოიწვიე მეგობარი</button>
-      <button class="btn" onclick="closeModal('result-modal');startFreePlay()" style="border-color:rgba(232,197,71,.3);color:var(--gold)">🎮 თავისუფალი თამაში</button>
       <div class="suggest-wrap">
         <h3>💡 დაამატე სიტყვა</h3>
         <input type="text" id="suggest-from-result" placeholder="სიტყვა (5 ასო)" maxlength="10" />
@@ -514,16 +480,18 @@
 
     <!-- Free play mode buttons -->
     <div id="result-freeplay-btns" style="display:none;">
-      <button class="btn btn-green" onclick="nextFreePlay();closeModal('result-modal')">🎮 გААგრძელე თამაში</button>
+      <button class="btn btn-green" onclick="nextFreePlay();closeModal('result-modal')">🎮 გააგრძელე თამაში</button>
       <button class="btn" onclick="openModal('challenge-modal');closeModal('result-modal')">⚔️ გამოიწვიე მეგობარი</button>
+
+      <!-- გამოგვიგზავნე სიტყვა -->
       <button class="btn" id="suggest-toggle-btn" onclick="toggleResultSuggest()">✉️ გამოგვიგზავნე სიტყვა</button>
       <div id="result-suggest-panel" style="display:none;margin-top:6px;">
         <input type="text" id="suggest-freeplay-word" placeholder="5-ასოიანი სიტყვა" maxlength="10"
           style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 13px;border-radius:var(--radius);font-size:14px;margin-bottom:6px;outline:none;"/>
         <button class="btn btn-primary" onclick="submitSuggestion('suggest-freeplay-word')">გაგზავნა</button>
       </div>
-      <button class="btn" onclick="closeModal('result-modal');switchToDaily()" style="border-color:rgba(232,197,71,.3);color:var(--gold)">📅 დღის სიტყვა</button>
-      <button class="btn" onclick="shareResult()" style="background:var(--accent);color:var(--bg);border-color:var(--accent);">📤 გААზიარე</button>
+
+      <button class="btn" onclick="shareResult()" style="background:var(--accent);color:var(--bg);border-color:var(--accent);margin-top:6px;">📤 გააზიარე</button>
     </div>
   </div>
 </div>
@@ -773,7 +741,7 @@ const L2G = {
 };
 
 // ── STATE ──
-let targetWord="", currentRow=0, currentCol=0, currentGuess=[], gameOver=false, guesses=[], revealInProgress=false, isChallenge=false, wordLength=5, isFreePlay=false;
+let targetWord="", currentRow=0, currentCol=0, currentGuess=[], gameOver=false, guesses=[], revealInProgress=false, isChallenge=false, wordLength=5, isFreePlay=false, isSubmitting=false;
 const state = { streak:0, best:0, played:0, distribution:{1:0,2:0,3:0,4:0,5:0,6:0}, user:null };
 
 // Expose targetWord to window so Firebase validation module can access it
@@ -782,18 +750,17 @@ Object.defineProperty(window, '_targetWord', { get: () => targetWord });
 // ── INIT ──
 async function init() {
   loadState();
+  // targetWord and wordLength are set inside loadWordsFromAPI
   targetWord = ''; wordLength = 5;
   document.getElementById('board-wrap').style.opacity = '0.4';
   await loadWordsFromAPI();
   document.getElementById('board-wrap').style.opacity = '1';
-  checkChallengeMode();
+  checkChallengeMode(); // may override targetWord for challenge links
   applyWordLength();
   buildBoard();
   buildKeyboard();
   updateStats();
   checkTodayPlayed();
-  updateModeBar();
-  initMobileKeyboard();
 }
 function loadState() {
   try {
@@ -900,7 +867,7 @@ function updateKeyColor(letter,cls) {
 
 // ── INPUT ──
 function handleKey(key) {
-  if(gameOver||revealInProgress) return;
+  if(gameOver||revealInProgress||isSubmitting) return;
   if(key==='⌫'||key==='Backspace') deleteLetter();
   else if(key==='ENTER'||key==='Enter') submitGuess();
   else if(/^[\u10D0-\u10FF]$/.test(key)) addLetter(key);
@@ -927,19 +894,21 @@ function deleteLetter() {
 }
 async function submitGuess() {
   if(currentCol<wordLength){shakeRow(currentRow);showToast(`${wordLength} ასო გჭირდება`);return;}
+  if(isSubmitting) return;
+  isSubmitting = true;
   const guess=currentGuess.join('');
 
   // Validate against Firebase for daily AND free play (not for challenges)
   if(!isChallenge || isFreePlay) {
     if(!/^[\u10D0-\u10FF]+$/.test(guess)) {
-      shakeRow(currentRow); showToast('სიტყვა ვერ მოიძებნა'); return;
+      shakeRow(currentRow); showToast('სიტყვა ვერ მოიძებნა'); isSubmitting=false; return;
     }
     if(guess !== targetWord) {
       if(window._firebaseReady && typeof window.isValidWord === 'function') {
         const valid = await window.isValidWord(guess);
-        if(!valid) { shakeRow(currentRow); showToast('სიტყვა ვერ მოიძებნა'); return; }
+        if(!valid) { shakeRow(currentRow); showToast('სიტყვა ვერ მოიძებნა'); isSubmitting=false; return; }
       } else {
-        shakeRow(currentRow); showToast('კავშირი მიმდინარეობს, სცადე ისევ'); return;
+        shakeRow(currentRow); showToast('კავშირი მიმდინარეობს, სცადე ისევ'); isSubmitting=false; return;
       }
     }
   }
@@ -950,6 +919,7 @@ async function submitGuess() {
   revealRow(currentRow,result,()=>{
     const won=result.every(r=>r==='correct');
     currentRow++; currentGuess=[]; currentCol=0;
+    isSubmitting = false;
     if(won){
       gameOver=true; const att=currentRow;
       state.streak++; state.best=Math.max(state.best,state.streak); state.played++;
@@ -1098,80 +1068,10 @@ async function startFreePlay() {
   } catch(e) { console.warn('Free play word error:', e); }
   applyWordLength();
   buildBoard();
-  updateModeBar();
 }
 
 function nextFreePlay() {
   startFreePlay();
-}
-
-function updateModeBar() {
-  const label = document.getElementById('mode-label');
-  const btn   = document.getElementById('mode-switch-btn');
-  if(isFreePlay) {
-    label.textContent = '🎮 თავისუფალი თამაში';
-    btn.textContent   = '📅 დღის სიტყვა';
-  } else {
-    label.textContent = '📅 დღის სიტყვა';
-    btn.textContent   = '🎮 თავისუფალი თამაში';
-  }
-}
-
-function switchGameMode() {
-  if(isFreePlay) switchToDaily();
-  else switchToFreePlay();
-}
-
-function switchToFreePlay() {
-  startFreePlay();
-  updateModeBar();
-}
-
-async function switchToDaily() {
-  isFreePlay = false; isChallenge = false;
-  gameOver = false; guesses = []; currentRow = 0; currentCol = 0; currentGuess = [];
-  wordLength = 5;
-  Object.keys(keyColors).forEach(k => delete keyColors[k]);
-  document.querySelectorAll('#keyboard .key').forEach(k => k.classList.remove('correct','present','absent'));
-  await loadWordsFromAPI();
-  applyWordLength();
-  buildBoard();
-  buildKeyboard();
-  checkTodayPlayed();
-  updateModeBar();
-}
-
-// ── MOBILE KEYBOARD ──
-// Hidden input captures mobile keyboard input and routes to game
-function initMobileKeyboard() {
-  const inp = document.getElementById('mobile-input');
-  if(!inp) return;
-
-  // Focus hidden input when board is tapped (mobile only)
-  document.getElementById('board-wrap').addEventListener('click', e => {
-    if(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-      inp.value = '';
-      inp.focus();
-    }
-  });
-
-  let lastVal = '';
-  inp.addEventListener('input', e => {
-    const val = inp.value;
-    // Detect new character
-    if(val.length > lastVal.length) {
-      const newChar = val.slice(-1);
-      if(/^[\u10D0-\u10FF]$/.test(newChar)) handleKey(newChar);
-    }
-    // Detect delete
-    if(val.length < lastVal.length) handleKey('⌫');
-    lastVal = inp.value = ''; // always clear
-  });
-
-  inp.addEventListener('keydown', e => {
-    if(e.key === 'Enter') { e.preventDefault(); handleKey('ENTER'); }
-    if(e.key === 'Backspace') handleKey('⌫');
-  });
 }
 
 // ── COUNTDOWN ──
@@ -1292,7 +1192,7 @@ function switchAuthTab(tab){
   document.getElementById('tab-register').classList.toggle('active',tab==='register');
 }
 
-
+// ── MODALS ──
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
