@@ -57,7 +57,7 @@
       border-bottom:1px solid var(--border);
       flex-shrink:0; z-index:10; position:relative;
     }
-    .header-logo .ka { font-size:16px; font-weight:700; color:var(--text); letter-spacing:1px; line-height:1; display:block; }
+    .header-logo .ka { font-size:16px; font-weight:700; color:var(--accent); letter-spacing:1px; line-height:1; display:block; }
     .header-logo .en { font-size:9px; color:var(--text-muted); letter-spacing:3px; text-transform:uppercase; margin-top:2px; display:block; }
     .header-actions { display:flex; gap:6px; align-items:center; }
     .icon-btn {
@@ -230,7 +230,14 @@
     label { font-size:11px; color:var(--text-muted); margin-bottom:3px; display:block; }
 
     /* RESULT MODAL */
-    .result-word { text-align:center; font-size:32px; font-weight:700; color:var(--accent); letter-spacing:4px; margin-bottom:2px; }
+    .result-word { display:flex; gap:6px; justify-content:center; margin-bottom:8px; }
+    .result-word-tile {
+      width:46px; height:46px; border-radius:6px;
+      background:var(--green); border:1px solid var(--green);
+      display:flex; align-items:center; justify-content:center;
+      font-size:22px; font-weight:800; color:#fff;
+      animation: pop .3s ease both;
+    }
     .result-sub  { text-align:center; font-size:11px; color:var(--text-muted); margin-bottom:14px; }
     #next-word-timer { text-align:center; font-size:11px; color:var(--text-muted); margin-bottom:12px; }
     #next-word-timer span { color:var(--accent); font-weight:700; font-size:14px; }
@@ -367,6 +374,8 @@
 
 <div id="toast"></div>
 
+<input id="mobile-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" style="position:fixed;opacity:0;pointer-events:none;width:1px;height:1px;top:50%;left:50%;transform:translate(-50%,-50%);font-size:16px;border:none;outline:none;background:transparent;" />
+
 <div id="board-wrap"><div id="board"></div></div>
 
 <div id="keyboard"></div>
@@ -468,7 +477,7 @@
     </div>
     <!-- Daily mode buttons -->
     <div id="result-daily-btns">
-      <button class="btn btn-green" onclick="shareResult()">📤 გААზიარე</button>
+      <button class="btn btn-green" onclick="shareResult()">📤 გააზიარე</button>
       <button class="btn" onclick="openModal('challenge-modal');closeModal('result-modal')">⚔️ გამოიწვიე მეგობარი</button>
       <button class="btn" onclick="closeModal('result-modal');startFreePlay()" style="border-color:rgba(45,198,83,.35);color:var(--green)">🎮 თავისუფალი თამაში</button>
       <div class="suggest-wrap">
@@ -480,7 +489,7 @@
 
     <!-- Free play mode buttons -->
     <div id="result-freeplay-btns" style="display:none;">
-      <button class="btn btn-green" onclick="nextFreePlay();closeModal('result-modal')">🎮 გААგრძელე თამაში</button>
+      <button class="btn btn-green" onclick="nextFreePlay();closeModal('result-modal')">🎮 გააგრძელე თამაში</button>
       <button class="btn" onclick="openModal('challenge-modal');closeModal('result-modal')">⚔️ გამოიწვიე მეგობარი</button>
       <button class="btn" id="suggest-toggle-btn" onclick="toggleResultSuggest()">✉️ დაამატე სიტყვა</button>
       <div id="result-suggest-panel" style="display:none;margin-top:6px;">
@@ -489,7 +498,7 @@
         <button class="btn btn-primary" onclick="submitSuggestion('suggest-freeplay-word')">გაგზავნა</button>
       </div>
       <button class="btn" onclick="closeModal('result-modal');switchToDaily()" style="border-color:rgba(45,198,83,.35);color:var(--green)">📅 დღის სიტყვა</button>
-      <button class="btn" onclick="shareResult()" style="background:var(--accent);color:var(--bg);border-color:var(--accent);">📤 გААზიარე</button>
+      <button class="btn" onclick="shareResult()" style="background:var(--accent);color:var(--bg);border-color:var(--accent);">📤 გააზიარე</button>
     </div>
   </div>
 </div>
@@ -604,6 +613,7 @@ window.submitSuggestion = async function(id) {
     const wordsSnap = await get(wordsQ);
     if (wordsSnap.exists()) {
       inp.value = '';
+      closeModal('suggest-modal');
       showToast('მადლობა სიტყვის გამოგზავნისთვის 🙏');
       return;
     }
@@ -612,6 +622,7 @@ window.submitSuggestion = async function(id) {
     const suggSnap = await get(suggQ);
     if (suggSnap.exists()) {
       inp.value = '';
+      closeModal('suggest-modal');
       showToast('მადლობა სიტყვის გამოგზავნისთვის 🙏');
       return;
     }
@@ -622,10 +633,12 @@ window.submitSuggestion = async function(id) {
       status: 'pending'
     });
     inp.value = '';
+    closeModal('suggest-modal');
     showToast('მადლობა სიტყვის გამოგზავნისთვის 🙏');
   } catch(e) {
     console.error('Firebase error:', e);
     inp.value = '';
+    closeModal('suggest-modal');
     showToast('მადლობა სიტყვის გამოგზავნისთვის 🙏');
   }
 };
@@ -884,7 +897,7 @@ function addLetter(l) {
   t.textContent=l; t.classList.add('filled'); currentGuess.push(l); currentCol++;
 }
 function deleteLetter() {
-  if(currentCol<=0 || revealInProgress) return;
+  if(currentCol<=0||revealInProgress) return;
   currentCol--; currentGuess.pop();
   const t=document.getElementById(`tile-${currentRow}-${currentCol}`);
   t.textContent=''; t.classList.remove('filled');
@@ -1001,8 +1014,13 @@ function renderDistribution(lastAtt){
 
 // ── RESULT ──
 function showResult(won,attempts){
-  document.getElementById('result-title').textContent=won?'🎉 გაიმარჯვე!':'😔 სცადე ხვალ!';
-  document.getElementById('result-word').textContent=targetWord;
+  const titleEl = document.getElementById('result-title');
+  titleEl.textContent = won ? '🎉 გაიმარჯვე!' : '😔 სცადე ხვალ!';
+  titleEl.style.color = won ? 'var(--green)' : '';
+  const rw = document.getElementById('result-word');
+  rw.innerHTML = [...targetWord].map(l =>
+    `<div class="result-word-tile">${l}</div>`
+  ).join('');
   document.getElementById('result-sub').textContent=won?`გამოიცანი ${attempts} მცდელობაში`:'დღის სიტყვაა:';
 
   // Show correct button set
@@ -1065,10 +1083,39 @@ async function startFreePlay() {
   } catch(e) { console.warn('Free play word error:', e); }
   applyWordLength();
   buildBoard();
+  buildKeyboard();
+  updateModeBar();
 }
 
-function nextFreePlay() {
-  startFreePlay();
+async function switchToDaily() {
+  isFreePlay = false; isChallenge = false;
+  gameOver = false; guesses = []; currentRow = 0; currentCol = 0; currentGuess = [];
+  wordLength = 5; isSubmitting = false;
+  Object.keys(keyColors).forEach(k => delete keyColors[k]);
+  document.querySelectorAll('#keyboard .key').forEach(k => k.classList.remove('correct','present','absent'));
+  hintsUsed = 0; // startFreePlay
+  document.getElementById('hint-btn')?.classList.remove('used');
+  hintsUsed = 0;
+  document.getElementById('hint-btn')?.classList.remove('used');
+  await loadWordsFromAPI();
+  applyWordLength(); buildBoard(); buildKeyboard(); checkTodayPlayed(); updateModeBar();
+}
+
+function updateModeBar() {
+  const label = document.getElementById('mode-label');
+  const btn   = document.getElementById('mode-switch-btn');
+  if(!label || !btn) return;
+  if(isFreePlay) {
+    label.textContent = '🎮 თავისუფალი თამაში';
+    btn.textContent   = '📅 დღის სიტყვა';
+  } else {
+    label.textContent = '📅 დღის სიტყვა';
+    btn.textContent   = '🎮 თავისუფალი თამაში';
+  }
+}
+
+function switchGameMode() {
+  if(isFreePlay) switchToDaily(); else startFreePlay();
 }
 
 // ── COUNTDOWN ──
@@ -1194,8 +1241,41 @@ function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
 
+// ── MOBILE KEYBOARD ──
+function initMobileKeyboard() {
+  const inp = document.getElementById('mobile-input');
+  if(!inp) return;
+  // Works for both iPhone and Android
+  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || ('ontouchstart' in window);
+  if(!isMobile) return;
+  inp.style.pointerEvents = 'auto';
+  // Auto-focus so keyboard is ready
+  setTimeout(() => { inp.value = ''; inp.focus(); }, 800);
+  // Re-focus on board/keyboard tap
+  document.getElementById('board-wrap').addEventListener('click', () => {
+    if(!gameOver && !revealInProgress) { inp.value = ''; inp.focus(); }
+  });
+  document.getElementById('keyboard').addEventListener('click', () => {
+    inp.value = ''; inp.focus();
+  });
+  // Route input to game
+  inp.addEventListener('input', () => {
+    const val = inp.value;
+    if(val.length > 0) {
+      const ch = val.slice(-1);
+      if(/^[ა-ჿ]$/.test(ch)) handleKey(ch);
+    }
+    inp.value = '';
+  });
+  inp.addEventListener('keydown', e => {
+    if(e.key === 'Backspace') { e.preventDefault(); handleKey('⌫'); }
+    if(e.key === 'Enter')     { e.preventDefault(); handleKey('ENTER'); }
+  });
+}
+
 // ── START ──
 init();
+initMobileKeyboard();
 
 // Handle freeplay param from landing page
 if(new URLSearchParams(location.search).get('freeplay')) {
