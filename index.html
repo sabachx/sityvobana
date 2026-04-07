@@ -367,14 +367,13 @@
     <div class="stat-pill"><span>🏆</span><span>საუკეთესო:</span><span class="val" id="stat-best">0</span></div>
     <div class="stat-pill"><span>🎯</span><span>ნათამაშები:</span><span class="val" id="stat-played">0</span></div>
   </div>
-  <!-- Shown when logged out -->
-  <div id="signin-bar" style="display:flex;gap:6px;align-items:center;width:100%;justify-content:center;flex-wrap:wrap;">
-    <button class="mode-pill" id="pill-daily" onclick="goDaily()">📅 დღის სიტყვა</button>
-    <button class="mode-pill" id="pill-free" onclick="goFree()">🎮 თავისუფალი</button>
-    <button class="mode-pill" onclick="openModal('challenge-modal')">⚔️ გამოწვევა</button>
-    <button class="mode-pill" onclick="openModal('challenge-modal');switchChalTab('blitz')">⚡ ბლიცი</button>
-  </div>
-  </div>
+</div>
+<div id="mode-bar" style="display:flex;gap:6px;align-items:center;width:100%;max-width:500px;justify-content:center;flex-wrap:wrap;padding:0 12px 4px;">
+  <button class="mode-pill" id="pill-daily" onclick="goDaily()">📅 დღის სიტყვა</button>
+  <button class="mode-pill" id="pill-free" onclick="goFree()">🎮 თავისუფალი</button>
+  <button class="mode-pill" onclick="openModal('challenge-modal')">⚔️ გამოწვევა</button>
+  <button class="mode-pill" onclick="openModal('challenge-modal');switchChalTab('blitz')">⚡ ბლიცი</button>
+</div>
 
 <div id="toast"></div>
 
@@ -1111,10 +1110,8 @@ function updateStats(){
   });
   // Only show stats pills if logged in
   const statsPills=document.getElementById('stats-pills');
-  const signinBar=document.getElementById('signin-bar');
-  if(statsPills && signinBar){
-    if(state.user){ statsPills.style.display='flex'; signinBar.style.display='none'; }
-    else           { statsPills.style.display='none'; signinBar.style.display='flex'; }
+  if(statsPills){
+    statsPills.style.display=state.user?'flex':'none';
   }
 }
 
@@ -1326,8 +1323,8 @@ function useHint(){
   const avail=Array.from({length:wordLength},(_,i)=>i).filter(i=>!conf.has(i));
   if(!avail.length){showToast('ყველა ადგილი ცნობილია 🎯');return;}
   const pos=avail[Math.floor(Math.random()*avail.length)];
-  const ordinals=['1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th'];
-  showToast(`💡 ${ordinals[pos]||pos+1} letter: "${tA[pos]}"`,3000);
+  const ordinals=['პირველი','მეორე','მესამე','მეოთხე','მეხუთე','მეექვსე','მეშვიდე','მერვე','მეცხრე','მეათე'];
+  showToast(`💡 ${ordinals[pos]||pos+1} ასო: "${tA[pos]}"`,3000);
   hintsUsed++; if(hintsUsed>=2) document.getElementById('hint-btn').classList.add('used');
 }
 
@@ -1344,7 +1341,7 @@ function setUser(u){
 }
 function updateUserUI(){
   const av=document.getElementById('user-avatar'),inner=document.getElementById('user-avatar-inner'),si=document.getElementById('auth-signed-in'),so=document.getElementById('auth-signed-out');
-  const statsPills=document.getElementById('stats-pills'), signinBar=document.getElementById('signin-bar');
+  const statsPills=document.getElementById('stats-pills');
   if(state.user){
     inner.textContent=state.user.initial||'?'; av.classList.add('signed-in');
     document.getElementById('profile-initial').textContent=state.user.initial||'?';
@@ -1352,12 +1349,12 @@ function updateUserUI(){
     document.getElementById('profile-email').textContent=state.user.email;
     si.style.display='block';so.style.display='none';
     document.getElementById('auth-title').textContent='პროფილი';
-    statsPills.style.display='flex'; signinBar.style.display='none';
+    statsPills.style.display='flex';
   } else {
     inner.textContent='👤'; av.classList.remove('signed-in');
     si.style.display='none';so.style.display='block';
     document.getElementById('auth-title').textContent='შესვლა';
-    statsPills.style.display='none'; signinBar.style.display='flex';
+    statsPills.style.display='none';
   }
 }
 function switchAuthTab(tab){
@@ -1368,7 +1365,7 @@ function switchAuthTab(tab){
 
 // ── MODALS ──
 function openModal(id){document.getElementById(id).classList.add('open');}
-function closeModal(id){document.getElementById(id).classList.remove('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');if(id==='challenge-modal')switchChalTab('custom');}
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
 
 // ── START ──
