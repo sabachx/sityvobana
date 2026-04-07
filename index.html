@@ -1153,6 +1153,15 @@ function showResult(won,attempts){
   const panel = document.getElementById('result-suggest-panel');
   if(panel) panel.style.display = 'none';
 
+  // Submit score to leaderboard (only wins; submitScore guards for login)
+  if(won && typeof window.submitScore === 'function'){
+    if(!isFreePlay){
+      window.submitScore('daily', { guesses: attempts, word: targetWord });
+    } else {
+      const score = Math.max(100, (7 - attempts) * 100);
+      window.submitScore('freeplay', { score, guesses: attempts, word: targetWord });
+    }
+  }
   renderDistribution(won?attempts:0); updateStats(); startCountdown(); openModal('result-modal');
 }
 function shareResult(){
