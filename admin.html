@@ -382,7 +382,7 @@ onAuthStateChanged(auth, async user => {
       await fbSignOut(auth);
       sessionStorage.removeItem('admin_auth');
       const errEl = document.getElementById('login-err');
-      errEl.textContent = 'წვდომა აკრძალულია';
+      errEl.textContent = 'წვდომა აკრძალულია. UID: ' + user.uid;
       errEl.style.display = 'block';
       return;
     }
