@@ -694,7 +694,7 @@ window.isValidWord = async function(word) {
     return snap.exists();
   } catch(e) {
     console.warn('Validation error:', e);
-    return true; // fail open
+    return false; // fail closed — don't accept words on Firebase errors
   }
 };
 
@@ -907,7 +907,7 @@ const L2G = {
 };
 
 // ── STATE ──
-let targetWord="", currentRow=0, currentCol=0, currentGuess=[], gameOver=false, guesses=[], revealInProgress=false, isChallenge=false, wordLength=5, isFreePlay=false;
+let targetWord="", currentRow=0, currentCol=0, currentGuess=[], gameOver=false, guesses=[], revealInProgress=false, isChallenge=false, wordLength=5, isFreePlay=false, isSubmitting=false;
 const state = { streak:0, best:0, played:0, distribution:{1:0,2:0,3:0,4:0,5:0,6:0}, user:null };
 
 // Expose targetWord to window so Firebase validation module can access it
@@ -928,6 +928,11 @@ async function init() {
   updateStats();
   checkTodayPlayed();
   updateModeBar();
+  // Show how-to-play on first ever visit
+  if(!localStorage.getItem('sitqva_how_shown')){
+    localStorage.setItem('sitqva_how_shown','1');
+    setTimeout(()=>openModal('how-modal'), 800);
+  }
 }
 function loadState() {
   try {
@@ -1094,17 +1099,20 @@ function deleteLetter() {
   t.textContent=''; t.classList.remove('filled');
 }
 async function submitGuess() {
+  if(isSubmitting||gameOver||revealInProgress) return;
   if(currentCol<wordLength){shakeRow(currentRow);showToast(`${wordLength} ასო გჭირდება`);return;}
   const guess=currentGuess.join('');
 
-  // Validate against Firebase for daily AND free play (not for challenges)
+  // Validate against Firebase for daily AND free play (not for challenge links)
   if(!isChallenge || isFreePlay) {
     if(!/^[\u10D0-\u10FF]+$/.test(guess)) {
       shakeRow(currentRow); showToast('სიტყვა ვერ მოიძებნა'); return;
     }
     if(guess !== targetWord) {
       if(window._firebaseReady && typeof window.isValidWord === 'function') {
+        isSubmitting = true;
         const valid = await window.isValidWord(guess);
+        isSubmitting = false;
         if(!valid) { shakeRow(currentRow); showToast('სიტყვა ვერ მოიძებნა'); return; }
       } else {
         shakeRow(currentRow); showToast('კავშირი მიმდინარეობს, სცადე ისევ'); return;

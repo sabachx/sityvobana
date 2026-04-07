@@ -468,27 +468,26 @@ const app = initializeApp({
 });
 const db = getDatabase(app);
 
-// ── WORD POOLS ──
-const W5 = [
-  "სახლი","წყალი","ვარდი","ღვინო","ლობია","ყველი","ვაშლი","ლექსი","ცეკვა","გული",
-  "სული","ახალი","ძველი","შავი","თეთრი","წითელ","ყვითე","მწვანე","ლურჯი","ნისლი",
-  "წვიმა","თოვლი","სიცხე","ქარი","კლდე","ქვიშა","ფოთლი","ტოტი","ფესვი",
-  "მუხა","ნაძვი","ირმი","ჩიტი","ლომი","მგელი","დათვი","მელა","კატა","ძაღლი",
-  "ცხენი","თევზი","ყვავი","გველი","ბანკი","ფული","ქუჩა","სკოლა","კარი","სარკე",
-  "სკამი","წიგნი","ქუდი","ბარათ","სიყვა","ოჯახი","ბებია","ცოლი","ქმარი","შვილი",
-  "ბიჭი","კაცი","ქალი","ბევრი","ხუთი","ყავა","ჩაი","წვენი","ლუდი","პური",
-  "მწვადი","ყაბაბ","სევდა","ამაყი","ლამაზ","ძლიერ","სუსტი","სწრაფ","ნელი","ლოცვა",
-  "ჯვარი","ხატი","სიმღე","სურათ","ნიკა","ლაშა","ზაზა","გელა","თამარ","ნინო",
-  "ლელა","თვალი","ყური","კბილი","ხელი","ფეხი","მხარი","ზურგი","მუხლი","გოგო",
-].filter(w=>[...w].length===5);
+// ── WORD POOLS — loaded from Firebase ──
+let fbW5 = [], fbRand = [], fbAllSet = new Set();
+let wordsReadyResolve;
+const wordsReady = new Promise(r => wordsReadyResolve = r);
 
-const WRAND = [
-  ...W5,
-  "კატა","ძაღლ","ირემ","მელა","ბიჭი","გოგო","ქარი","მიწა",
-  "სახლები","ხელები","ფეხები","თვალები","ყურები","კბილები","მეგობარ","ოჯახები",
-  "სიყვარულ","სიხარულ","სიმღერა","სიცხელე","ბედნიერ","ლამაზები",
-  "ბედნიერი","ქვეყანაზ","ოჯახებში","სიყვარულ",
-].filter(w=>[...w].length>=4&&/^[\u10D0-\u10FF]+$/.test(w));
+async function loadWordsDB() {
+  try {
+    const snap = await get(ref(db, 'words'));
+    if (snap.exists()) {
+      const all = Object.values(snap.val())
+        .map(v => v.word)
+        .filter(w => w && /^[\u10D0-\u10FF]+$/.test(w));
+      fbW5   = all.filter(w => [...w].length === 5);
+      fbRand = all.filter(w => [...w].length >= 4);
+      fbAllSet = new Set(all);
+    }
+  } catch(e) { console.warn('Word load failed, blitz pool empty', e); }
+  wordsReadyResolve();
+}
+loadWordsDB();
 
 // ── KEYBOARD ──
 const KB=[
@@ -513,7 +512,7 @@ function uid(){return Math.random().toString(36).slice(2,9);}
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 let toastT;
 function toast(msg,dur=2200){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),dur);}
-function pickWords(mode,n=3){const pool=mode==='five'?W5:WRAND;const sh=[...pool].sort(()=>Math.random()-.5);return sh.slice(0,n);}
+function pickWords(mode,n=3){const pool=mode==='five'?fbW5:fbRand;if(!pool.length){toast('სიტყვების სია ვერ ჩაიტვირთა');return[];}const sh=[...pool].sort(()=>Math.random()-.5);return sh.slice(0,n);}
 
 // ── SETUP ──
 window.selMode=function(m){blitzMode=m;document.getElementById('mc-five').classList.toggle('sel',m==='five');document.getElementById('mc-rand').classList.toggle('sel',m==='random');};
@@ -521,8 +520,10 @@ window.selMode=function(m){blitzMode=m;document.getElementById('mc-five').classL
 window.createRoom=async function(){
   const name=document.getElementById('inp-name').value.trim();
   if(!name){toast('შეიყვანე შენი სახელი');return;}
+  await wordsReady;
   myName=name; isHost=true; myId=uid(); roomId=uid();
   const picked=pickWords(blitzMode);
+  if(!picked.length)return;
   roomRef=ref(db,`blitz/${roomId}`);
   await set(roomRef,{
     mode:blitzMode, words:picked, status:'lobby',
@@ -714,9 +715,8 @@ function submit(){
   if(currentCol<wlen){shakeRow(currentRow);toast(`${wlen} ასო გჭირდება`);return;}
   const guess=currentGuess.join('');
 
-  // Validate: must exist in the word pool
-  const pool = blitzMode==='five' ? new Set(W5) : new Set(WRAND);
-  if(guess !== word && !pool.has(guess)){
+  // Validate: must exist in Firebase word list
+  if(guess !== word && !fbAllSet.has(guess)){
     shakeRow(currentRow);
     toast('სიტყვა ვერ მოიძებნა');
     return;
