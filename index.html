@@ -428,11 +428,15 @@
     
   </div>
   <div class="header-actions">
+    <button class="icon-btn" onclick="openModal('how-modal')" title="როგორ ვითამაშოთ">❓</button>
     <button class="icon-btn hint-btn" id="hint-btn" onclick="useHint()" title="მინიშნება">💡</button>
+    <button class="icon-btn" onclick="openModal('challenge-modal')" title="გამოიწვიე მეგობარი">⚔️</button>
+    <button class="icon-btn" onclick="window.location.href='leaderboard.html'" title="ლიდერბორდი">🏆</button>
+    <button class="icon-btn" onclick="openModal('suggest-modal')" title="დაამატე სიტყვა">✉️</button>
     <div class="user-btn" id="user-avatar" onclick="openModal('auth-modal')" title="პროფილი">
       <span id="user-avatar-inner">👤</span>
     </div>
-    <button class="icon-btn" onclick="openMenu()" title="მენიუ" style="font-size:19px;border-color:rgba(255,255,255,.15);">☰</button>
+    <button class="icon-btn" onclick="openMenu()" title="მოდები / სტატისტიკა" style="font-size:18px;border-color:rgba(255,255,255,.15);">☰</button>
   </div>
 </header>
 
