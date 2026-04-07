@@ -2,7 +2,7 @@
 <html lang="ka">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0f0e17" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -18,7 +18,7 @@
       --border: #3a3a5c;
       --text: #fffffe;
       --text-dim: #a7a9be;
-      --text-muted: #666680;
+      --text-muted: #9090b0;
       --accent: #e8c547;
       --accent2: #ff8906;
       --green: #2dc653;
@@ -33,6 +33,7 @@
       --kb-fs: 16px;
     }
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    :focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
     html,body { height:100%; overflow:hidden; }
     body {
       background:var(--bg); color:var(--text);
@@ -57,13 +58,13 @@
       flex-shrink:0; z-index:10; position:relative;
     }
     .header-logo .ka { font-size:16px; font-weight:700; color:var(--accent); letter-spacing:1px; line-height:1; display:block; }
-    .header-logo .en { font-size:9px; color:var(--text-muted); letter-spacing:3px; text-transform:uppercase; margin-top:2px; display:block; }
+    .header-logo .en { font-size:11px; color:var(--text-muted); letter-spacing:3px; text-transform:uppercase; margin-top:2px; display:block; }
     .header-actions { display:flex; gap:6px; align-items:center; }
     .icon-btn {
       background:var(--surface); border:1px solid var(--border); color:var(--text-dim);
-      width:34px; height:34px; border-radius:50%; cursor:pointer;
+      width:44px; height:44px; border-radius:50%; cursor:pointer;
       display:flex; align-items:center; justify-content:center;
-      font-size:15px; transition:all .2s; flex-shrink:0;
+      font-size:16px; transition:all .2s; flex-shrink:0;
     }
     .icon-btn:hover { background:var(--surface2); color:var(--text); border-color:var(--accent); }
     .hint-btn { border-color:rgba(232,197,71,.4); }
@@ -71,9 +72,10 @@
     .user-btn {
       background:linear-gradient(135deg,var(--accent),var(--accent2));
       border:2px solid transparent; color:var(--bg);
-      width:34px; height:34px; border-radius:50%; cursor:pointer;
+      width:44px; height:44px; border-radius:50%; cursor:pointer;
       display:flex; align-items:center; justify-content:center;
       font-size:14px; font-weight:700; transition:all .2s; flex-shrink:0;
+      font-family:inherit;
     }
     .user-btn:hover { transform:scale(1.06); }
     .user-btn.signed-in { background:linear-gradient(135deg,var(--green),#1da348); }
@@ -104,7 +106,7 @@
     .menu-hdr-title { font-size:13px; font-weight:700; color:var(--accent); letter-spacing:1px; }
     .menu-section { padding:14px 16px; border-bottom:1px solid var(--border); }
     .menu-section-title {
-      font-size:9px; color:var(--text-muted); letter-spacing:2px;
+      font-size:11px; color:var(--text-muted); letter-spacing:2px;
       text-transform:uppercase; margin-bottom:10px;
     }
     .menu-mode-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
@@ -123,7 +125,7 @@
       border-radius:var(--radius); padding:10px 6px; text-align:center;
     }
     .menu-stat-box .v { font-size:22px; font-weight:700; color:var(--accent); display:block; }
-    .menu-stat-box .l { font-size:9px; color:var(--text-muted); display:block; margin-top:2px; }
+    .menu-stat-box .l { font-size:11px; color:var(--text-muted); display:block; margin-top:2px; }
     .menu-link-row {
       display:flex; align-items:center; gap:10px;
       padding:11px 0; color:var(--text-dim); background:none; border:none;
@@ -182,7 +184,7 @@
     .tile.filled  { border-color:var(--text-muted); animation:pop .1s ease; }
     .tile.correct { background:var(--green);  border-color:var(--green);  color:#fff; }
     .tile.present { background:var(--yellow); border-color:var(--yellow); color:var(--bg); }
-    .tile.absent  { background:var(--grey);   border-color:var(--grey);   color:var(--text-dim); }
+    .tile.absent  { background:var(--grey);   border-color:var(--grey);   color:var(--text); }
     .tile.reveal  { animation:flip .45s ease forwards; }
     .tile.shake   { animation:shake .35s ease; }
     .tile.win-bounce { animation:bounce .4s ease; }
@@ -244,10 +246,10 @@
     }
     .modal-overlay.open .modal { transform:translateY(0); }
     .modal-close {
-      position:absolute; top:12px; right:12px;
+      position:absolute; top:8px; right:8px;
       background:var(--surface); border:1px solid var(--border);
-      color:var(--text-dim); width:28px; height:28px;
-      border-radius:50%; cursor:pointer; font-size:14px;
+      color:var(--text-dim); width:44px; height:44px;
+      border-radius:50%; cursor:pointer; font-size:16px;
       display:flex; align-items:center; justify-content:center;
     }
     .modal h2 { font-size:17px; margin-bottom:14px; color:var(--accent); letter-spacing:1px; }
@@ -285,11 +287,11 @@
     .result-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:12px; }
     .result-stat { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:7px 4px; text-align:center; }
     .result-stat .n { font-size:20px; font-weight:700; color:var(--accent); }
-    .result-stat .l { font-size:9px; color:var(--text-muted); margin-top:2px; }
+    .result-stat .l { font-size:11px; color:var(--text-muted); margin-top:2px; }
 
     /* DISTRIBUTION CHART */
     .dist-chart { margin-bottom:14px; }
-    .dist-chart h3 { font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; text-align:center; }
+    .dist-chart h3 { font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; text-align:center; }
     .dist-row { display:flex; align-items:center; gap:7px; margin-bottom:4px; }
     .dist-label { font-size:11px; font-weight:700; color:var(--text-dim); width:12px; text-align:center; flex-shrink:0; }
     .dist-bar-wrap { flex:1; background:var(--surface); border-radius:3px; height:20px; overflow:hidden; }
@@ -297,7 +299,7 @@
       height:100%; min-width:20px;
       background:var(--surface2); border-radius:3px;
       display:flex; align-items:center; justify-content:flex-end;
-      padding-right:6px; font-size:10px; font-weight:700; color:var(--text-dim);
+      padding-right:6px; font-size:11px; font-weight:700; color:var(--text-dim);
       transition:width .6s ease;
     }
     .dist-bar.highlight { background:var(--green); color:#fff; }
@@ -338,7 +340,7 @@
     }
     .how-tile.correct { background:var(--green);  border-color:var(--green);  color:#fff; }
     .how-tile.present { background:var(--yellow); border-color:var(--yellow); color:var(--bg); }
-    .how-tile.absent  { background:var(--grey);   border-color:var(--grey);   color:var(--text-dim); }
+    .how-tile.absent  { background:var(--grey);   border-color:var(--grey);   color:var(--text); }
     .how-desc { font-size:12px; color:var(--text-dim); margin-bottom:3px; }
     .how-desc span { color:var(--text); font-weight:600; }
     .shortcut-grid { display:grid; grid-template-columns:1fr 1fr; gap:3px 12px; margin-top:6px; }
@@ -428,15 +430,15 @@
     
   </div>
   <div class="header-actions">
-    <button class="icon-btn" onclick="openModal('how-modal')" title="როგორ ვითამაშოთ">❓</button>
-    <button class="icon-btn hint-btn" id="hint-btn" onclick="useHint()" title="მინიშნება">💡</button>
-    <button class="icon-btn" onclick="openModal('challenge-modal')" title="გამოიწვიე მეგობარი">⚔️</button>
-    <button class="icon-btn" onclick="window.location.href='leaderboard.html'" title="ლიდერბორდი">🏆</button>
-    <button class="icon-btn" onclick="openModal('suggest-modal')" title="დაამატე სიტყვა">✉️</button>
-    <div class="user-btn" id="user-avatar" onclick="openModal('auth-modal')" title="პროფილი">
-      <span id="user-avatar-inner">👤</span>
-    </div>
-    <button class="icon-btn" onclick="openMenu()" title="მოდები / სტატისტიკა" style="font-size:18px;border-color:rgba(255,255,255,.15);">☰</button>
+    <button class="icon-btn" onclick="openModal('how-modal')" aria-label="როგორ ვითამაშოთ">❓</button>
+    <button class="icon-btn hint-btn" id="hint-btn" onclick="useHint()" aria-label="მინიშნება">💡</button>
+    <button class="icon-btn" onclick="openModal('challenge-modal')" aria-label="გამოიწვიე მეგობარი">⚔️</button>
+    <button class="icon-btn" onclick="window.location.href='leaderboard.html'" aria-label="ლიდერბორდი">🏆</button>
+    <button class="icon-btn" onclick="openModal('suggest-modal')" aria-label="სიტყვის შეთავაზება">✉️</button>
+    <button class="user-btn" id="user-avatar" onclick="openModal('auth-modal')" aria-label="პროფილი">
+      <span id="user-avatar-inner" aria-hidden="true">👤</span>
+    </button>
+    <button class="icon-btn" onclick="openMenu()" aria-label="მენიუ" style="font-size:18px;border-color:rgba(255,255,255,.15);">☰</button>
   </div>
 </header>
 
@@ -492,15 +494,15 @@
 
 <div id="toast"></div>
 
-<div id="board-wrap"><div id="board"></div></div>
+<div id="board-wrap"><div id="board" role="grid" aria-label="სათამაშო დაფა"></div></div>
 
-<div id="keyboard"></div>
+<div id="keyboard" role="group" aria-label="კლავიატურა"></div>
 
 <!-- HOW TO PLAY -->
-<div class="modal-overlay" id="how-modal">
+<div class="modal-overlay" id="how-modal" role="dialog" aria-modal="true" aria-labelledby="how-modal-title">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal('how-modal')">✕</button>
-    <h2>როგორ ვითამაშოთ</h2>
+    <button class="modal-close" onclick="closeModal('how-modal')" aria-label="დახურვა">✕</button>
+    <h2 id="how-modal-title">როგორ ვითამაშოთ</h2>
     <p>გამოიცანი <strong>5-ასოიანი</strong> ქართული სიტყვა 6 მცდელობაში.</p>
     <div class="how-row">
       <div class="how-tile absent">თ</div><div class="how-tile present">ვ</div><div class="how-tile present">ა</div><div class="how-tile correct">ლ</div><div class="how-tile correct">ი</div>
@@ -527,9 +529,9 @@
 </div>
 
 <!-- AUTH -->
-<div class="modal-overlay" id="auth-modal">
+<div class="modal-overlay" id="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal('auth-modal')">✕</button>
+    <button class="modal-close" onclick="closeModal('auth-modal')" aria-label="დახურვა">✕</button>
     <h2 id="auth-title">შესვლა</h2>
 
     <!-- Signed out view -->
@@ -601,7 +603,7 @@
 </div>
 
 <!-- RESULT -->
-<div class="modal-overlay" id="result-modal">
+<div class="modal-overlay" id="result-modal" role="dialog" aria-modal="true" aria-labelledby="result-title">
   <div class="modal">
     <h2 id="result-title">🎉 გაიმარჯვე!</h2>
     <div class="result-sub" id="result-sub"></div>
@@ -652,10 +654,10 @@
 </div>
 
 <!-- CHALLENGE -->
-<div class="modal-overlay" id="challenge-modal">
+<div class="modal-overlay" id="challenge-modal" role="dialog" aria-modal="true" aria-labelledby="challenge-modal-title">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal('challenge-modal')">✕</button>
-    <h2>⚔️ გამოიწვიე მეგობარი</h2>
+    <button class="modal-close" onclick="closeModal('challenge-modal')" aria-label="დახურვა">✕</button>
+    <h2 id="challenge-modal-title">⚔️ გამოიწვიე მეგობარი</h2>
     <div class="chal-tabs">
       <div class="chal-tab active" onclick="switchChalTab('custom')">✍️ შენი სიტყვა</div>
       <div class="chal-tab" onclick="switchChalTab('daily')">📅 დღის სიტყვა</div>
@@ -697,10 +699,10 @@
 </div>
 
 <!-- SUGGEST -->
-<div class="modal-overlay" id="suggest-modal">
+<div class="modal-overlay" id="suggest-modal" role="dialog" aria-modal="true" aria-labelledby="suggest-modal-title">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal('suggest-modal')">✕</button>
-    <h2>✉️ დაამატე სიტყვა</h2>
+    <button class="modal-close" onclick="closeModal('suggest-modal')" aria-label="დახურვა">✕</button>
+    <h2 id="suggest-modal-title">✉️ დაამატე სიტყვა</h2>
     <p>შემოგვთავაზე ქართული სიტყვები! დაწერე და დააჭირე <strong>Space</strong> ან <strong>,</strong> თითოეული სიტყვის შემდეგ.</p>
     <label>სიტყვები (4+ ასო)</label>
     <div class="tag-input-wrap" id="tag-suggest-modal">
@@ -1151,7 +1153,7 @@ function buildBoard() {
     const row=document.createElement('div'); row.className='row'; row.id='row-'+r;
     row.style.gridTemplateColumns=`repeat(${wordLength},var(--tile-size))`;
     for(let c=0;c<wordLength;c++){
-      const t=document.createElement('div'); t.className='tile'; t.id=`tile-${r}-${c}`; row.appendChild(t);
+      const t=document.createElement('div'); t.className='tile'; t.id=`tile-${r}-${c}`; t.setAttribute('role','gridcell'); t.setAttribute('aria-label','ცარიელი'); row.appendChild(t);
     }
     b.appendChild(row);
   }
@@ -1177,8 +1179,8 @@ function buildKeyboard() {
     const rowEl=document.createElement('div'); rowEl.className='kb-row';
     row.forEach(key=>{
       const btn=document.createElement('button');
-      if(key==='ENTER'){ btn.className='key enter-key'; btn.innerHTML=`<svg width="22" height="17" viewBox="0 0 22 17" fill="none"><path d="M19 3.5 L19 9.5 L4.5 9.5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 5 L3.5 9.5 L9 14" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`; btn.id='key-ENTER'; }
-      else if(key==='⌫'){ btn.className='key del-key'; btn.textContent='⌫'; btn.id='key-DEL'; }
+      if(key==='ENTER'){ btn.className='key enter-key'; btn.innerHTML=`<svg width="22" height="17" viewBox="0 0 22 17" fill="none"><path d="M19 3.5 L19 9.5 L4.5 9.5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 5 L3.5 9.5 L9 14" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`; btn.id='key-ENTER'; btn.setAttribute('aria-label','დადასტურება'); }
+      else if(key==='⌫'){ btn.className='key del-key'; btn.textContent='⌫'; btn.id='key-DEL'; btn.setAttribute('aria-label','წაშლა'); }
       else { btn.className='key'; btn.textContent=key; btn.id='key-'+key; }
       btn.onclick=()=>handleKey(key);
       rowEl.appendChild(btn);
@@ -1214,13 +1216,14 @@ document.addEventListener('keydown',e=>{
 function addLetter(l) {
   if(currentCol>=wordLength) return;
   const t=document.getElementById(`tile-${currentRow}-${currentCol}`);
-  t.textContent=l; t.classList.add('filled'); currentGuess.push(l); currentCol++;
+  t.textContent=l; t.classList.add('filled'); t.setAttribute('aria-label',l);
+  currentGuess.push(l); currentCol++;
 }
 function deleteLetter() {
   if(currentCol<=0) return;
   currentCol--; currentGuess.pop();
   const t=document.getElementById(`tile-${currentRow}-${currentCol}`);
-  t.textContent=''; t.classList.remove('filled');
+  t.textContent=''; t.classList.remove('filled'); t.setAttribute('aria-label','ცარიელი');
 }
 async function submitGuess() {
   if(isSubmitting||gameOver||revealInProgress) return;
@@ -1281,7 +1284,11 @@ function revealRow(ri,result,cb) {
     setTimeout(()=>{
       const t=document.getElementById(`tile-${ri}-${i}`);
       t.classList.add('reveal');
-      setTimeout(()=>{t.classList.remove('filled');t.classList.add(cls);updateKeyColor([...guesses[ri]][i],cls);},delay/2);
+      setTimeout(()=>{
+        t.classList.remove('filled'); t.classList.add(cls); updateKeyColor([...guesses[ri]][i],cls);
+        const stateLabel={correct:'სწორი ადგილი',present:'სიტყვაშია',absent:'სიტყვაში არ არის'};
+        t.setAttribute('aria-label',`${[...guesses[ri]][i]} — ${stateLabel[cls]||cls}`);
+      },delay/2);
       if(i===result.length-1) setTimeout(()=>{revealInProgress=false;cb();},delay);
     },i*delay);
   });
@@ -1596,9 +1603,38 @@ function switchAuthTab(tab){
 }
 
 // ── MODALS ──
-function openModal(id){document.getElementById(id).classList.add('open');}
-function closeModal(id){document.getElementById(id).classList.remove('open');if(id==='challenge-modal')switchChalTab('custom');}
-document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+let _lastFocused = null;
+function openModal(id) {
+  _lastFocused = document.activeElement;
+  const overlay = document.getElementById(id);
+  overlay.classList.add('open');
+  requestAnimationFrame(() => {
+    const modal = overlay.querySelector('.modal');
+    if (!modal) return;
+    const first = modal.querySelector('button:not([disabled]),[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
+    if (first) first.focus();
+  });
+  overlay._trapFn = e => {
+    if (e.key === 'Escape') { closeModal(id); return; }
+    if (e.key !== 'Tab') return;
+    const modal = overlay.querySelector('.modal');
+    if (!modal) return;
+    const all = [...modal.querySelectorAll('button:not([disabled]),[href],input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])')].filter(el => el.offsetParent !== null);
+    if (!all.length) return;
+    const first = all[0], last = all[all.length-1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  };
+  document.addEventListener('keydown', overlay._trapFn);
+}
+function closeModal(id) {
+  const overlay = document.getElementById(id);
+  overlay.classList.remove('open');
+  if (overlay._trapFn) { document.removeEventListener('keydown', overlay._trapFn); overlay._trapFn = null; }
+  if (id === 'challenge-modal') switchChalTab('custom');
+  if (_lastFocused && typeof _lastFocused.focus === 'function') { _lastFocused.focus(); _lastFocused = null; }
+}
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) closeModal(o.id); }));
 
 // ── TAG CHIP INPUT ──
 const _tagChips = {};
