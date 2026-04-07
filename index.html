@@ -78,13 +78,62 @@
     .user-btn:hover { transform:scale(1.06); }
     .user-btn.signed-in { background:linear-gradient(135deg,var(--green),#1da348); }
 
-    /* STREAK BAR */
-    #streak-bar {
-      width:100%; max-width:500px;
-      padding:5px 12px;
-      display:flex; gap:10px; justify-content:center;
-      flex-shrink:0; z-index:10;
+    /* STREAK BAR + MODE BAR — hidden, kept in DOM for JS refs */
+    #streak-bar, #mode-bar { display:none !important; }
+
+    /* SIDE MENU */
+    #menu-overlay {
+      position:fixed; inset:0; z-index:100;
+      background:rgba(0,0,0,.55); backdrop-filter:blur(3px);
+      opacity:0; pointer-events:none; transition:opacity .22s;
     }
+    #menu-overlay.open { opacity:1; pointer-events:auto; }
+    #side-menu {
+      position:fixed; top:0; right:0; bottom:0;
+      width:min(290px,88vw); background:var(--bg2);
+      border-left:1px solid var(--border); z-index:101;
+      transform:translateX(100%);
+      transition:transform .25s cubic-bezier(.4,0,.2,1);
+      display:flex; flex-direction:column; overflow-y:auto;
+    }
+    #side-menu.open { transform:translateX(0); }
+    .menu-hdr {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:13px 16px; border-bottom:1px solid var(--border); flex-shrink:0;
+    }
+    .menu-hdr-title { font-size:13px; font-weight:700; color:var(--accent); letter-spacing:1px; }
+    .menu-section { padding:14px 16px; border-bottom:1px solid var(--border); }
+    .menu-section-title {
+      font-size:9px; color:var(--text-muted); letter-spacing:2px;
+      text-transform:uppercase; margin-bottom:10px;
+    }
+    .menu-mode-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+    .menu-mode-pill {
+      background:var(--surface); border:1.5px solid var(--border);
+      color:var(--text-dim); border-radius:var(--radius);
+      padding:9px 8px; font-size:12px; font-weight:600;
+      cursor:pointer; transition:all .18s; text-align:left;
+      display:flex; align-items:center; gap:5px; font-family:inherit;
+    }
+    .menu-mode-pill:hover { border-color:var(--accent); color:var(--accent); background:rgba(232,197,71,.07); }
+    .menu-mode-pill.active { border-color:var(--accent); color:var(--accent); background:rgba(232,197,71,.12); }
+    .menu-stats-row { display:flex; gap:6px; }
+    .menu-stat-box {
+      flex:1; background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); padding:10px 6px; text-align:center;
+    }
+    .menu-stat-box .v { font-size:22px; font-weight:700; color:var(--accent); display:block; }
+    .menu-stat-box .l { font-size:9px; color:var(--text-muted); display:block; margin-top:2px; }
+    .menu-link-row {
+      display:flex; align-items:center; gap:10px;
+      padding:11px 0; color:var(--text-dim); background:none; border:none;
+      cursor:pointer; font-size:13px; font-weight:500; width:100%;
+      transition:color .18s; font-family:inherit;
+      border-bottom:1px solid rgba(255,255,255,.04);
+    }
+    .menu-link-row:last-child { border-bottom:none; }
+    .menu-link-row:hover { color:var(--text); }
+    .menu-link-row .ico { font-size:18px; width:26px; text-align:center; flex-shrink:0; }
     .stat-pill {
       display:flex; align-items:center; gap:5px;
       background:var(--surface); border:1px solid var(--border);
@@ -379,14 +428,11 @@
     
   </div>
   <div class="header-actions">
-    <button class="icon-btn" onclick="openModal('how-modal')" title="როგორ ვითამაშოთ">❓</button>
     <button class="icon-btn hint-btn" id="hint-btn" onclick="useHint()" title="მინიშნება">💡</button>
-    <button class="icon-btn" onclick="openModal('challenge-modal')" title="გამოიწვიე მეგობარი">⚔️</button>
-    <button class="icon-btn" onclick="window.location.href='leaderboard.html'" title="ლიდერბორდი">🏆</button>
-    <button class="icon-btn" onclick="openModal('suggest-modal')" title="დაამატე სიტყვა">✉️</button>
     <div class="user-btn" id="user-avatar" onclick="openModal('auth-modal')" title="პროფილი">
       <span id="user-avatar-inner">👤</span>
     </div>
+    <button class="icon-btn" onclick="openMenu()" title="მენიუ" style="font-size:19px;border-color:rgba(255,255,255,.15);">☰</button>
   </div>
 </header>
 
@@ -403,6 +449,41 @@
   <button class="mode-pill" id="pill-free" onclick="goFree()">🎮 თავისუფალი</button>
   <button class="mode-pill" onclick="openModal('challenge-modal')">⚔️ გამოწვევა</button>
   <button class="mode-pill" onclick="openModal('challenge-modal');switchChalTab('blitz')">⚡ ბლიცი</button>
+</div>
+
+<!-- SIDE MENU -->
+<div id="menu-overlay" onclick="closeMenu()"></div>
+<div id="side-menu">
+  <div class="menu-hdr">
+    <span class="menu-hdr-title">მენიუ</span>
+    <button class="icon-btn" onclick="closeMenu()" style="font-size:15px;">✕</button>
+  </div>
+
+  <div class="menu-section">
+    <div class="menu-section-title">თამაშის რეჟიმი</div>
+    <div class="menu-mode-grid">
+      <button class="menu-mode-pill" id="mpill-daily" onclick="goDaily();closeMenu()">📅 დღის სიტყვა</button>
+      <button class="menu-mode-pill" id="mpill-free" onclick="goFree();closeMenu()">🎮 თავისუფალი</button>
+      <button class="menu-mode-pill" onclick="openModal('challenge-modal');closeMenu()">⚔️ გამოწვევა</button>
+      <button class="menu-mode-pill" onclick="openModal('challenge-modal');switchChalTab('blitz');closeMenu()">⚡ ბლიცი</button>
+    </div>
+  </div>
+
+  <div class="menu-section" id="menu-stats-section" style="display:none">
+    <div class="menu-section-title">სტატისტიკა</div>
+    <div class="menu-stats-row">
+      <div class="menu-stat-box"><span class="v" id="ms-streak">0</span><span class="l">🔥 სტრიქი</span></div>
+      <div class="menu-stat-box"><span class="v" id="ms-best">0</span><span class="l">🏆 საუკეთესო</span></div>
+      <div class="menu-stat-box"><span class="v" id="ms-played">0</span><span class="l">🎯 ნათამაშები</span></div>
+    </div>
+  </div>
+
+  <div class="menu-section">
+    <button class="menu-link-row" onclick="window.location.href='leaderboard.html'"><span class="ico">🏆</span>ლიდერბორდი</button>
+    <button class="menu-link-row" onclick="openModal('challenge-modal');closeMenu()"><span class="ico">⚔️</span>გამოიწვიე მეგობარი</button>
+    <button class="menu-link-row" onclick="openModal('suggest-modal');closeMenu()"><span class="ico">✉️</span>სიტყვის შეთავაზება</button>
+    <button class="menu-link-row" onclick="openModal('how-modal');closeMenu()"><span class="ico">❓</span>როგორ ვითამაშოთ</button>
+  </div>
 </div>
 
 <div id="toast"></div>
@@ -1221,12 +1302,12 @@ function updateStats(){
     const s=document.getElementById('stat-'+k); if(s) s.textContent=state[k];
     const r=document.getElementById('rs-'+k);   if(r) r.textContent=state[k];
     const p=document.getElementById('ps-'+k);   if(p) p.textContent=state[k];
+    const m=document.getElementById('ms-'+k);   if(m) m.textContent=state[k];
   });
-  // Only show stats pills if logged in
   const statsPills=document.getElementById('stats-pills');
-  if(statsPills){
-    statsPills.style.display=state.user?'flex':'none';
-  }
+  if(statsPills) statsPills.style.display=state.user?'flex':'none';
+  const menuStats=document.getElementById('menu-stats-section');
+  if(menuStats) menuStats.style.display=state.user?'block':'none';
 }
 
 // ── DISTRIBUTION CHART ──
@@ -1354,17 +1435,14 @@ function goFree() {
 }
 
 function updateModeBar() {
-  // Update mode bar label/btn if they exist
-  const label = document.getElementById('mode-label');
-  const btn   = document.getElementById('mode-switch-btn');
-  if(label) label.textContent = isFreePlay ? '🎮 თავისუფალი თამაში' : '📅 დღის სიტყვა';
-  if(btn)   btn.textContent   = isFreePlay ? '📅 დღის სიტყვა' : '🎮 თავისუფალი თამაში';
-  // Update pill active state
+  // Update hidden mode pills (still used for active state logic)
   document.querySelectorAll('.mode-pill').forEach(p => p.classList.remove('active'));
-  const activePillId = isFreePlay ? 'pill-free' : 'pill-daily';
-  const activePill = document.getElementById(activePillId);
+  const activePill = document.getElementById(isFreePlay ? 'pill-free' : 'pill-daily');
   if(activePill) activePill.classList.add('active');
-  // Refresh stats display
+  // Update menu mode pills
+  document.querySelectorAll('.menu-mode-pill').forEach(p => p.classList.remove('active'));
+  const activeMenuPill = document.getElementById(isFreePlay ? 'mpill-free' : 'mpill-daily');
+  if(activeMenuPill) activeMenuPill.classList.add('active');
   updateStats();
 }
 
@@ -1489,6 +1567,7 @@ async function setUser(u){
 function updateUserUI(){
   const av=document.getElementById('user-avatar'),inner=document.getElementById('user-avatar-inner'),si=document.getElementById('auth-signed-in'),so=document.getElementById('auth-signed-out');
   const statsPills=document.getElementById('stats-pills');
+  const menuStats=document.getElementById('menu-stats-section');
   if(state.user){
     inner.textContent=state.user.initial||'?'; av.classList.add('signed-in');
     document.getElementById('profile-initial').textContent=state.user.initial||'?';
@@ -1497,11 +1576,13 @@ function updateUserUI(){
     si.style.display='block';so.style.display='none';
     document.getElementById('auth-title').textContent='პროფილი';
     statsPills.style.display='flex';
+    if(menuStats) menuStats.style.display='block';
   } else {
     inner.textContent='👤'; av.classList.remove('signed-in');
     si.style.display='none';so.style.display='block';
     document.getElementById('auth-title').textContent='შესვლა';
     statsPills.style.display='none';
+    if(menuStats) menuStats.style.display='none';
   }
 }
 function switchAuthTab(tab){
@@ -1525,6 +1606,7 @@ function initTagInput(wrapId) {
   if (!wrap) return;
   const inp = wrap.querySelector('.tag-text-input');
   wrap.addEventListener('click', () => inp.focus());
+  // keydown: desktop space/comma/enter/backspace
   inp.addEventListener('keydown', e => {
     if (e.key === ',' || e.key === ' ') {
       e.preventDefault();
@@ -1537,23 +1619,25 @@ function initTagInput(wrapId) {
       if (arr.length) _removeTag(wrapId, arr[arr.length - 1]);
     }
   });
+  // input: mobile keyboards insert space/comma directly — catch them here
   inp.addEventListener('input', () => {
-    // Strip anything that isn't Georgian
-    const clean = inp.value.replace(/[^\u10D0-\u10FF]/g, '');
-    if (clean !== inp.value) inp.value = clean;
+    const val = inp.value;
+    if (/[,\s]/.test(val)) {
+      inp.value = '';
+      val.split(/[,\s]+/).forEach(part => { const w = part.trim(); if (w) _commitTag(wrapId, w); });
+    }
   });
 }
 
-function _commitTag(wrapId) {
+function _commitTag(wrapId, word) {
   const wrap = document.getElementById(wrapId);
   const inp = wrap.querySelector('.tag-text-input');
-  const word = inp.value.trim();
-  inp.value = '';
+  if (word === undefined) { word = inp.value.trim(); inp.value = ''; }
   if (!word) return;
+  if (!/^[\u10D0-\u10FF]+$/.test(word)) { showToast('მხოლოდ ქართული ასოები'); return; }
   if ([...word].length < 4) { showToast('სიტყვა ძალიან მოკლეა (მინ. 4 ასო)'); return; }
-  if (_tagChips[wrapId].has(word)) return; // duplicate
+  if (_tagChips[wrapId].has(word)) return;
   _tagChips[wrapId].add(word);
-  // Render chip
   const chip = document.createElement('span');
   chip.className = 'tag-chip';
   chip.dataset.word = word;
@@ -1585,6 +1669,16 @@ async function submitTagSuggestion(wrapId) {
   await window.submitMultipleSuggestions(words);
   _clearTagInput(wrapId);
   showToast('მადლობა სიტყვის გამოგზავნისთვის 🙏');
+}
+
+// ── SIDE MENU ──
+function openMenu() {
+  document.getElementById('side-menu').classList.add('open');
+  document.getElementById('menu-overlay').classList.add('open');
+}
+function closeMenu() {
+  document.getElementById('side-menu').classList.remove('open');
+  document.getElementById('menu-overlay').classList.remove('open');
 }
 
 // ── START ──
