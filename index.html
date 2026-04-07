@@ -595,7 +595,7 @@
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getDatabase, ref, push, get, query, orderByChild, equalTo }
+import { getDatabase, ref, push, get, set, query, orderByChild, equalTo }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 import {
   getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider,
@@ -696,6 +696,38 @@ window.isValidWord = async function(word) {
     console.warn('Validation error:', e);
     return true; // fail open
   }
+};
+
+// ── USER DATA SYNC ──
+window._saveUserStats = async function(uid, stats) {
+  try { await set(ref(_db, `users/${uid}/stats`), stats); } catch(e) {}
+};
+window._saveUserDaily = async function(uid, key, data) {
+  try { await set(ref(_db, `users/${uid}/daily/${key}`), data); } catch(e) {}
+};
+window._loadUserData = async function(uid) {
+  try { const snap = await get(ref(_db, `users/${uid}`)); return snap.val(); } catch(e) { return null; }
+};
+
+// ── SECURE CHALLENGES ──
+window._createChallenge = async function(word, from, mode) {
+  const id = Math.random().toString(36).slice(2,10) + Math.random().toString(36).slice(2,10);
+  await set(ref(_db, `challenges/${id}`), { word, from, mode, createdAt: Date.now() });
+  return id;
+};
+window._fetchChallenge = async function(id) {
+  try {
+    const snap = await get(ref(_db, `challenges/${id}`));
+    return snap.exists() ? snap.val() : null;
+  } catch(e) { return null; }
+};
+
+window._recordDailyWord = async function(date, word) {
+  try {
+    const r = ref(_db, `word_history/${date}`);
+    const snap = await get(r);
+    if (!snap.exists()) await set(r, word); // write only if not already recorded
+  } catch(e) {}
 };
 
 // Signal that Firebase module is ready
@@ -800,6 +832,7 @@ async function loadWordsFromAPI() {
     targetWord    = daily.word;
     wordLength    = [...daily.word].length;
     todayIsSpecial = !!daily.special;
+    if (window._recordDailyWord) window._recordDailyWord(new Date().toISOString().slice(0,10), daily.word);
 
     // Show special day badge if applicable
     if (todayIsSpecial && daily.special_label) {
@@ -888,7 +921,7 @@ async function init() {
   document.getElementById('board-wrap').style.opacity = '0.4';
   await loadWordsFromAPI();
   document.getElementById('board-wrap').style.opacity = '1';
-  checkChallengeMode(); // may override targetWord for challenge links
+  await checkChallengeMode(); // may override targetWord for challenge links
   applyWordLength();
   buildBoard();
   buildKeyboard();
@@ -905,24 +938,54 @@ function loadState() {
   } catch(e){}
   updateUserUI();
 }
-function saveState() { localStorage.setItem('sitqva_state',JSON.stringify(state)); }
+function saveState() {
+  localStorage.setItem('sitqva_state', JSON.stringify(state));
+  if (state.user && window._saveUserStats) {
+    window._saveUserStats(state.user.uid, {
+      streak: state.streak, best: state.best,
+      played: state.played, distribution: state.distribution
+    });
+  }
+}
 
-function checkChallengeMode() {
+async function checkChallengeMode() {
   const p = new URLSearchParams(location.search);
-  const cw = p.get('c'), from = p.get('from')||'Someone';
+  const from = decodeURIComponent(p.get('from')||'მეგობარი');
+
+  // New secure challenge: fetch word from Firebase by ID
+  const cid = p.get('cid');
+  if (cid && window._fetchChallenge) {
+    const data = await window._fetchChallenge(cid);
+    if (data && data.word && /^[\u10D0-\u10FF]+$/.test(data.word)) {
+      const len = [...data.word].length;
+      if (len>=4 && len<=10) {
+        isChallenge=true; targetWord=data.word; wordLength=len;
+        document.getElementById('challenge-from').textContent=data.from||from;
+        document.getElementById('challenge-banner').classList.add('visible');
+        applyWordLength();
+        return;
+      }
+    }
+    showToast('გამოწვევის ლინკი არასწორია');
+    setDailyWord(); return;
+  }
+
+  // Legacy fallback: old ?c= links still work
+  const cw = p.get('c');
   if (cw) {
     try {
       const decoded = decodeURIComponent(atob(cw));
       const len = [...decoded].length;
       if (len>=4 && len<=10 && /^[\u10D0-\u10FF]+$/.test(decoded)) {
         isChallenge=true; targetWord=decoded; wordLength=len;
-        document.getElementById('challenge-from').textContent=decodeURIComponent(from);
+        document.getElementById('challenge-from').textContent=from;
         document.getElementById('challenge-banner').classList.add('visible');
         applyWordLength();
         return;
       }
     } catch(e){}
   }
+
   setDailyWord();
 }
 function applyWordLength() {
@@ -944,7 +1007,11 @@ function checkTodayPlayed() {
 }
 function saveTodayProgress() {
   if (isChallenge) return;
-  localStorage.setItem('sitqva_today_'+todayKey(), JSON.stringify({guesses,gameOver,currentRow}));
+  const data = {guesses, gameOver, currentRow};
+  localStorage.setItem('sitqva_today_'+todayKey(), JSON.stringify(data));
+  if (state.user && window._saveUserDaily) {
+    window._saveUserDaily(state.user.uid, todayKey(), data);
+  }
 }
 
 // ── BOARD ──
@@ -1279,22 +1346,21 @@ function switchChalTab(type){
   document.getElementById('cpanel-daily').classList.toggle('active',type==='daily');
   document.getElementById('cpanel-blitz').classList.toggle('active',type==='blitz');
 }
-function genChallenge(type){
-  // Get name from account, saved preference, or prompt
+async function genChallenge(type){
   let fromName;
   if(state.user) {
-    fromName = encodeURIComponent(state.user.name);
+    fromName = state.user.name;
   } else {
     const saved = localStorage.getItem('sitqva_challenger_name');
     if(saved) {
-      fromName = encodeURIComponent(saved);
+      fromName = saved;
     } else {
       const entered = prompt('შენი სახელი:');
       if(entered && entered.trim()) {
         localStorage.setItem('sitqva_challenger_name', entered.trim());
-        fromName = encodeURIComponent(entered.trim());
+        fromName = entered.trim();
       } else {
-        fromName = encodeURIComponent('მეგობარი');
+        fromName = 'მეგობარი';
       }
     }
   }
@@ -1311,7 +1377,9 @@ function genChallenge(type){
     linkEl=document.getElementById('chal-link-daily');
     copyBtn=document.getElementById('copy-daily'); shareBtn=document.getElementById('share-daily');
   }
-  const url=`${location.origin}${location.pathname}?c=${btoa(encodeURIComponent(word))}&mode=${type}&from=${fromName}`;
+  showToast('ლინკი იქმნება...');
+  const id = await window._createChallenge(word, fromName, type);
+  const url = `${location.origin}${location.pathname}?cid=${id}&from=${encodeURIComponent(fromName)}`;
   linkEl.textContent=url; linkEl.classList.add('visible');
   copyBtn.style.display='flex'; shareBtn.style.display='flex';
 }
@@ -1338,14 +1406,37 @@ function useHint(){
 }
 
 // ── AUTH ──
-function setUser(u){
+async function setUser(u){
   state.user=u;
-  // Don't save auth state to localStorage — Firebase handles persistence
   updateUserUI();
   updateStats();
   if(u) {
-    // Save display name for challenges/leaderboard
     localStorage.setItem('sitqva_challenger_name', u.name);
+    if(window._loadUserData) {
+      const data = await window._loadUserData(u.uid);
+      if(data) {
+        // Restore stats from Firebase (authoritative for logged-in users)
+        if(data.stats) {
+          state.streak = data.stats.streak||0;
+          state.best   = data.stats.best||0;
+          state.played = data.stats.played||0;
+          state.distribution = data.stats.distribution||{1:0,2:0,3:0,4:0,5:0,6:0};
+          localStorage.setItem('sitqva_state', JSON.stringify(state));
+          updateStats();
+        }
+        // Restore today's daily progress from Firebase
+        if(!isChallenge && !isFreePlay && data.daily) {
+          const todayData = data.daily[todayKey()];
+          if(todayData && todayData.guesses && todayData.guesses.length > 0) {
+            guesses = todayData.guesses;
+            gameOver = todayData.gameOver||false;
+            currentRow = todayData.currentRow||guesses.length;
+            buildBoard();
+            restoreBoard(todayData);
+          }
+        }
+      }
+    }
   }
 }
 function updateUserUI(){

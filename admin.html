@@ -176,6 +176,15 @@
     }
     .search-input:focus{border-color:var(--accent);}
 
+    /* LEADERBOARD / HISTORY TABLES */
+    .data-table{width:100%;border-collapse:collapse;}
+    .data-table th{text-align:left;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;padding:8px 12px;border-bottom:1px solid var(--border);}
+    .data-table td{padding:9px 12px;font-size:13px;border-bottom:1px solid rgba(58,58,92,.4);vertical-align:middle;}
+    .data-table tr:hover td{background:rgba(255,255,255,.02);}
+    .lb-mode-tabs{display:flex;gap:6px;margin-bottom:16px;}
+    .lb-mode-btn{padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--muted);transition:all .2s;}
+    .lb-mode-btn.active{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+
     /* EMPTY STATE */
     .empty{text-align:center;padding:40px;color:var(--muted);font-size:13px;}
 
@@ -237,6 +246,8 @@
   <div class="tabs">
     <div class="tab active" onclick="switchTab('suggestions')">💡 შეთავაზებები <span id="pending-badge"></span></div>
     <div class="tab" onclick="switchTab('words')">📚 სიტყვების სია</div>
+    <div class="tab" onclick="switchTab('history')">📅 სიტყვის ისტორია</div>
+    <div class="tab" onclick="switchTab('leaderboard')">🏆 ლიდერბორდი</div>
     <div class="tab" onclick="switchTab('stats')">📊 სტატისტიკა</div>
   </div>
 
@@ -300,6 +311,25 @@
         </button>
       </div>
       <div id="word-list"><div class="loading"><span class="spin">⏳</span> იტვირთება...</div></div>
+    </div>
+
+    <!-- HISTORY TAB -->
+    <div class="tab-panel" id="tab-history">
+      <div class="add-form">
+        <div class="field"><label>თარიღი</label><input type="date" id="hist-date"/></div>
+        <div class="field"><label>სიტყვა</label><input type="text" id="hist-word" placeholder="ქართული სიტყვა" maxlength="10"/></div>
+        <button class="add-btn" onclick="addHistoryEntry()">+ დამატება / განახლება</button>
+      </div>
+      <div id="history-list"><div class="loading"><span class="spin">⏳</span> იტვირთება...</div></div>
+    </div>
+
+    <!-- LEADERBOARD TAB -->
+    <div class="tab-panel" id="tab-leaderboard">
+      <div class="lb-mode-tabs">
+        <button class="lb-mode-btn active" onclick="setLbMode('daily',this)">📅 დღის სიტყვა</button>
+        <button class="lb-mode-btn" onclick="setLbMode('freeplay',this)">🎮 თავისუფალი</button>
+      </div>
+      <div id="lb-list"><div class="loading"><span class="spin">⏳</span> იტვირთება...</div></div>
     </div>
 
     <!-- STATS TAB -->
@@ -761,9 +791,95 @@ function updateStats() {
 // ── TABS ──
 window.switchTab = function(name) {
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',
-    ['suggestions','words','stats'][i]===name));
+    ['suggestions','words','history','leaderboard','stats'][i]===name));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
+  if(name==='history') loadHistory();
+  if(name==='leaderboard') loadLeaderboard();
+};
+
+// ── WORD HISTORY ──
+let allHistory = {};
+async function loadHistory() {
+  document.getElementById('history-list').innerHTML = '<div class="loading"><span class="spin">⏳</span> იტვირთება...</div>';
+  const snap = await get(ref(db, 'word_history'));
+  allHistory = snap.exists() ? snap.val() : {};
+  renderHistory();
+}
+function renderHistory() {
+  const entries = Object.entries(allHistory).sort((a,b)=>b[0].localeCompare(a[0]));
+  const container = document.getElementById('history-list');
+  if(!entries.length){ container.innerHTML='<div class="empty">ისტორია ცარიელია</div>'; return; }
+  container.innerHTML = `<table class="data-table">
+    <thead><tr><th>თარიღი</th><th>სიტყვა</th><th></th></tr></thead>
+    <tbody>${entries.map(([date,word])=>`
+      <tr>
+        <td style="color:var(--dim)">${date}</td>
+        <td class="word-ka">${word}</td>
+        <td><button class="del-word-btn" onclick="deleteHistoryEntry('${date}')" title="წაშლა">🗑</button></td>
+      </tr>`).join('')}
+    </tbody></table>`;
+}
+window.addHistoryEntry = async function() {
+  const date = document.getElementById('hist-date').value;
+  const word = document.getElementById('hist-word').value.trim();
+  if(!date){ toast('აირჩიე თარიღი'); return; }
+  if(!word || !/^[\u10D0-\u10FF]+$/.test(word)){ toast('შეიყვანე ქართული სიტყვა'); return; }
+  await set(ref(db, `word_history/${date}`), word);
+  allHistory[date] = word;
+  document.getElementById('hist-date').value='';
+  document.getElementById('hist-word').value='';
+  renderHistory();
+  toast(`${date} — "${word}" შენახულია`);
+};
+window.deleteHistoryEntry = async function(date) {
+  if(!confirm(`წაიშალოს ${date}-ის ჩანაწერი?`)) return;
+  await remove(ref(db, `word_history/${date}`));
+  delete allHistory[date];
+  renderHistory();
+  toast('წაიშალა');
+};
+
+// ── LEADERBOARD MANAGEMENT ──
+let lbMode = 'daily';
+let allLb = {};
+async function loadLeaderboard() {
+  document.getElementById('lb-list').innerHTML = '<div class="loading"><span class="spin">⏳</span> იტვირთება...</div>';
+  const snap = await get(ref(db, `leaderboard/${lbMode}`));
+  allLb = snap.exists() ? snap.val() : {};
+  renderLeaderboard();
+}
+function renderLeaderboard() {
+  const container = document.getElementById('lb-list');
+  const entries = Object.entries(allLb).sort((a,b)=>{
+    if(lbMode==='daily') return (a[1].guesses||99)-(b[1].guesses||99);
+    return (b[1].score||0)-(a[1].score||0);
+  });
+  if(!entries.length){ container.innerHTML='<div class="empty">ჩანაწერები არ არის</div>'; return; }
+  container.innerHTML = `<table class="data-table">
+    <thead><tr><th>#</th><th>მოთამაშე</th><th>თარიღი</th><th>${lbMode==='daily'?'მცდელობა':'ქულა'}</th><th></th></tr></thead>
+    <tbody>${entries.map(([id,e],i)=>`
+      <tr>
+        <td style="color:var(--muted)">${i+1}</td>
+        <td style="font-weight:600">${e.name||'ანონიმი'}</td>
+        <td style="color:var(--muted);font-size:11px">${e.date||'—'}</td>
+        <td style="color:var(--accent);font-weight:700">${lbMode==='daily'?(e.guesses||'?'):(e.score||0)}</td>
+        <td><button class="del-word-btn" onclick="deleteLbEntry('${id}')" title="წაშლა">🗑</button></td>
+      </tr>`).join('')}
+    </tbody></table>`;
+}
+window.setLbMode = function(mode, el) {
+  lbMode = mode;
+  document.querySelectorAll('.lb-mode-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  loadLeaderboard();
+};
+window.deleteLbEntry = async function(id) {
+  if(!confirm('წაიშალოს ეს ჩანაწერი?')) return;
+  await remove(ref(db, `leaderboard/${lbMode}/${id}`));
+  delete allLb[id];
+  renderLeaderboard();
+  toast('ჩანაწერი წაიშალა');
 };
 
 // ── UTILS ──
