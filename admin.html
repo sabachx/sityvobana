@@ -367,7 +367,7 @@ window.doLogin = async function() {
   errEl.style.display = 'none';
   try {
     const cred = await signInWithEmailAndPassword(auth, email, pass);
-    const snap = await get(ref(db, 'admins/' + cred.user.uid));
+    const snap = await get(ref(db, 'admin/' + cred.user.uid));
     if (!snap.exists()) {
       await fbSignOut(auth);
       errEl.textContent = 'წვდომა აკრძალულია. UID: ' + cred.user.uid;
@@ -391,7 +391,7 @@ window.doLogout = async function() {
 // Handle page reloads — user already authenticated
 onAuthStateChanged(auth, async user => {
   if (user && sessionStorage.getItem('admin_auth')) {
-    const snap = await get(ref(db, 'admins/' + user.uid));
+    const snap = await get(ref(db, 'admin/' + user.uid));
     if (!snap.exists()) {
       await fbSignOut(auth);
       sessionStorage.removeItem('admin_auth');
