@@ -527,7 +527,7 @@ window.createRoom=async function(){
   await set(roomRef,{
     mode:blitzMode, words:picked, status:'lobby',
     hostId:myId, createdAt:Date.now(),
-    players:{[myId]:{name:myName,'სტუმარი → 'მასპინძელი'
+    players:{[myId]:{name:myName,isHost:true,joinedAt:Date.now(),solved:0,score:null,done:false}}
   });
   words=picked;
   enterLobby();
