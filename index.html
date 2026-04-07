@@ -307,6 +307,36 @@
     .suggest-wrap { margin-top:6px; padding-top:12px; border-top:1px solid var(--border); }
     .suggest-wrap h3 { font-size:10px; color:var(--text-muted); margin-bottom:7px; letter-spacing:1px; text-transform:uppercase; }
 
+    /* TAG CHIP INPUT */
+    .tag-input-wrap {
+      display:flex; flex-wrap:wrap; gap:5px; align-items:center;
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); padding:7px 10px;
+      cursor:text; min-height:42px; transition:border-color .2s;
+    }
+    .tag-input-wrap:focus-within { border-color:var(--accent); }
+    .tag-chip {
+      display:inline-flex; align-items:center; gap:4px;
+      background:rgba(232,197,71,.15); border:1px solid rgba(232,197,71,.35);
+      color:var(--accent); border-radius:20px;
+      padding:3px 6px 3px 10px; font-size:13px; font-weight:600;
+      letter-spacing:.5px; white-space:nowrap; animation:chipIn .15s ease;
+    }
+    @keyframes chipIn { from{transform:scale(.7);opacity:0} to{transform:scale(1);opacity:1} }
+    .tag-chip-remove {
+      background:none; border:none; color:var(--accent); cursor:pointer;
+      font-size:13px; line-height:1; padding:0 2px; opacity:.6;
+      display:flex; align-items:center;
+    }
+    .tag-chip-remove:hover { opacity:1; }
+    .tag-text-input {
+      background:none; border:none; outline:none;
+      color:var(--text); font-size:14px;
+      flex:1; min-width:80px; padding:2px 0;
+      font-family:inherit;
+    }
+    .tag-text-input::placeholder { color:var(--text-muted); }
+
     /* MODE PILLS */
     .mode-pill {
       padding: 5px 12px;
@@ -509,8 +539,10 @@
       <button class="btn" onclick="openModal('challenge-modal');closeModal('result-modal')">⚔️ გამოიწვიე მეგობარი</button>
       <div class="suggest-wrap">
         <h3>💡 დაამატე სიტყვა</h3>
-        <input type="text" id="suggest-from-result" placeholder="სიტყვა (5 ასო)" maxlength="10" />
-        <button class="btn btn-primary" onclick="submitSuggestion('suggest-from-result')">გაგზავნა</button>
+        <div class="tag-input-wrap" id="tag-suggest-result">
+          <input class="tag-text-input" placeholder="სიტყვა, სიტყვა..." type="text" />
+        </div>
+        <button class="btn btn-primary" onclick="submitTagSuggestion('tag-suggest-result')" style="margin-top:6px">გაგზავნა</button>
       </div>
     </div>
 
@@ -523,9 +555,10 @@
       <!-- გამოგვიგზავნე სიტყვა -->
       <button class="btn" id="suggest-toggle-btn" onclick="toggleResultSuggest()">✉️ გამოგვიგზავნე სიტყვა</button>
       <div id="result-suggest-panel" style="display:none;margin-top:6px;">
-        <input type="text" id="suggest-freeplay-word" placeholder="5-ასოიანი სიტყვა" maxlength="10"
-          style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 13px;border-radius:var(--radius);font-size:14px;margin-bottom:6px;outline:none;"/>
-        <button class="btn btn-primary" onclick="submitSuggestion('suggest-freeplay-word')">გაგზავნა</button>
+        <div class="tag-input-wrap" id="tag-suggest-freeplay">
+          <input class="tag-text-input" placeholder="სიტყვა, სიტყვა..." type="text" />
+        </div>
+        <button class="btn btn-primary" onclick="submitTagSuggestion('tag-suggest-freeplay')" style="margin-top:6px">გაგზავნა</button>
       </div>
 
       <button class="btn" onclick="shareResult()" style="background:var(--accent);color:var(--bg);border-color:var(--accent);margin-top:6px;">📤 გააზიარე</button>
@@ -583,13 +616,13 @@
   <div class="modal">
     <button class="modal-close" onclick="closeModal('suggest-modal')">✕</button>
     <h2>✉️ დაამატე სიტყვა</h2>
-    <p>გვეხმარე სიტყვების სიის გაზრდაში! შემოგვთავაზე 5-ასოიანი ქართული სიტყვა.</p>
-    <label>ქართული სიტყვა (5 ასო)</label>
-    <input type="text" id="suggest-word" placeholder="მაგ: სახლი..." maxlength="10" />
-    <label>შენი სახელი (სურვილისამებრ)</label>
-    <input type="text" id="suggest-name" placeholder="სახელი" />
-    <button class="btn btn-primary" onclick="submitSuggestion('suggest-word')">გაგზავნა</button>
-    <p style="font-size:10px;color:var(--text-muted);margin-top:6px">სიტყვები განიხილება ქართველი მკვლევარების მიერ დამატებამდე.</p>
+    <p>შემოგვთავაზე ქართული სიტყვები! დაწერე და დააჭირე <strong>Space</strong> ან <strong>,</strong> თითოეული სიტყვის შემდეგ.</p>
+    <label>სიტყვები (4+ ასო)</label>
+    <div class="tag-input-wrap" id="tag-suggest-modal">
+      <input class="tag-text-input" placeholder="სახლი, წყალი, ვარდი..." type="text" />
+    </div>
+    <button class="btn btn-primary" onclick="submitTagSuggestion('tag-suggest-modal')" style="margin-top:8px">გაგზავნა</button>
+    <p style="font-size:10px;color:var(--text-muted);margin-top:6px">სიტყვები განიხილება ადმინის მიერ დამატებამდე.</p>
   </div>
 </div>
 
@@ -785,48 +818,23 @@ window.submitScore = async function(mode, data) {
   } catch(e) { console.warn('Score submit failed:', e); }
 };
 
-// ── SUBMIT SUGGESTION ──
-window.submitSuggestion = async function(id) {
-  const inp = document.getElementById(id);
-  const word = inp.value.trim();
-  if ([...word].length < 4) { showToast('სიტყვა ძალიან მოკლეა'); return; }
-  if (!/^[\u10D0-\u10FF]+$/.test(word)) { showToast('გთხოვთ შეიყვანოთ ქართული სიტყვა'); return; }
-
-  try {
-    // Check if word already exists in /words (use cache if available)
-    const alreadyInWords = _allWordsCache
-      ? _allWordsCache.has(word)
-      : await (async () => {
-          const q = query(ref(_db, 'words'), orderByChild('word'), equalTo(word));
-          const snap = await get(q);
-          return snap.exists();
-        })();
-    if (alreadyInWords) {
-      inp.value = '';
-      showToast('მადლობა სიტყვის გამოგზავნისთვის 🙏');
-      return;
-    }
-    // Check if already suggested
-    const suggQ = query(ref(_db, 'suggestions'), orderByChild('word'), equalTo(word));
-    const suggSnap = await get(suggQ);
-    if (suggSnap.exists()) {
-      inp.value = '';
-      showToast('მადლობა სიტყვის გამოგზავნისთვის 🙏');
-      return;
-    }
-    // Add as pending
-    await push(ref(_db, 'suggestions'), {
-      word,
-      date: new Date().toISOString(),
-      status: 'pending'
-    });
-    inp.value = '';
-    showToast('მადლობა სიტყვის გამოგზავნისთვის 🙏');
-  } catch(e) {
-    console.error('Firebase error:', e);
-    inp.value = '';
-    showToast('მადლობა სიტყვის გამოგზავნისთვის 🙏');
+// ── SUBMIT SUGGESTIONS (accepts array of words) ──
+window.submitMultipleSuggestions = async function(words) {
+  let submitted = 0;
+  for (const word of words) {
+    if (!word || [...word].length < 4 || !/^[\u10D0-\u10FF]+$/.test(word)) continue;
+    try {
+      // Skip if already in word database (use cache when available)
+      if (_allWordsCache ? _allWordsCache.has(word) : false) continue;
+      // Skip if already suggested
+      const suggQ = query(ref(_db, 'suggestions'), orderByChild('word'), equalTo(word));
+      const suggSnap = await get(suggQ);
+      if (suggSnap.exists()) continue;
+      await push(ref(_db, 'suggestions'), { word, date: new Date().toISOString(), status: 'pending' });
+      submitted++;
+    } catch(e) { console.error('Suggestion error:', e); }
   }
+  return submitted;
 };
 </script>
 <script>
@@ -1507,8 +1515,82 @@ function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');if(id==='challenge-modal')switchChalTab('custom');}
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
 
+// ── TAG CHIP INPUT ──
+const _tagChips = {};
+
+function initTagInput(wrapId) {
+  if (_tagChips[wrapId]) return; // already initialised
+  _tagChips[wrapId] = new Set();
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  const inp = wrap.querySelector('.tag-text-input');
+  wrap.addEventListener('click', () => inp.focus());
+  inp.addEventListener('keydown', e => {
+    if (e.key === ',' || e.key === ' ') {
+      e.preventDefault();
+      _commitTag(wrapId);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      _commitTag(wrapId);
+    } else if (e.key === 'Backspace' && !inp.value) {
+      const arr = [..._tagChips[wrapId]];
+      if (arr.length) _removeTag(wrapId, arr[arr.length - 1]);
+    }
+  });
+  inp.addEventListener('input', () => {
+    // Strip anything that isn't Georgian
+    const clean = inp.value.replace(/[^\u10D0-\u10FF]/g, '');
+    if (clean !== inp.value) inp.value = clean;
+  });
+}
+
+function _commitTag(wrapId) {
+  const wrap = document.getElementById(wrapId);
+  const inp = wrap.querySelector('.tag-text-input');
+  const word = inp.value.trim();
+  inp.value = '';
+  if (!word) return;
+  if ([...word].length < 4) { showToast('სიტყვა ძალიან მოკლეა (მინ. 4 ასო)'); return; }
+  if (_tagChips[wrapId].has(word)) return; // duplicate
+  _tagChips[wrapId].add(word);
+  // Render chip
+  const chip = document.createElement('span');
+  chip.className = 'tag-chip';
+  chip.dataset.word = word;
+  chip.innerHTML = `${word}<button class="tag-chip-remove" tabindex="-1">✕</button>`;
+  chip.querySelector('button').addEventListener('click', e => { e.stopPropagation(); _removeTag(wrapId, word); });
+  wrap.insertBefore(chip, inp);
+}
+
+function _removeTag(wrapId, word) {
+  _tagChips[wrapId].delete(word);
+  const wrap = document.getElementById(wrapId);
+  wrap.querySelectorAll('.tag-chip').forEach(c => { if (c.dataset.word === word) c.remove(); });
+}
+
+function _clearTagInput(wrapId) {
+  if (_tagChips[wrapId]) _tagChips[wrapId].clear();
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  wrap.querySelectorAll('.tag-chip').forEach(c => c.remove());
+  const inp = wrap.querySelector('.tag-text-input');
+  if (inp) inp.value = '';
+}
+
+async function submitTagSuggestion(wrapId) {
+  _commitTag(wrapId); // commit any partially-typed word
+  const words = [...(_tagChips[wrapId] || new Set())];
+  if (!words.length) { showToast('შეიყვანე სიტყვა'); return; }
+  if (!window.submitMultipleSuggestions) { showToast('კავშირი მიმდინარეობს, სცადე ისევ'); return; }
+  await window.submitMultipleSuggestions(words);
+  _clearTagInput(wrapId);
+  showToast('მადლობა სიტყვის გამოგზავნისთვის 🙏');
+}
+
 // ── START ──
 init();
+// Init tag inputs that are already in DOM
+['tag-suggest-modal','tag-suggest-result','tag-suggest-freeplay'].forEach(initTagInput);
 
 // Handle freeplay param from landing page
 if(new URLSearchParams(location.search).get('freeplay')) {
