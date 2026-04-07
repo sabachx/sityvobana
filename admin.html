@@ -321,6 +321,9 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
 import {
   getDatabase, ref, onValue, push, set, update, remove, get
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+import {
+  getAuth, signInWithPopup, GoogleAuthProvider, signOut as fbSignOut, onAuthStateChanged
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 // ── CONFIG ──
 const ADMIN_PASSWORD = 'sityvobana2025'; // Change this!
@@ -342,6 +345,8 @@ const BLOCKED_WORDS = [
 
 const app = initializeApp(FB_CONFIG);
 const db  = getDatabase(app);
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
 
 // ── STATE ──
 let allSuggestions = {};
@@ -350,31 +355,49 @@ let suggFilter = 'pending';
 let wordFilter = 'all';
 
 // ── LOGIN ──
-window.doLogin = function() {
+window.doLogin = async function() {
   const pwd = document.getElementById('pwd-input').value;
-  if (pwd === ADMIN_PASSWORD) {
-    sessionStorage.setItem('admin_auth', '1');
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('admin-screen').style.display = 'block';
-    initAdmin();
-  } else {
-    document.getElementById('login-err').style.display = 'block';
+  const errEl = document.getElementById('login-err');
+  if (pwd !== ADMIN_PASSWORD) {
+    errEl.textContent = 'არასწორი პაროლი';
+    errEl.style.display = 'block';
     document.getElementById('pwd-input').value = '';
     document.getElementById('pwd-input').focus();
+    return;
+  }
+  errEl.style.display = 'none';
+  try {
+    await signInWithPopup(auth, googleProvider);
+    sessionStorage.setItem('admin_auth', '1');
+  } catch(e) {
+    errEl.textContent = 'Google შესვლა ვერ მოხდა';
+    errEl.style.display = 'block';
   }
 };
 
-window.doLogout = function() {
+window.doLogout = async function() {
   sessionStorage.removeItem('admin_auth');
+  await fbSignOut(auth);
   location.reload();
 };
 
-// Auto-login if session exists
-if (sessionStorage.getItem('admin_auth')) {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('admin-screen').style.display = 'block';
-  initAdmin();
-}
+// Show admin once Firebase confirms auth (covers both fresh login and page reload)
+onAuthStateChanged(auth, async user => {
+  if (user && sessionStorage.getItem('admin_auth')) {
+    const snap = await get(ref(db, 'admins/' + user.uid));
+    if (!snap.exists()) {
+      await fbSignOut(auth);
+      sessionStorage.removeItem('admin_auth');
+      const errEl = document.getElementById('login-err');
+      errEl.textContent = 'წვდომა აკრძალულია';
+      errEl.style.display = 'block';
+      return;
+    }
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-screen').style.display = 'block';
+    initAdmin();
+  }
+});
 
 // ── INIT ──
 function initAdmin() {
