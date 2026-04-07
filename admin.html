@@ -212,9 +212,10 @@
 <div id="login-screen">
   <h1><span style="display:inline-flex;align-items:center;justify-content:center;background:#2dc653;color:#fff;width:22px;height:22px;border-radius:4px;font-size:14px;font-weight:900;margin-right:2px;vertical-align:middle;position:relative;top:-1px;">ს</span>იტყვობანა</h1>
   <p>ადმინის პანელი</p>
-  <input type="password" id="pwd-input" placeholder="პაროლი" onkeydown="if(event.key==='Enter')doLogin()"/>
+  <input type="email" id="admin-email" placeholder="ელ-ფოსტა" onkeydown="if(event.key==='Enter')doLogin()"/>
+  <input type="password" id="admin-pass" placeholder="პაროლი" onkeydown="if(event.key==='Enter')doLogin()"/>
   <button onclick="doLogin()">შესვლა</button>
-  <div class="login-err" id="login-err">არასწორი პაროლი</div>
+  <div class="login-err" id="login-err"></div>
 </div>
 
 <!-- ══ ADMIN ══ -->
@@ -322,11 +323,10 @@ import {
   getDatabase, ref, onValue, push, set, update, remove, get
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 import {
-  getAuth, signInWithPopup, GoogleAuthProvider, signOut as fbSignOut, onAuthStateChanged
+  getAuth, signInWithEmailAndPassword, signOut as fbSignOut, onAuthStateChanged
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 // ── CONFIG ──
-const ADMIN_PASSWORD = 'sityvobana2025'; // Change this!
 const FB_CONFIG = {
   apiKey:"AIzaSyDUwQUWDHXtHtxRq6RcZcbId3z-kzrAwwY",
   authDomain:"sityvobana-2a717.firebaseapp.com",
@@ -346,7 +346,6 @@ const BLOCKED_WORDS = [
 const app = initializeApp(FB_CONFIG);
 const db  = getDatabase(app);
 const auth = getAuth(app);
-const googleProvider = new GoogleAuthProvider();
 
 // ── STATE ──
 let allSuggestions = {};
@@ -356,21 +355,15 @@ let wordFilter = 'all';
 
 // ── LOGIN ──
 window.doLogin = async function() {
-  const pwd = document.getElementById('pwd-input').value;
+  const email = document.getElementById('admin-email').value.trim();
+  const pass  = document.getElementById('admin-pass').value;
   const errEl = document.getElementById('login-err');
-  if (pwd !== ADMIN_PASSWORD) {
-    errEl.textContent = 'არასწორი პაროლი';
-    errEl.style.display = 'block';
-    document.getElementById('pwd-input').value = '';
-    document.getElementById('pwd-input').focus();
-    return;
-  }
   errEl.style.display = 'none';
   try {
-    await signInWithPopup(auth, googleProvider);
+    await signInWithEmailAndPassword(auth, email, pass);
     sessionStorage.setItem('admin_auth', '1');
   } catch(e) {
-    errEl.textContent = 'Google შესვლა ვერ მოხდა';
+    errEl.textContent = 'არასწორი ელ-ფოსტა ან პაროლი';
     errEl.style.display = 'block';
   }
 };
@@ -381,7 +374,7 @@ window.doLogout = async function() {
   location.reload();
 };
 
-// Show admin once Firebase confirms auth (covers both fresh login and page reload)
+// Only grant access if the user logged in via this form AND their UID is in /admins
 onAuthStateChanged(auth, async user => {
   if (user && sessionStorage.getItem('admin_auth')) {
     const snap = await get(ref(db, 'admins/' + user.uid));
