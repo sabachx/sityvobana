@@ -354,14 +354,28 @@ let suggFilter = 'pending';
 let wordFilter = 'all';
 
 // ── LOGIN ──
+function showAdmin() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-screen').style.display = 'block';
+  initAdmin();
+}
+
 window.doLogin = async function() {
   const email = document.getElementById('admin-email').value.trim();
   const pass  = document.getElementById('admin-pass').value;
   const errEl = document.getElementById('login-err');
   errEl.style.display = 'none';
   try {
-    await signInWithEmailAndPassword(auth, email, pass);
+    const cred = await signInWithEmailAndPassword(auth, email, pass);
+    const snap = await get(ref(db, 'admins/' + cred.user.uid));
+    if (!snap.exists()) {
+      await fbSignOut(auth);
+      errEl.textContent = 'წვდომა აკრძალულია. UID: ' + cred.user.uid;
+      errEl.style.display = 'block';
+      return;
+    }
     sessionStorage.setItem('admin_auth', '1');
+    showAdmin();
   } catch(e) {
     errEl.textContent = 'არასწორი ელ-ფოსტა ან პაროლი';
     errEl.style.display = 'block';
@@ -374,21 +388,16 @@ window.doLogout = async function() {
   location.reload();
 };
 
-// Only grant access if the user logged in via this form AND their UID is in /admins
+// Handle page reloads — user already authenticated
 onAuthStateChanged(auth, async user => {
   if (user && sessionStorage.getItem('admin_auth')) {
     const snap = await get(ref(db, 'admins/' + user.uid));
     if (!snap.exists()) {
       await fbSignOut(auth);
       sessionStorage.removeItem('admin_auth');
-      const errEl = document.getElementById('login-err');
-      errEl.textContent = 'წვდომა აკრძალულია. UID: ' + user.uid;
-      errEl.style.display = 'block';
       return;
     }
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('admin-screen').style.display = 'block';
-    initAdmin();
+    showAdmin();
   }
 });
 
