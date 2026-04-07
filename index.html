@@ -686,9 +686,15 @@ window.signOut = async function() {
   } catch(e) { console.error(e); }
 };
 
+// Cache of all words for instant validation (populated at startup)
+let _allWordsCache = null;
+
 window.isValidWord = async function(word) {
   try {
     if (word === window._targetWord) return true;
+    // Use cached word set if available (much faster, no index needed)
+    if (_allWordsCache) return _allWordsCache.has(word);
+    // Fallback: direct Firebase query (requires .indexOn: ["word"] in rules)
     const q = query(ref(_db, 'words'), orderByChild('word'), equalTo(word));
     const snap = await get(q);
     return snap.exists();
@@ -696,6 +702,21 @@ window.isValidWord = async function(word) {
     console.warn('Validation error:', e);
     return false; // fail closed — don't accept words on Firebase errors
   }
+};
+
+// Preload all words into cache at startup (called from init, runs in background)
+window._preloadWords = async function() {
+  try {
+    const snap = await get(ref(_db, 'words'));
+    if (snap.exists()) {
+      _allWordsCache = new Set(
+        Object.values(snap.val())
+          .map(v => v.word)
+          .filter(w => w && /^[\u10D0-\u10FF]+$/.test(w))
+      );
+      console.log(`[სიტყვობანა] ${_allWordsCache.size} სიტყვა ჩაიტვირთა`);
+    }
+  } catch(e) { console.warn('Word preload failed:', e); }
 };
 
 // ── USER DATA SYNC ──
@@ -733,9 +754,20 @@ window._recordDailyWord = async function(date, word) {
 // Signal that Firebase module is ready
 window._firebaseReady = true;
 
-// Expose words getter for free play
+// Auto-start word preload as soon as Firebase module is ready
+// (module scripts are deferred, so this runs after non-module scripts; start preload immediately)
+window._preloadWords();
+
+// Expose words getter for free play (also populates validation cache)
 window._fbGetWords = async function() {
   const snap = await get(ref(_db, 'words'));
+  if (snap.exists() && !_allWordsCache) {
+    _allWordsCache = new Set(
+      Object.values(snap.val())
+        .map(v => v.word)
+        .filter(w => w && /^[\u10D0-\u10FF]+$/.test(w))
+    );
+  }
   return snap.val();
 };
 
@@ -753,12 +785,6 @@ window.submitScore = async function(mode, data) {
   } catch(e) { console.warn('Score submit failed:', e); }
 };
 
-// Expose words getter for free play
-window._fbGetWords = async function() {
-  const snap = await get(ref(_db, 'words'));
-  return snap.val();
-};
-
 // ── SUBMIT SUGGESTION ──
 window.submitSuggestion = async function(id) {
   const inp = document.getElementById(id);
@@ -767,10 +793,15 @@ window.submitSuggestion = async function(id) {
   if (!/^[\u10D0-\u10FF]+$/.test(word)) { showToast('გთხოვთ შეიყვანოთ ქართული სიტყვა'); return; }
 
   try {
-    // Check if word already exists in /words
-    const wordsQ = query(ref(_db, 'words'), orderByChild('word'), equalTo(word));
-    const wordsSnap = await get(wordsQ);
-    if (wordsSnap.exists()) {
+    // Check if word already exists in /words (use cache if available)
+    const alreadyInWords = _allWordsCache
+      ? _allWordsCache.has(word)
+      : await (async () => {
+          const q = query(ref(_db, 'words'), orderByChild('word'), equalTo(word));
+          const snap = await get(q);
+          return snap.exists();
+        })();
+    if (alreadyInWords) {
       inp.value = '';
       showToast('მადლობა სიტყვის გამოგზავნისთვის 🙏');
       return;
