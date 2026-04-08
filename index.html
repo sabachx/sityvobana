@@ -610,13 +610,8 @@
     <div class="result-word" id="result-word"></div>
     <div id="next-word-timer">შემდეგი სიტყვა: <span id="countdown">00:00:00</span></div>
     <div class="dist-chart">
-      <h3>📊 გამოცნობის დისტრიბუცია</h3>
+      <h3 id="dist-title">📊 გამოცნობის სტატისტიკა</h3>
       <div id="dist-bars"></div>
-    </div>
-    <div class="result-stats">
-      <div class="result-stat"><div class="n" id="rs-streak">0</div><div class="l">🔥 სტრიქი</div></div>
-      <div class="result-stat"><div class="n" id="rs-best">0</div><div class="l">🏆 საუკეთესო</div></div>
-      <div class="result-stat"><div class="n" id="rs-played">0</div><div class="l">🎯 ნათამაშები</div></div>
     </div>
     <!-- Daily mode buttons -->
     <div id="result-daily-btns">
@@ -889,6 +884,14 @@ window._fbGetWords = async function() {
     );
   }
   return snap.val();
+};
+
+// Fetch leaderboard entries for a mode
+window._fbGetLeaderboard = async function(mode) {
+  try {
+    const snap = await get(ref(_db, `leaderboard/${mode}`));
+    return snap.exists() ? snap.val() : {};
+  } catch(e) { return {}; }
 };
 
 // Submit score to leaderboard
@@ -1322,23 +1325,33 @@ function updateStats(){
 }
 
 // ── DISTRIBUTION CHART ──
-function renderDistribution(lastAtt){
+function renderDistribution(distObj, highlightAtt) {
   const c=document.getElementById('dist-bars'); c.innerHTML='';
-  const dist=state.distribution, maxV=Math.max(1,...Object.values(dist));
+  if(!distObj) return;
+  const maxV=Math.max(1,...Object.values(distObj));
   for(let i=1;i<=6;i++){
-    const count=dist[i]||0, pct=Math.round((count/maxV)*100);
-    const isLast=(i===lastAtt&&gameOver&&guesses.length>0&&guesses[guesses.length-1]===targetWord);
+    const count=distObj[i]||0, pct=Math.round((count/maxV)*100);
     const row=document.createElement('div'); row.className='dist-row';
     const lbl=document.createElement('div'); lbl.className='dist-label'; lbl.textContent=i;
     const wrap=document.createElement('div'); wrap.className='dist-bar-wrap';
-    const bar=document.createElement('div'); bar.className='dist-bar'+(isLast?' highlight':'');
+    const bar=document.createElement('div'); bar.className='dist-bar'+(i===highlightAtt?' highlight':'');
     bar.style.width=Math.max(20,pct)+'%'; bar.textContent=count;
     wrap.appendChild(bar); row.appendChild(lbl); row.appendChild(wrap); c.appendChild(row);
   }
 }
 
+async function fetchWordDistribution(word) {
+  if(!window._fbGetLeaderboard) return null;
+  const entries = await window._fbGetLeaderboard('daily');
+  const dist = {1:0,2:0,3:0,4:0,5:0,6:0};
+  Object.values(entries).forEach(e => {
+    if(e.word===word && e.guesses>=1 && e.guesses<=6) dist[e.guesses]++;
+  });
+  return dist;
+}
+
 // ── RESULT ──
-function showResult(won,attempts){
+async function showResult(won,attempts){
   document.getElementById('result-title').textContent=won?'🎉 გაიმარჯვე!':'😔 სცადე ხვალ!';
   document.getElementById('result-word').textContent=targetWord;
   document.getElementById('result-sub').textContent=won?`გამოიცანი ${attempts} მცდელობაში`:'დღის სიტყვაა:';
@@ -1368,7 +1381,16 @@ function showResult(won,attempts){
       window.submitScore('freeplay', { score, guesses: attempts, word: targetWord });
     }
   }
-  renderDistribution(won?attempts:0); updateStats(); startCountdown(); openModal('result-modal');
+  const distTitle = document.getElementById('dist-title');
+  if(!isFreePlay && !isChallenge) {
+    if(distTitle) distTitle.textContent = '🌍 ვინ რამდენ ცდაში გამოიცნო';
+    const globalDist = await fetchWordDistribution(targetWord);
+    renderDistribution(globalDist || state.distribution, won ? attempts : 0);
+  } else {
+    if(distTitle) distTitle.textContent = '📊 გამოცნობის სტატისტიკა';
+    renderDistribution(state.distribution, won ? attempts : 0);
+  }
+  updateStats(); startCountdown(); openModal('result-modal');
 }
 function shareResult(){
   const won=guesses.length>0&&guesses[guesses.length-1]===targetWord;
