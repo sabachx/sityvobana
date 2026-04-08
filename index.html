@@ -494,6 +494,12 @@
 
 <div id="toast"></div>
 
+<!-- Hidden input captures native mobile keyboard -->
+<input id="kb-capture" type="text" inputmode="text"
+  autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
+  aria-hidden="true" tabindex="-1"
+  style="position:fixed;opacity:0;width:1px;height:1px;top:50%;left:50%;border:none;padding:0;outline:none;pointer-events:none;" />
+
 <div id="board-wrap"><div id="board" role="grid" aria-label="სათამაშო დაფა"></div></div>
 
 <div id="keyboard" role="group" aria-label="კლავიატურა"></div>
@@ -1057,6 +1063,8 @@ async function init() {
   updateStats();
   checkTodayPlayed();
   updateModeBar();
+  setupMobileCapture();
+  focusCapture();
   // Show how-to-play on first ever visit
   if(!localStorage.getItem('sitqva_how_shown')){
     localStorage.setItem('sitqva_how_shown','1');
@@ -1636,6 +1644,9 @@ function openModal(id) {
     const first = modal.querySelector('button:not([disabled]),[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
     if (first) first.focus();
   });
+  // Hide native keyboard while modal is open
+  const cap = document.getElementById('kb-capture');
+  if (cap) cap.blur();
   overlay._trapFn = e => {
     if (e.key === 'Escape') { closeModal(id); return; }
     if (e.key !== 'Tab') return;
@@ -1655,6 +1666,8 @@ function closeModal(id) {
   if (overlay._trapFn) { document.removeEventListener('keydown', overlay._trapFn); overlay._trapFn = null; }
   if (id === 'challenge-modal') switchChalTab('custom');
   if (_lastFocused && typeof _lastFocused.focus === 'function') { _lastFocused.focus(); _lastFocused = null; }
+  // Restore native keyboard after modal closes
+  setTimeout(focusCapture, 100);
 }
 document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) closeModal(o.id); }));
 
@@ -1731,6 +1744,41 @@ async function submitTagSuggestion(wrapId) {
   await window.submitMultipleSuggestions(words);
   _clearTagInput(wrapId);
   showToast('მადლობა სიტყვის გამოგზავნისთვის 🙏');
+}
+
+// ── MOBILE KEYBOARD CAPTURE ──
+const _isMobile = () => navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
+
+function setupMobileCapture() {
+  if (!_isMobile()) return;
+  const inp = document.getElementById('kb-capture');
+  if (!inp) return;
+
+  // On input: grab the last typed char, clear, forward to game
+  inp.addEventListener('input', () => {
+    const val = inp.value;
+    inp.value = '';
+    if (!val) return;
+    for (const ch of val) {
+      if (/^[\u10D0-\u10FF]$/.test(ch)) handleKey(ch);
+    }
+  });
+
+  // keydown covers Backspace and Enter reliably on most mobile browsers
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Backspace') { handleKey('⌫'); }
+    if (e.key === 'Enter')    { e.preventDefault(); handleKey('ENTER'); }
+  });
+
+  // Tapping the board or custom keyboard re-focuses (keyboard slides back up)
+  document.getElementById('board-wrap').addEventListener('click', () => focusCapture());
+  document.getElementById('keyboard').addEventListener('click',    () => focusCapture());
+}
+
+function focusCapture() {
+  if (!_isMobile() || gameOver) return;
+  const inp = document.getElementById('kb-capture');
+  if (inp && document.activeElement !== inp) inp.focus();
 }
 
 // ── SIDE MENU ──
