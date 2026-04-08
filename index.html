@@ -1407,7 +1407,7 @@ function toggleResultSuggest() {
   const btn   = document.getElementById('suggest-toggle-btn');
   const isOpen = panel.style.display !== 'none';
   panel.style.display = isOpen ? 'none' : 'block';
-  if(!isOpen) setTimeout(()=>document.getElementById('suggest-freeplay-word').focus(), 50);
+  if(!isOpen) setTimeout(()=>{ const w=document.getElementById('tag-suggest-freeplay'); if(w) w.querySelector('.tag-text-input')?.focus(); }, 50);
 }
 
 async function startFreePlay() {
