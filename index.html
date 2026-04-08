@@ -1380,10 +1380,10 @@ async function showResult(won,attempts){
   const panel = document.getElementById('result-suggest-panel');
   if(panel) panel.style.display = 'none';
 
-  // Submit score to leaderboard (only wins; submitScore guards for login)
+  // Submit score — await daily so it's in Firebase before we fetch the distribution
   if(won && typeof window.submitScore === 'function'){
     if(!isFreePlay){
-      window.submitScore('daily', { guesses: attempts, word: targetWord });
+      await window.submitScore('daily', { guesses: attempts, word: targetWord });
     } else {
       const score = Math.max(100, (7 - attempts) * 100);
       window.submitScore('freeplay', { score, guesses: attempts, word: targetWord });
