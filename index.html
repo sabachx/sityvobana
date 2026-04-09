@@ -302,6 +302,20 @@
       transition:transform .25s; position:relative;
       box-shadow: var(--shadow-out), 0 24px 48px rgba(9,10,7,.3);
     }
+    /* Result modal: compact, no scroll */
+    #result-modal .modal {
+      overflow:hidden; padding:16px 16px 12px;
+    }
+    #result-modal .result-word { font-size:26px; margin-bottom:0; }
+    #result-modal .result-sub  { margin-bottom:6px; }
+    #result-modal #next-word-timer { margin-bottom:6px; }
+    #result-modal .dist-chart  { margin-bottom:6px; }
+    #result-modal .dist-chart h3 { margin-bottom:4px; }
+    #result-modal .dist-row    { margin-bottom:3px; }
+    #result-modal .dist-bar-wrap { height:18px; }
+    #result-modal .btn         { padding:9px; margin-bottom:5px; }
+    #result-modal .suggest-wrap { padding-top:8px; margin-top:4px; }
+    #result-modal .modal h2    { margin-bottom:6px; }
     .modal-overlay.open .modal { transform:translateY(0); }
     .modal-close {
       position:absolute; top:10px; right:10px;
@@ -495,7 +509,7 @@
   <div class="logo-mark" aria-label="სიტყვობანა">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 38 38">
       <rect width="38" height="38" rx="10" fill="#29592D"/>
-      <text x="19" y="28" text-anchor="middle" font-family="'Helvetica Neue',Helvetica,Arial,sans-serif" font-size="24" font-weight="300" fill="#FFFBF4">ს</text>
+      <text x="19" y="28" text-anchor="middle" font-family="'Helvetica Neue',Helvetica,Arial,sans-serif" font-size="26" font-weight="700" fill="#FFFBF4">ს</text>
     </svg>
   </div>
   <div class="header-actions">
@@ -530,7 +544,7 @@
     <div class="menu-hdr-logo" aria-label="სიტყვობანა">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
         <rect width="32" height="32" rx="8" fill="#29592D"/>
-        <text x="16" y="24" text-anchor="middle" font-family="'Helvetica Neue',Helvetica,Arial,sans-serif" font-size="20" font-weight="300" fill="#FFFBF4">ს</text>
+        <text x="16" y="24" text-anchor="middle" font-family="'Helvetica Neue',Helvetica,Arial,sans-serif" font-size="22" font-weight="700" fill="#FFFBF4">ს</text>
       </svg>
     </div>
     <button class="icon-btn" onclick="closeMenu()" style="font-size:15px;">✕</button>
@@ -699,9 +713,8 @@
     <!-- Daily mode buttons -->
     <div id="result-daily-btns">
       <button class="btn btn-green" onclick="nextFreePlay();closeModal('result-modal')">🎮 გააგრძელე თამაში</button>
-      <button class="btn btn-green" onclick="shareResult()" style="background:var(--accent);color:#FFFBF4;">📤 გააზიარე</button>
+      <button class="btn" onclick="shareResult()" style="background:var(--accent2);color:#FFFBF4;">📤 გააზიარე</button>
       <button class="btn" onclick="window.location.href='leaderboard.html'" style="color:var(--accent)">🏆 ლიდერბორდი</button>
-      <button class="btn" onclick="openModal('challenge-modal');closeModal('result-modal')">⚔️ გამოიწვიე მეგობარი</button>
       <div class="suggest-wrap">
         <h3>💡 დაამატე სიტყვა</h3>
         <div class="tag-input-wrap" id="tag-suggest-result">
@@ -713,9 +726,9 @@
 
     <!-- Free play mode buttons -->
     <div id="result-freeplay-btns" style="display:none;">
-      <button class="btn" onclick="window.location.href='leaderboard.html'" style="color:var(--accent)">🏆 ლიდერბორდი</button>
       <button class="btn btn-green" onclick="closeModal('result-modal');nextFreePlay()">🎮 გააგრძელე თამაში</button>
-      <button class="btn" onclick="openModal('challenge-modal');closeModal('result-modal')">⚔️ გამოიწვიე მეგობარი</button>
+      <button class="btn" onclick="shareResult()" style="background:var(--accent2);color:#FFFBF4;">📤 გააზიარე</button>
+      <button class="btn" onclick="window.location.href='leaderboard.html'" style="color:var(--accent)">🏆 ლიდერბორდი</button>
 
       <!-- გამოგვიგზავნე სიტყვა -->
       <button class="btn" id="suggest-toggle-btn" onclick="toggleResultSuggest()">✉️ გამოგვიგზავნე სიტყვა</button>
@@ -725,8 +738,6 @@
         </div>
         <button class="btn btn-primary" onclick="submitTagSuggestion('tag-suggest-freeplay')" style="margin-top:6px">გაგზავნა</button>
       </div>
-
-      <button class="btn" onclick="shareResult()" style="background:var(--accent);color:#FFFBF4;margin-top:6px;">📤 გააზიარე</button>
     </div>
   </div>
 </div>
