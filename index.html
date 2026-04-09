@@ -454,7 +454,7 @@
   <button class="mode-pill" id="pill-daily" onclick="goDaily()">📅 დღის სიტყვა</button>
   <button class="mode-pill" id="pill-free" onclick="goFree()">🎮 თავისუფალი</button>
   <button class="mode-pill" onclick="openModal('challenge-modal')">⚔️ გამოწვევა</button>
-  <button class="mode-pill" onclick="openModal('challenge-modal');switchChalTab('blitz')">⚡ ბლიცი</button>
+  <button class="mode-pill" onclick="openModal('blitz-intro-modal')">⚡ ბლიცი</button>
 </div>
 
 <!-- SIDE MENU -->
@@ -471,7 +471,7 @@
       <button class="menu-mode-pill" id="mpill-daily" onclick="goDaily();closeMenu()">📅 დღის სიტყვა</button>
       <button class="menu-mode-pill" id="mpill-free" onclick="goFree();closeMenu()">🎮 თავისუფალი</button>
       <button class="menu-mode-pill" onclick="openModal('challenge-modal');closeMenu()">⚔️ გამოწვევა</button>
-      <button class="menu-mode-pill" onclick="openModal('challenge-modal');switchChalTab('blitz');closeMenu()">⚡ ბლიცი</button>
+      <button class="menu-mode-pill" onclick="openModal('blitz-intro-modal');closeMenu()">⚡ ბლიცი</button>
     </div>
   </div>
 
@@ -685,17 +685,46 @@
     </div>
     <!-- Blitz -->
     <div class="chal-panel" id="cpanel-blitz">
-      <p style="margin-bottom:14px">⚡ <strong>ბლიც რეჟიმი</strong> — 3 სიტყვა, 5 წუთი, ყველა თამაშობს ბრმად. მეტი ქულა იმარჯვებს!</p>
+      <p style="margin-bottom:14px">⚡ <strong>ბლიც გამოწვევა მეგობართან</strong> — შექმენი ოთახი, გააზიარე ლინკი და თამაშობეთ ერთდროულად!</p>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:12px;font-size:12px;color:var(--text-dim);line-height:1.8">
-        🔤 აირჩიე 5-ასოიანი ან შემთხვევითი სიტყვები<br>
-        ⏱ ერთი 5-წუთიანი საათი სამივე სიტყვისთვის<br>
+        👥 2+ მოთამაშე ერთ ოთახში<br>
+        🔤 3 სიტყვა, 5 წუთი<br>
         🏆 ქულები: ნაკლები მცდელობა + დროის ბონუსი<br>
         📊 ბოლოს ხედავ ყველა მოთამაშის შედეგს
       </div>
       <a href="blitz.html" class="btn" style="background:var(--accent2);color:#fff;border-color:var(--accent2);text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px">
-        ⚡ ბლიც სიტყვობანა
+        ⚔️ ბლიც გამოწვევა
       </a>
     </div>
+  </div>
+</div>
+
+<!-- BLITZ INTRO -->
+<div class="modal-overlay" id="blitz-intro-modal" role="dialog" aria-modal="true" aria-labelledby="blitz-intro-title">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('blitz-intro-modal')" aria-label="დახურვა">✕</button>
+    <h2 id="blitz-intro-title" style="color:var(--accent)">⚡ ბლიც რეჟიმი</h2>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:16px;font-size:13px;color:var(--text-dim);line-height:2">
+      🔤 3 შემთხვევითი 5-ასოიანი სიტყვა<br>
+      ⏱ ერთი 5-წუთიანი საათი სამივე სიტყვისთვის<br>
+      💡 სიტყვები ენაცვლება ავტომატურად<br>
+      🏁 თამაში მთავრდება — 5 წუთი ან 3 სიტყვა
+    </div>
+    <p style="font-weight:600;margin-bottom:8px;font-size:13px">ქულების სისტემა</p>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px;font-size:13px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+        <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text-dim)">1 მცდელობა</div><div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:700;color:var(--accent)">6 ქულა</div>
+        <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text-dim)">2 მცდელობა</div><div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:700;color:var(--accent)">5 ქულა</div>
+        <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text-dim)">3 მცდელობა</div><div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:700;color:var(--accent)">4 ქულა</div>
+        <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text-dim)">4 მცდელობა</div><div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:700;color:var(--accent)">3 ქულა</div>
+        <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text-dim)">5 მცდელობა</div><div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:700;color:var(--accent)">2 ქულა</div>
+        <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text-dim)">6 მცდელობა</div><div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:700;color:var(--accent)">1 ქულა</div>
+        <div style="padding:8px 12px;color:var(--text-dim)">დროის ბონუსი</div><div style="padding:8px 12px;font-weight:700;color:var(--accent)">+1–5 ქულა</div>
+      </div>
+    </div>
+    <a href="blitz.html?solo=1" class="btn" style="background:var(--accent);color:#fff;border-color:var(--accent);text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;font-size:16px;padding:14px" onclick="closeModal('blitz-intro-modal')">
+      ⚡ დაწყება
+    </a>
   </div>
 </div>
 
@@ -1360,9 +1389,9 @@ async function fetchWordDistribution(word) {
 
 // ── RESULT ──
 async function showResult(won,attempts){
-  document.getElementById('result-title').textContent=won?'🎉 გაიმარჯვე!':'😔 სცადე ხვალ!';
+  document.getElementById('result-title').textContent = won ? '🎉 გაიმარჯვე!' : (isFreePlay ? '😔 სცადე ისევ!' : '😔 სცადე ხვალ!');
   document.getElementById('result-word').textContent=targetWord;
-  document.getElementById('result-sub').textContent=won?`გამოიცანი ${attempts} მცდელობაში`:'დღის სიტყვაა:';
+  document.getElementById('result-sub').textContent = won ? `გამოიცანი ${attempts} მცდელობაში` : (isFreePlay ? 'სიტყვა იყო:' : 'დღის სიტყვაა:');
 
   // Show correct button set
   const dailyBtns = document.getElementById('result-daily-btns');
@@ -1427,7 +1456,7 @@ async function startFreePlay() {
   wordLength = 5;
   Object.keys(keyColors).forEach(k => delete keyColors[k]);
   document.querySelectorAll('#keyboard .key').forEach(k => k.classList.remove('correct','present','absent'));
-  hintsUsed = 0;
+  hintsUsed = 0; _hintedPos.clear();
   document.getElementById('hint-btn')?.classList.remove('used');
   updateModeBar();
   // Show board immediately with dimmed state while word loads
@@ -1458,7 +1487,7 @@ async function switchToDaily() {
   wordLength = 5; isSubmitting = false;
   Object.keys(keyColors).forEach(k => delete keyColors[k]);
   document.querySelectorAll('#keyboard .key').forEach(k => k.classList.remove('correct','present','absent'));
-  hintsUsed = 0;
+  hintsUsed = 0; _hintedPos.clear();
   document.getElementById('hint-btn')?.classList.remove('used');
   await loadWordsFromAPI();
   applyWordLength(); buildBoard(); buildKeyboard(); checkTodayPlayed();
@@ -1557,15 +1586,17 @@ function shareLink(id,title){
 }
 
 // ── HINT ──
-let hintsUsed=0;
+let hintsUsed=0, _hintedPos=new Set();
 function useHint(){
   if(gameOver||revealInProgress) return;
   if(hintsUsed>=2){showToast('მინიშნებები ამოიწურა 😅');return;}
   const tA=[...targetWord], conf=new Set();
   guesses.forEach(g=>[...g].forEach((l,i)=>{if(l===tA[i])conf.add(i);}));
-  const avail=Array.from({length:wordLength},(_,i)=>i).filter(i=>!conf.has(i));
+  // Exclude positions already confirmed correct AND already hinted
+  const avail=Array.from({length:wordLength},(_,i)=>i).filter(i=>!conf.has(i)&&!_hintedPos.has(i));
   if(!avail.length){showToast('ყველა ადგილი ცნობილია 🎯');return;}
   const pos=avail[Math.floor(Math.random()*avail.length)];
+  _hintedPos.add(pos);
   const ordinals=['პირველი','მეორე','მესამე','მეოთხე','მეხუთე','მეექვსე','მეშვიდე','მერვე','მეცხრე','მეათე'];
   showToast(`💡 ${ordinals[pos]||pos+1} ასო: "${tA[pos]}"`,3000);
   hintsUsed++; if(hintsUsed>=2) document.getElementById('hint-btn').classList.add('used');

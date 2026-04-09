@@ -498,6 +498,7 @@ const KB=[
 const L2G={q:'ქ',w:'წ',e:'ე',r:'რ',t:'ტ',y:'ყ',u:'უ',i:'ი',o:'ო',p:'პ',a:'ა',s:'ს',d:'დ',f:'ფ',g:'გ',h:'ჰ',j:'ჯ',k:'კ',l:'ლ',z:'ზ',x:'ხ',c:'ც',v:'ვ',b:'ბ',n:'ნ',m:'მ',W:'ჭ',R:'ღ',T:'თ',S:'შ',J:'ჟ',C:'ჩ',Z:'ძ'};
 
 // ── STATE ──
+let isSolo=false;
 let roomId=null, myId=null, myName='', isHost=false, blitzMode='five';
 let roomRef=null, roomListener=null;
 let words=[], currentWI=0, currentRow=0, currentCol=0, currentGuess=[];
@@ -780,7 +781,7 @@ function updateProg(){
 }
 
 function pushProgress(){
-  if(!roomId||!myId) return;
+  if(isSolo||!roomId||!myId) return;
   update(ref(db,`blitz/${roomId}/players/${myId}`),{solved:wordResults.filter(w=>w.solved).length});
 }
 
@@ -819,7 +820,7 @@ function calcScore(){
 function endGame(){
   clearInterval(timerIv); wordDone=true;
   const sc=calcScore(); myScore=sc.total;
-  update(ref(db,`blitz/${roomId}/players/${myId}`),{score:sc.total,done:true,solved:wordResults.filter(w=>w.solved).length});
+  if(!isSolo) update(ref(db,`blitz/${roomId}/players/${myId}`),{score:sc.total,done:true,solved:wordResults.filter(w=>w.solved).length});
   showResultScreen(sc);
 }
 
@@ -837,9 +838,15 @@ function showResultScreen(sc){
     brows.appendChild(row);
   });
   showScreen('s-result');
-  document.getElementById('waiting-note').style.display='block';
-  // Keep listening for all players to finish
-  listenRoom();
+  if(isSolo){
+    document.getElementById('waiting-note').style.display='none';
+    document.getElementById('lb-rows').style.display='none';
+    document.querySelector('.lb-title').style.display='none';
+  } else {
+    document.getElementById('waiting-note').style.display='block';
+    // Keep listening for all players to finish
+    listenRoom();
+  }
 }
 
 function renderResultLb(players){
@@ -882,6 +889,21 @@ window.shareResult=function(){
 // ── INIT ──
 (async function(){
   const p=new URLSearchParams(location.search);
+
+  // Solo mode: skip setup/lobby entirely
+  if(p.get('solo')==='1'){
+    isSolo=true;
+    await wordsReady;
+    words=pickWords('five',3);
+    if(!words.length) return;
+    gameStarted=true;
+    secondsLeft=300;
+    startedAt=Date.now();
+    document.getElementById('lb-strip').style.display='none';
+    startGame();
+    return;
+  }
+
   const rp=p.get('room');
   if(!rp){showScreen('s-setup');return;}
 
