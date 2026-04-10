@@ -1041,16 +1041,15 @@ window.submitMultipleSuggestions = async function(words) {
   let submitted = 0;
   for (const word of words) {
     if (!word || [...word].length < 4 || !/^[\u10D0-\u10FF]+$/.test(word)) continue;
+    // Skip if already in word database (use cache when available)
+    if (_allWordsCache && _allWordsCache.has(word)) continue;
     try {
-      // Skip if already in word database (use cache when available)
-      if (_allWordsCache ? _allWordsCache.has(word) : false) continue;
-      // Skip if already suggested
-      const suggQ = query(ref(_db, 'suggestions'), orderByChild('word'), equalTo(word));
-      const suggSnap = await get(suggQ);
-      if (suggSnap.exists()) continue;
       await push(ref(_db, 'suggestions'), { word, date: new Date().toISOString(), status: 'pending' });
       submitted++;
-    } catch(e) { console.error('Suggestion error:', e); }
+    } catch(e) {
+      console.error('Suggestion error:', e.code || e.message);
+      showToast('შეცდომა: ' + (e.code || 'კავშირი ვერ მოხერხდა'));
+    }
   }
   return submitted;
 };
