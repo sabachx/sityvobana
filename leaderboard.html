@@ -3,41 +3,77 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#DF5B30" />
+  <meta name="theme-color" content="#FFFBF4" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#1e2330" media="(prefers-color-scheme: dark)" />
   <title>ლიდერბორდი — სიტყვობანა</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%232dc653'/%3E%3Ctext x='16' y='23' text-anchor='middle' font-family='sans-serif' font-weight='900' font-size='20' fill='%23ffffff'%3Eს%3C/text%3E%3C/svg%3E">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wdth,wght@87.5,300;87.5,400;87.5,500;87.5,700;87.5,900&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2329592D'/%3E%3Ctext x='16' y='23' text-anchor='middle' font-family='Helvetica Neue,Helvetica,Arial,sans-serif' font-weight='700' font-size='20' fill='%23FFFBF4'%3Eს%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;700;900&display=swap" rel="stylesheet" />
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZYRDVJSMHE"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-ZYRDVJSMHE');
-  </script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-ZYRDVJSMHE');</script>
+  <!-- Theme persistence — must run before paint -->
+  <script>(function(){var t=localStorage.getItem('sityvobana-theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
   <style>
+    /* ── VARIABLES — LIGHT ── */
     :root {
-      --bg:      #F0EAE0;
-      --surface: #FFFFFF;
-      --surface2:#F5F1EB;
-      --border:  #D8D0C6;
-      --text:    #1C1815;
-      --dim:     #6A6058;
-      --muted:   #9A9088;
-      --gold:    #DF5B30;
-      --gold2:   #C44D22;
-      --green:   #2DC653;
-      --accent:  #DF5B30;
-      --radius:  10px;
+      --bg:          #FFFBF4;
+      --text:        #11120d;
+      --text-dim:    #565449;
+      --text-muted:  #8A8278;
+      --accent:      #29592D;
+      --accent2:     #DF5B30;
+      --border:      rgba(88,84,73,.1);
+      --nm-d:        #d0c8b5;
+      --nm-l:        #ffffff;
+      --shadow-out:    6px  6px 16px var(--nm-d), -6px  -6px 16px var(--nm-l);
+      --shadow-out-sm: 4px  4px  9px var(--nm-d), -4px  -4px  9px var(--nm-l);
+      --shadow-out-xs: 2px  2px  5px var(--nm-d), -2px  -2px  5px var(--nm-l);
+      --shadow-in:    inset 6px  6px 12px var(--nm-d), inset -6px  -6px 12px var(--nm-l);
+      --shadow-in-sm: inset 4px  4px  8px var(--nm-d), inset -4px  -4px  8px var(--nm-l);
+      --shadow-in-xs: inset 2px  2px  5px var(--nm-d), inset -2px  -2px  5px var(--nm-l);
+      --radius: 12px;
     }
+    /* ── DARK MODE — system preference ── */
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg:         #1e2330;
+        --text:       #FFFBF4;
+        --text-dim:   #a0a5b8;
+        --text-muted: #585d74;
+        --border:     rgba(255,251,244,.06);
+        --nm-d:       #141820;
+        --nm-l:       #282e40;
+      }
+    }
+    /* ── DARK MODE — explicit override ── */
+    :root[data-theme="dark"] {
+      --bg:         #1e2330;
+      --text:       #FFFBF4;
+      --text-dim:   #a0a5b8;
+      --text-muted: #585d74;
+      --border:     rgba(255,251,244,.06);
+      --nm-d:       #141820;
+      --nm-l:       #282e40;
+    }
+    /* ── LIGHT MODE — explicit override ── */
+    :root[data-theme="light"] {
+      --bg:          #FFFBF4;
+      --text:        #11120d;
+      --text-dim:    #565449;
+      --text-muted:  #8A8278;
+      --border:      rgba(88,84,73,.1);
+      --nm-d:        #d0c8b5;
+      --nm-l:        #ffffff;
+    }
+
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
     html, body { height:100%; }
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: 'Noto Sans Georgian', sans-serif;
+      font-family: 'Noto Sans Georgian', system-ui, sans-serif;
       font-weight: 400;
       display: flex;
       flex-direction: column;
@@ -50,36 +86,45 @@
       align-items: center;
       justify-content: space-between;
       padding: 10px 16px;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface);
+      background: var(--bg);
       position: sticky; top: 0; z-index: 100;
     }
-    .header-logo {
-      font-weight: 900;
-      font-size: 16px;
-      color: var(--text);
+    .logo-mark {
+      width: 36px; height: 36px;
+      border-radius: 9px;
+      flex-shrink: 0;
+      box-shadow: var(--shadow-out-sm);
+      overflow: hidden;
       text-decoration: none;
-      letter-spacing: 1px;
-      font-variation-settings: 'wdth' 87.5;
     }
-    .header-logo span { color: var(--green); }
-    .back-btn {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--dim);
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-family: 'Noto Sans Georgian', sans-serif;
+    .logo-mark svg { display: block; width: 100%; height: 100%; }
+    .header-right { display: flex; gap: 8px; align-items: center; }
+    .icon-btn {
+      background: var(--bg); border: none; color: var(--text-dim);
+      width: 38px; height: 38px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; cursor: pointer;
+      box-shadow: var(--shadow-out-sm);
+      transition: box-shadow .15s, color .15s;
+    }
+    .icon-btn:hover { color: var(--text); }
+    .icon-btn:active { box-shadow: var(--shadow-in-sm); }
+    .pill-btn {
+      background: var(--bg); border: none; color: var(--text-dim);
+      padding: 6px 14px; border-radius: 20px;
+      font-size: 12px; font-family: inherit;
       cursor: pointer;
-      transition: all .2s;
+      box-shadow: var(--shadow-out-xs);
+      transition: box-shadow .15s, color .15s;
     }
-    .back-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .pill-btn:hover { color: var(--text); }
+    .pill-btn:active { box-shadow: var(--shadow-in-xs); }
+    .user-name { font-size: 13px; font-weight: 700; color: var(--accent); }
 
     /* ── TABS ── */
     .tabs {
       display: flex;
-      gap: 6px;
+      gap: 8px;
       padding: 16px 16px 0;
       max-width: 600px;
       margin: 0 auto;
@@ -89,21 +134,20 @@
       flex: 1;
       padding: 9px 6px;
       border-radius: var(--radius);
-      border: 1px solid var(--border);
-      background: var(--surface2);
-      color: var(--dim);
+      border: none;
+      background: var(--bg);
+      color: var(--text-dim);
       font-size: 11px;
       font-weight: 700;
-      font-family: 'Noto Sans Georgian', sans-serif;
-      letter-spacing: .5px;
+      font-family: inherit;
       cursor: pointer;
       text-align: center;
-      transition: all .2s;
+      transition: box-shadow .15s, color .15s;
+      box-shadow: var(--shadow-out-xs);
     }
     .tab.active {
-      background: var(--gold);
-      border-color: var(--gold);
-      color: #0f0e17;
+      box-shadow: var(--shadow-in-xs);
+      color: var(--accent);
     }
 
     /* ── CONTENT ── */
@@ -118,112 +162,76 @@
     /* ── PERIOD FILTER ── */
     .period-bar {
       display: flex;
-      gap: 6px;
+      gap: 8px;
       margin-bottom: 16px;
     }
     .period-btn {
       padding: 5px 14px;
       border-radius: 20px;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--muted);
+      border: none;
+      background: var(--bg);
+      color: var(--text-muted);
       font-size: 11px;
-      font-family: 'Noto Sans Georgian', sans-serif;
+      font-family: inherit;
       cursor: pointer;
-      transition: all .2s;
+      transition: box-shadow .15s, color .15s;
+      box-shadow: var(--shadow-out-xs);
     }
     .period-btn.active {
-      border-color: var(--accent);
+      box-shadow: var(--shadow-in-xs);
       color: var(--accent);
-      background: rgba(99,179,237,.1);
     }
 
     /* ── LEADERBOARD TABLE ── */
-    .board {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+    .board { display: flex; flex-direction: column; gap: 8px; }
     .board-row {
       display: flex;
       align-items: center;
       gap: 12px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
+      background: var(--bg);
       border-radius: var(--radius);
       padding: 12px 14px;
-      transition: border-color .2s;
+      box-shadow: var(--shadow-out-xs);
     }
-    .board-row:hover { border-color: var(--border); }
-    .board-row.top-1 { border-color: var(--gold); background: rgba(223,91,48,.07); }
-    .board-row.top-2 { border-color: #b0b0b0; background: rgba(176,176,176,.06); }
-    .board-row.top-3 { border-color: #cd7f32; background: rgba(205,127,50,.06); }
-    .rank {
-      font-size: 18px;
-      min-width: 32px;
-      text-align: center;
-    }
+    .board-row.top-1 { box-shadow: var(--shadow-out-sm); }
+    .board-row.top-1 .rank { color: #FFB830; }
+    .board-row.top-2 .rank { color: #A8A8A8; }
+    .board-row.top-3 .rank { color: #C47F3A; }
+    .rank { font-size: 18px; min-width: 32px; text-align: center; }
     .player-info { flex: 1; }
-    .player-name {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .player-sub {
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: 2px;
-    }
-    .player-score {
-      text-align: right;
-    }
-    .score-num {
-      font-size: 20px;
-      font-weight: 900;
-      color: var(--gold);
-      font-variation-settings: 'wdth' 87.5;
-    }
-    .score-label {
-      font-size: 10px;
-      color: var(--muted);
-    }
+    .player-name { font-size: 14px; font-weight: 700; color: var(--text); }
+    .player-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .player-score { text-align: right; }
+    .score-num { font-size: 20px; font-weight: 900; color: var(--accent); }
+    .score-label { font-size: 10px; color: var(--text-muted); }
 
     /* ── YOUR RANK ── */
     .your-rank {
-      margin-top: 16px;
-      padding: 12px 14px;
-      background: rgba(99,179,237,.08);
-      border: 1px solid rgba(99,179,237,.3);
+      margin-top: 12px;
       border-radius: var(--radius);
+      padding: 12px 14px;
       display: flex;
       align-items: center;
       gap: 12px;
+      box-shadow: var(--shadow-in-xs);
     }
-    .your-rank .rank { color: var(--accent); }
     .your-rank .player-name { color: var(--accent); }
+    .your-rank .rank { color: var(--accent); }
+    .your-rank .score-num { color: var(--accent); }
 
-    /* ── EMPTY STATE ── */
+    /* ── EMPTY / LOADING ── */
     .empty {
-      text-align: center;
-      padding: 48px 20px;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.8;
+      text-align: center; padding: 48px 20px;
+      color: var(--text-muted); font-size: 13px; line-height: 1.8;
     }
     .empty-icon { font-size: 40px; margin-bottom: 12px; }
-
-    /* ── LOADING ── */
-    .loading {
-      text-align: center;
-      padding: 40px;
-      color: var(--muted);
-    }
+    .loading { text-align: center; padding: 40px; color: var(--text-muted); }
     @keyframes spin { to { transform: rotate(360deg); } }
     .spinner {
       display: inline-block;
       width: 20px; height: 20px;
       border: 2px solid var(--border);
-      border-top-color: var(--gold);
+      border-top-color: var(--accent);
       border-radius: 50%;
       animation: spin .8s linear infinite;
       margin-bottom: 8px;
@@ -240,6 +248,10 @@
       pointer-events: none; white-space: nowrap;
     }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--nm-d); border-radius: 2px; }
   </style>
 </head>
 <body>
@@ -247,14 +259,20 @@
 <div id="toast"></div>
 
 <header>
-  <a href="index.html" class="header-logo" style="text-decoration:none;display:flex;align-items:center;gap:6px;font-weight:700;font-size:16px;color:var(--text);"><span style="display:inline-flex;align-items:center;justify-content:center;background:#2dc653;color:#fff;width:22px;height:22px;border-radius:4px;font-size:14px;font-weight:900;">ს</span>სიტყვობანა</a>
-  <div style="display:flex;gap:8px;align-items:center;">
-    <button id="login-btn" onclick="signInWithPopup(auth, new GoogleAuthProvider()).then(()=>showToast('კეთილი იყოს 👋')).catch(e=>showToast(e.message))" class="back-btn" style="border-color:rgba(99,179,237,.4);color:var(--accent);">🔑 შესვლა</button>
+  <a href="index.html" class="logo-mark" aria-label="სიტყვობანა">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36">
+      <rect width="36" height="36" rx="9" fill="#29592D"/>
+      <text x="19" y="29" text-anchor="middle" font-family="'Noto Sans Georgian','Helvetica Neue',Arial,sans-serif" font-size="27" font-weight="900" fill="#FFFBF4">ს</text>
+    </svg>
+  </a>
+  <div class="header-right">
+    <button id="login-btn" onclick="doGoogleLogin()" class="pill-btn">🔑 შესვლა</button>
     <div id="user-info" style="display:none;align-items:center;gap:6px;">
-      <span class="user-name" style="font-size:13px;font-weight:700;color:var(--green);"></span>
-      <button onclick="getAuth(app).signOut()" class="back-btn">გამოსვლა</button>
+      <span class="user-name" id="user-name-lbl"></span>
+      <button onclick="doLogout()" class="pill-btn">გამოსვლა</button>
     </div>
-    <button class="back-btn" onclick="history.back()">← უკან</button>
+    <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="თემა">🌙</button>
+    <button class="pill-btn" onclick="history.back()">← უკან</button>
   </div>
 </header>
 
@@ -271,18 +289,14 @@
     <button class="period-btn" onclick="setPeriod('week', this)">კვირა</button>
     <button class="period-btn" onclick="setPeriod('alltime', this)">ყველა დრო</button>
   </div>
-
   <div id="board-container">
-    <div class="loading">
-      <div class="spinner"></div><br>იტვირთება...
-    </div>
+    <div class="loading"><div class="spinner"></div><br>იტვირთება...</div>
   </div>
 </div>
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getDatabase, ref, query, orderByChild, limitToLast, get, onValue }
-  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
@@ -295,14 +309,17 @@ const app = initializeApp({
   messagingSenderId:"654904298229",
   appId:"1:654904298229:web:6d6e54a5681edd5975d3bc"
 });
+window.app = app;
 const db = getDatabase(app);
 const auth = getAuth(app);
+window.auth = auth;
+window.doGoogleLogin = () => signInWithPopup(auth, new GoogleAuthProvider()).then(()=>showToast('კეთილი იყოს 👋')).catch(e=>showToast(e.message));
+window.doLogout = () => auth.signOut();
 let currentUser = null;
 onAuthStateChanged(auth, u => { currentUser = u; updateAuthUI(); });
 
 let currentTab = 'daily';
 let currentPeriod = 'today';
-
 const MEDALS = ['🥇','🥈','🥉'];
 const RANK_CLASSES = ['top-1','top-2','top-3'];
 
@@ -310,10 +327,7 @@ function getPlayerName() {
   if(currentUser) return currentUser.displayName || currentUser.email.split('@')[0];
   return localStorage.getItem('sitqva_challenger_name') || null;
 }
-
-function getPlayerUid() {
-  return currentUser ? currentUser.uid : null;
-}
+function getPlayerUid() { return currentUser ? currentUser.uid : null; }
 
 function updateAuthUI() {
   const loginBtn = document.getElementById('login-btn');
@@ -323,139 +337,91 @@ function updateAuthUI() {
     const name = currentUser.displayName || currentUser.email.split('@')[0];
     loginBtn.style.display = 'none';
     userInfo.style.display = 'flex';
-    userInfo.querySelector('.user-name').textContent = name;
+    document.getElementById('user-name-lbl').textContent = name;
   } else {
     loginBtn.style.display = 'flex';
     userInfo.style.display = 'none';
   }
 }
 
-// Get today's date string
-function todayStr() {
-  return new Date().toISOString().slice(0,10);
-}
-
-// Get date N days ago
+function todayStr() { return new Date().toISOString().slice(0,10); }
 function daysAgoStr(n) {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
+  const d = new Date(); d.setDate(d.getDate() - n);
   return d.toISOString().slice(0,10);
 }
 
 async function loadScores() {
   const container = document.getElementById('board-container');
   container.innerHTML = '<div class="loading"><div class="spinner"></div><br>იტვირთება...</div>';
-
   try {
-    const path = `leaderboard/${currentTab}`;
-    const snap = await get(ref(db, path));
-
-    if(!snap.exists()) {
-      showEmpty();
-      return;
-    }
-
+    const snap = await get(ref(db, `leaderboard/${currentTab}`));
+    if(!snap.exists()) { showEmpty(); return; }
     let entries = Object.entries(snap.val()).map(([id, v]) => ({id, ...v}));
-
-    // Filter by period
-    if(currentPeriod === 'today') {
-      entries = entries.filter(e => e.date === todayStr());
-    } else if(currentPeriod === 'week') {
-      const weekAgo = daysAgoStr(7);
-      entries = entries.filter(e => e.date >= weekAgo);
-    }
-
-    if(entries.length === 0) { showEmpty(); return; }
-
-    // Sort by score descending for all modes (score already encodes fewer guesses = higher)
-    // For entries missing score (legacy), compute from guesses
+    if(currentPeriod === 'today') entries = entries.filter(e => e.date === todayStr());
+    else if(currentPeriod === 'week') { const w = daysAgoStr(7); entries = entries.filter(e => e.date >= w); }
+    if(!entries.length) { showEmpty(); return; }
+    // Compute missing scores from guesses
     entries.forEach(e => { if(!e.score && e.guesses) e.score = Math.max(10, (7-(e.guesses||6))*100); });
     entries.sort((a,b) => (b.score||0) - (a.score||0));
-
-    // Deduplicate by player name — keep best score
-    const seen = {};
+    // Deduplicate by uid or name — keep best
+    const seen = new Map();
     entries = entries.filter(e => {
-      const key = e.name || 'anonymous';
-      if(seen[key]) return false;
-      seen[key] = true;
-      return true;
+      const key = e.uid || e.name || 'anonymous';
+      if(seen.has(key)) return false;
+      seen.set(key, true); return true;
     });
-
     renderBoard(entries.slice(0, 50));
-
-  } catch(e) {
-    console.error(e);
-    showEmpty('კავშირის შეცდომა');
-  }
+  } catch(e) { console.error(e); showEmpty('კავშირის შეცდომა'); }
 }
 
 function renderBoard(entries) {
-  const myName = getPlayerName();
-  const container = document.getElementById('board-container');
-
-  if(entries.length === 0) { showEmpty(); return; }
-
   const myUid = getPlayerUid();
+  const myName = getPlayerName();
+  if(!entries.length) { showEmpty(); return; }
   let myRank = -1;
   const rows = entries.map((e, i) => {
     const rank = i + 1;
     const name = e.name || 'ანონიმი';
     const isMe = myUid ? e.uid === myUid : (myName && name === myName);
     if(isMe) myRank = rank;
-
     const medal = MEDALS[i] || `${rank}.`;
     const rankClass = RANK_CLASSES[i] || '';
-
-    const sc = e.score || Math.max(10, (7-(e.guesses||6))*100);
-    const scoreHtml = `<div class="score-num">${sc}</div><div class="score-label">ქულა</div>`;
-
+    const sc = e.score || Math.max(10,(7-(e.guesses||6))*100);
     let sub = '';
     if(e.date) sub = e.date;
     if(e.time) sub += sub ? ` · ${formatTime(e.time)}` : formatTime(e.time);
-
     return `<div class="board-row ${rankClass}${isMe?' your-rank':''}">
       <div class="rank">${medal}</div>
       <div class="player-info">
-        <div class="player-name">${name}${isMe ? ' 👈' : ''}</div>
-        ${sub ? `<div class="player-sub">${sub}</div>` : ''}
+        <div class="player-name">${name}${isMe?' 👈':''}</div>
+        ${sub?`<div class="player-sub">${sub}</div>`:''}
       </div>
-      <div class="player-score">${scoreHtml}</div>
+      <div class="player-score">
+        <div class="score-num">${sc}</div>
+        <div class="score-label">ქულა</div>
+      </div>
     </div>`;
   }).join('');
-
-  container.innerHTML = `<div class="board">${rows}</div>`;
+  document.getElementById('board-container').innerHTML = `<div class="board">${rows}</div>`;
 }
 
-function formatTime(seconds) {
-  if(!seconds) return '';
-  const m = Math.floor(seconds/60);
-  const s = seconds % 60;
-  return m > 0 ? `${m}წ ${s}წმ` : `${s}წმ`;
+function formatTime(s) {
+  if(!s) return '';
+  const m = Math.floor(s/60), sec = s%60;
+  return m>0?`${m}წ ${sec}წმ`:`${sec}წმ`;
 }
 
 function showEmpty(msg) {
-  const labels = {
-    daily: 'დღის სიტყვის',
-    freeplay: 'თავისუფალი თამაშის',
-    speed: 'სიჩქარის',
-    accuracy: 'სიზუსტის'
-  };
-  document.getElementById('board-container').innerHTML = `
-    <div class="empty">
-      <div class="empty-icon">🏆</div>
-      ${msg || `${labels[currentTab]||''} შედეგები ჯერ არ არის`}<br>
-      <span style="font-size:11px;margin-top:6px;display:block">იყავი პირველი!</span>
-    </div>`;
+  const labels = { daily:'დღის სიტყვის', freeplay:'თავისუფალი თამაშის', speed:'სიჩქარის', accuracy:'სიზუსტის' };
+  document.getElementById('board-container').innerHTML = `<div class="empty"><div class="empty-icon">🏆</div>${msg||`${labels[currentTab]||''} შედეგები ჯერ არ არის`}<br><span style="font-size:11px;margin-top:6px;display:block">იყავი პირველი!</span></div>`;
 }
 
-// ── GLOBAL FUNCTIONS ──
 window.switchTab = function(tab, el) {
   currentTab = tab;
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   loadScores();
 };
-
 window.setPeriod = function(period, el) {
   currentPeriod = period;
   document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
@@ -463,16 +429,35 @@ window.setPeriod = function(period, el) {
   loadScores();
 };
 
-// Initial load
 loadScores();
 </script>
 
 <script>
-let tt;
+// ── THEME TOGGLE ──
+function _isDark() {
+  const t = document.documentElement.getAttribute('data-theme');
+  if(t==='dark') return true;
+  if(t==='light') return false;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+function toggleTheme() {
+  const next = _isDark() ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('sityvobana-theme', next);
+  _updateThemeBtn();
+}
+function _updateThemeBtn() {
+  const btn = document.getElementById('theme-btn');
+  if(btn) btn.textContent = _isDark() ? '☀️' : '🌙';
+}
+_updateThemeBtn();
+
+// ── TOAST ──
+let _tt;
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
-  clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2800);
+  clearTimeout(_tt); _tt = setTimeout(() => t.classList.remove('show'), 2800);
 }
 </script>
 </body>

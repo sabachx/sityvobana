@@ -3,192 +3,307 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#FFFBF4" media="(prefers-color-scheme: light)"/>
+  <meta name="theme-color" content="#1e2330" media="(prefers-color-scheme: dark)"/>
   <title>სიტყვობანა – ადმინი</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@700;900&display=swap" rel="stylesheet"/>
+  <script>(function(){var t=localStorage.getItem('sityvobana-theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
   <style>
+    /* ── PALETTE ── */
     :root {
-      --bg:#F0EAE0; --bg2:#E8E2D8; --surface:#FFFFFF; --surface2:#F5F1EB;
-      --border:#D8D0C6; --text:#1C1815; --dim:#6A6058; --muted:#9A9088;
-      --accent:#DF5B30; --green:#2DC653; --red:#D93A3A; --yellow:#B88A00;
+      --bg:#FFFBF4;
+      --nm-d:#d0c8b5;
+      --nm-l:#ffffff;
+      --text:#1C1815;
+      --text-dim:#6A6058;
+      --text-muted:#9A9088;
+      --accent:#DF5B30;
+      --accent2:#c44e26;
+      --green:#29592D;
+      --red:#D93A3A;
+      --yellow:#B88A00;
       --radius:10px;
+      --border:rgba(0,0,0,.08);
+      --shadow-out-xs: 3px 3px 6px var(--nm-d), -3px -3px 6px var(--nm-l);
+      --shadow-out-sm: 5px 5px 10px var(--nm-d), -5px -5px 10px var(--nm-l);
+      --shadow-in-xs: inset 3px 3px 6px var(--nm-d), inset -3px -3px 6px var(--nm-l);
+      --shadow-in-sm: inset 5px 5px 10px var(--nm-d), inset -5px -5px 10px var(--nm-l);
+      /* Compat aliases for inline styles */
+      --surface:var(--bg);
+      --surface2:var(--bg);
+      --bg2:var(--bg);
+      --dim:var(--text-dim);
+      --muted:var(--text-muted);
     }
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min-height:100vh;}
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg:#1e2330;
+        --nm-d:#141820;
+        --nm-l:#282e40;
+        --text:#FFFBF4;
+        --text-dim:#a0a5b8;
+        --text-muted:#585d74;
+        --border:rgba(255,255,255,.08);
+      }
+    }
+    [data-theme="dark"] {
+      --bg:#1e2330;
+      --nm-d:#141820;
+      --nm-l:#282e40;
+      --text:#FFFBF4;
+      --text-dim:#a0a5b8;
+      --text-muted:#585d74;
+      --border:rgba(255,255,255,.08);
+    }
+    [data-theme="light"] {
+      --bg:#FFFBF4;
+      --nm-d:#d0c8b5;
+      --nm-l:#ffffff;
+      --text:#1C1815;
+      --text-dim:#6A6058;
+      --text-muted:#9A9088;
+      --border:rgba(0,0,0,.08);
+    }
 
-    /* LOGIN */
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min-height:100vh;transition:background .2s,color .2s;}
+
+    /* ── LOGO ── */
+    .logo-mark{text-decoration:none;display:inline-flex;align-items:center;gap:8px;}
+    .logo-mark svg{display:block;flex-shrink:0;}
+    .logo-name{font-family:'Noto Sans Georgian','Helvetica Neue',Arial,sans-serif;font-weight:900;font-size:17px;color:var(--text);letter-spacing:-.3px;}
+    .logo-sub{font-size:11px;color:var(--text-muted);font-weight:400;margin-left:4px;}
+
+    /* ── LOGIN ── */
     #login-screen{
       display:flex;flex-direction:column;align-items:center;justify-content:center;
       min-height:100vh;gap:16px;padding:20px;
     }
     #login-screen h1{font-size:22px;color:var(--text);}
-    #login-screen p{font-size:13px;color:var(--muted);}
+    #login-screen p{font-size:13px;color:var(--text-muted);}
     #login-screen input{
-      width:280px;padding:12px 16px;background:var(--surface);
-      border:1px solid var(--border);border-radius:var(--radius);
-      color:var(--text);font-size:14px;outline:none;
+      width:280px;padding:12px 16px;background:var(--bg);
+      box-shadow:var(--shadow-in-xs);border:none;border-radius:var(--radius);
+      color:var(--text);font-size:14px;outline:none;transition:box-shadow .15s;
     }
-    #login-screen input:focus{border-color:var(--accent);}
+    #login-screen input:focus{box-shadow:var(--shadow-in-sm);}
     #login-screen button{
       width:280px;padding:13px;background:var(--accent);color:#fff;
       border:none;border-radius:var(--radius);font-size:14px;font-weight:700;cursor:pointer;
+      box-shadow:var(--shadow-out-xs);transition:background .2s,box-shadow .2s;
     }
-    #login-screen button:hover{background:var(--accent2);}
+    #login-screen button:hover{background:var(--accent2);box-shadow:var(--shadow-out-sm);}
     .login-err{color:var(--red);font-size:12px;display:none;}
 
-    /* MAIN LAYOUT */
+    /* ── MAIN LAYOUT ── */
     #admin-screen{display:none;}
     .topbar{
-      background:var(--bg2);border-bottom:1px solid var(--border);
+      background:var(--bg);box-shadow:var(--shadow-out-xs);
       padding:12px 24px;display:flex;align-items:center;justify-content:space-between;
       position:sticky;top:0;z-index:100;
     }
-    .topbar h1{font-size:18px;color:var(--text);}
     .topbar-right{display:flex;gap:10px;align-items:center;}
-    .topbar-right span{font-size:12px;color:var(--muted);}
+    .topbar-right span{font-size:12px;color:var(--text-muted);}
     .logout-btn{
-      background:var(--surface);border:1px solid var(--border);
-      color:var(--dim);padding:6px 14px;border-radius:var(--radius);
-      font-size:12px;cursor:pointer;
+      background:var(--bg);box-shadow:var(--shadow-out-xs);border:none;
+      color:var(--text-dim);padding:6px 14px;border-radius:var(--radius);
+      font-size:12px;cursor:pointer;transition:color .2s,box-shadow .15s;
     }
-    .logout-btn:hover{border-color:var(--red);color:var(--red);}
+    .logout-btn:hover{color:var(--red);}
+    .icon-btn{
+      background:var(--bg);box-shadow:var(--shadow-out-xs);
+      border:none;cursor:pointer;padding:6px 10px;border-radius:var(--radius);
+      font-size:16px;line-height:1;transition:box-shadow .15s;
+    }
+    .icon-btn:active{box-shadow:var(--shadow-in-xs);}
 
-    /* TABS */
+    /* ── TABS ── */
     .tabs{
       display:flex;border-bottom:1px solid var(--border);
-      padding:0 24px;background:var(--bg2);
+      padding:0 24px;background:var(--bg);
     }
     .tab{
       padding:12px 20px;font-size:13px;font-weight:600;
-      color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;
+      color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;
       transition:all .2s;
     }
     .tab:hover{color:var(--text);}
     .tab.active{color:var(--accent);border-bottom-color:var(--accent);}
 
-    /* CONTENT */
+    /* ── CONTENT ── */
     .content{max-width:900px;margin:0 auto;padding:24px;}
 
-    /* STATS ROW */
+    /* ── STATS ROW ── */
     .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
     .stat-card{
-      background:var(--surface);border:1px solid var(--border);
+      background:var(--bg);box-shadow:var(--shadow-out-xs);
       border-radius:var(--radius);padding:16px;text-align:center;
     }
     .stat-card .sc-n{font-size:28px;font-weight:700;color:var(--accent);}
-    .stat-card .sc-l{font-size:11px;color:var(--muted);margin-top:4px;}
+    .stat-card .sc-l{font-size:11px;color:var(--text-muted);margin-top:4px;}
 
-    /* SECTION HEADER */
+    /* ── SECTION HEADER ── */
     .section-header{
       display:flex;align-items:center;justify-content:space-between;
       margin-bottom:14px;
     }
     .section-header h2{font-size:15px;font-weight:700;color:var(--text);}
-    .badge{
-      font-size:10px;padding:3px 8px;border-radius:10px;font-weight:700;
-    }
+    .badge{font-size:10px;padding:3px 8px;border-radius:10px;font-weight:700;}
     .badge-yellow{background:rgba(223,91,48,.12);color:var(--accent);}
-    .badge-green{background:rgba(45,198,83,.15);color:var(--green);}
-    .badge-red{background:rgba(229,83,83,.15);color:var(--red);}
+    .badge-green{background:rgba(41,89,45,.12);color:var(--green);}
+    .badge-red{background:rgba(217,58,58,.15);color:var(--red);}
 
-    /* SUGGESTION CARDS */
+    /* ── SUGGESTION CARDS ── */
     .sugg-card{
-      background:var(--surface);border:1px solid var(--border);
+      background:var(--bg);box-shadow:var(--shadow-out-xs);
       border-radius:var(--radius);padding:14px 16px;
       display:flex;align-items:center;gap:14px;margin-bottom:8px;
     }
     .sugg-word{font-size:20px;font-weight:700;color:var(--accent);min-width:90px;letter-spacing:2px;}
-    .sugg-meta{flex:1;font-size:11px;color:var(--muted);line-height:1.6;}
-    .sugg-meta span{color:var(--dim);}
+    .sugg-meta{flex:1;font-size:11px;color:var(--text-muted);line-height:1.6;}
+    .sugg-meta span{color:var(--text-dim);}
     .sugg-actions{display:flex;gap:6px;}
     .act-btn{
       padding:6px 14px;border-radius:var(--radius);font-size:12px;font-weight:600;
       cursor:pointer;border:none;transition:all .2s;
     }
-    .act-approve{background:rgba(45,198,83,.15);color:var(--green);}
+    .act-approve{background:rgba(41,89,45,.12);color:var(--green);}
     .act-approve:hover{background:var(--green);color:#fff;}
-    .act-reject{background:rgba(229,83,83,.12);color:var(--red);}
+    .act-reject{background:rgba(217,58,58,.12);color:var(--red);}
     .act-reject:hover{background:var(--red);color:#fff;}
     .act-pending{background:rgba(223,91,48,.10);color:var(--accent);}
     .act-pending:hover{background:var(--accent);color:#fff;}
 
-    /* STATUS PILL */
-    .status-pill{
-      font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;
-    }
+    /* ── STATUS PILL ── */
+    .status-pill{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;}
     .sp-pending{background:rgba(223,91,48,.12);color:var(--accent);}
-    .sp-approved{background:rgba(45,198,83,.15);color:var(--green);}
-    .sp-rejected{background:rgba(229,83,83,.15);color:var(--red);}
+    .sp-approved{background:rgba(41,89,45,.12);color:var(--green);}
+    .sp-rejected{background:rgba(217,58,58,.15);color:var(--red);}
 
-    /* WORD LIST TABLE */
+    /* ── WORD TABLE ── */
     .word-table{width:100%;border-collapse:collapse;}
     .word-table th{
-      text-align:left;font-size:11px;color:var(--muted);
+      text-align:left;font-size:11px;color:var(--text-muted);
       letter-spacing:1px;text-transform:uppercase;
       padding:8px 12px;border-bottom:1px solid var(--border);
     }
     .word-table td{
-      padding:9px 12px;font-size:13px;border-bottom:1px solid rgba(58,58,92,.4);
+      padding:9px 12px;font-size:13px;border-bottom:1px solid var(--border);
     }
-    .word-table tr:hover td{background:rgba(255,255,255,.02);}
+    .word-table tr:hover td{background:rgba(0,0,0,.025);}
     .word-ka{font-size:15px;font-weight:600;color:var(--accent);letter-spacing:1px;}
     .word-type{font-size:10px;padding:2px 7px;border-radius:8px;}
-    .wt-daily{background:rgba(45,198,83,.12);color:var(--green);}
+    .wt-daily{background:rgba(41,89,45,.12);color:var(--green);}
     .wt-valid{background:rgba(223,91,48,.08);color:var(--accent);}
     .del-word-btn{
-      background:none;border:none;color:var(--muted);cursor:pointer;
-      font-size:14px;padding:2px 6px;border-radius:4px;
+      background:none;border:none;color:var(--text-muted);cursor:pointer;
+      font-size:14px;padding:2px 6px;border-radius:4px;transition:all .15s;
     }
-    .del-word-btn:hover{background:rgba(229,83,83,.15);color:var(--red);}
+    .del-word-btn:hover{background:rgba(217,58,58,.15);color:var(--red);}
 
-    /* ADD WORD FORM */
+    /* ── ADD WORD FORM ── */
     .add-form{
-      background:var(--surface);border:1px solid var(--border);
+      background:var(--bg);box-shadow:var(--shadow-out-xs);
       border-radius:var(--radius);padding:16px;margin-bottom:20px;
       display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;
     }
     .add-form .field{display:flex;flex-direction:column;gap:4px;}
-    .add-form label{font-size:11px;color:var(--muted);}
+    .add-form label{font-size:11px;color:var(--text-muted);}
     .add-form input,.add-form select{
-      background:var(--surface2);border:1px solid var(--border);
+      background:var(--bg);box-shadow:var(--shadow-in-xs);border:none;
       color:var(--text);padding:9px 12px;border-radius:var(--radius);
-      font-size:13px;outline:none;
+      font-size:13px;outline:none;transition:box-shadow .15s;
     }
-    .add-form input:focus,.add-form select:focus{border-color:var(--accent);}
-    .add-form select option{background:var(--surface2);}
+    .add-form input:focus,.add-form select:focus{box-shadow:var(--shadow-in-sm);}
+    .add-form select option{background:var(--bg);}
     .add-btn{
       padding:9px 20px;background:var(--accent);color:#fff;
       border:none;border-radius:var(--radius);font-size:13px;font-weight:700;
-      cursor:pointer;
+      cursor:pointer;box-shadow:var(--shadow-out-xs);transition:background .2s;
     }
     .add-btn:hover{background:var(--accent2);}
+    .add-btn.secondary{background:var(--bg);color:var(--text-dim);box-shadow:var(--shadow-out-xs);}
+    .add-btn.secondary:hover{background:var(--bg);color:var(--text);}
 
-    /* FILTER BAR */
+    /* ── FILTER BAR ── */
     .filter-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
     .filter-btn{
       padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;
-      cursor:pointer;border:1px solid var(--border);background:var(--surface);
-      color:var(--muted);transition:all .2s;
+      cursor:pointer;border:none;background:var(--bg);
+      color:var(--text-muted);transition:all .2s;box-shadow:var(--shadow-out-xs);
     }
-    .filter-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+    .filter-btn.active{background:var(--accent);color:#fff;box-shadow:var(--shadow-in-xs);}
     .search-input{
-      flex:1;min-width:160px;padding:5px 12px;background:var(--surface);
-      border:1px solid var(--border);border-radius:20px;
-      color:var(--text);font-size:12px;outline:none;
+      flex:1;min-width:160px;padding:5px 12px;background:var(--bg);
+      box-shadow:var(--shadow-in-xs);border:none;border-radius:20px;
+      color:var(--text);font-size:12px;outline:none;transition:box-shadow .15s;
     }
-    .search-input:focus{border-color:var(--accent);}
+    .search-input:focus{box-shadow:var(--shadow-in-sm);}
 
-    /* LEADERBOARD / HISTORY TABLES */
+    /* ── DATA TABLE ── */
     .data-table{width:100%;border-collapse:collapse;}
-    .data-table th{text-align:left;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;padding:8px 12px;border-bottom:1px solid var(--border);}
-    .data-table td{padding:9px 12px;font-size:13px;border-bottom:1px solid rgba(58,58,92,.4);vertical-align:middle;}
-    .data-table tr:hover td{background:rgba(255,255,255,.02);}
+    .data-table th{text-align:left;font-size:11px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;padding:8px 12px;border-bottom:1px solid var(--border);}
+    .data-table td{padding:9px 12px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle;}
+    .data-table tr:hover td{background:rgba(0,0,0,.025);}
     .lb-mode-tabs{display:flex;gap:6px;margin-bottom:16px;}
-    .lb-mode-btn{padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--muted);transition:all .2s;}
-    .lb-mode-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+    .lb-mode-btn{padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:var(--bg);color:var(--text-muted);transition:all .2s;box-shadow:var(--shadow-out-xs);}
+    .lb-mode-btn.active{background:var(--accent);color:#fff;box-shadow:var(--shadow-in-xs);}
 
-    /* EMPTY STATE */
-    .empty{text-align:center;padding:40px;color:var(--muted);font-size:13px;}
+    /* ── FIREBASE RULES BANNER ── */
+    #rules-banner{
+      background:rgba(217,58,58,.08);border-bottom:1px solid rgba(217,58,58,.2);
+      padding:10px 24px;font-size:12px;color:var(--red);gap:10px;align-items:center;
+    }
+    #rules-banner code{background:rgba(0,0,0,.12);padding:2px 6px;border-radius:4px;}
 
-    /* TOAST */
+    /* ── BULK PANEL ── */
+    #bulk-panel{
+      background:var(--bg)!important;box-shadow:var(--shadow-out-xs)!important;
+      border:none!important;border-radius:var(--radius);padding:16px;margin-bottom:16px;
+    }
+    #bulk-panel textarea{
+      width:100%;height:150px;
+      background:var(--bg)!important;border:none!important;
+      box-shadow:var(--shadow-in-xs);border-radius:var(--radius);
+      color:var(--text);padding:10px;font-size:13px;resize:vertical;outline:none;font-family:system-ui;margin-top:4px;
+    }
+    #bulk-panel textarea:focus{box-shadow:var(--shadow-in-sm);}
+    #bulk-preview{
+      font-size:11px;color:var(--text-muted);padding:8px;
+      background:var(--bg)!important;box-shadow:var(--shadow-in-xs);
+      border-radius:var(--radius);min-height:40px;
+    }
+
+    /* ── POS SEARCH ── */
+    #pos-search-bar{
+      background:var(--bg)!important;box-shadow:var(--shadow-out-xs)!important;
+      border:none!important;border-radius:var(--radius);
+      display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;padding:12px 14px;
+    }
+    .pos-inp{
+      width:40px!important;height:40px!important;text-align:center;font-size:18px!important;font-weight:700;padding:0!important;
+      border-radius:var(--radius)!important;
+      background:var(--bg)!important;box-shadow:var(--shadow-in-xs)!important;
+      border:none!important;color:var(--text)!important;
+      outline:none;font-family:inherit;transition:box-shadow .15s!important;
+    }
+    .pos-inp:focus{box-shadow:var(--shadow-in-sm)!important;}
+    .pos-clear-btn{
+      padding:6px 12px;border-radius:var(--radius);font-size:12px;font-weight:600;
+      cursor:pointer;border:none;background:var(--bg);box-shadow:var(--shadow-out-xs);
+      color:var(--text-muted);transition:all .2s;
+    }
+    .pos-clear-btn:hover{color:var(--red);}
+
+    /* ── EMPTY / LOADING ── */
+    .empty{text-align:center;padding:40px;color:var(--text-muted);font-size:13px;}
+    .loading{text-align:center;padding:30px;color:var(--text-muted);font-size:13px;}
+    .spin{display:inline-block;animation:spin 1s linear infinite;}
+    @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+    /* ── TOAST ── */
     #toast{
       position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
       background:var(--text);color:var(--bg);padding:10px 20px;
@@ -197,11 +312,6 @@
       white-space:nowrap;
     }
     #toast.show{opacity:1;}
-
-    /* LOADING */
-    .loading{text-align:center;padding:30px;color:var(--muted);font-size:13px;}
-    .spin{display:inline-block;animation:spin 1s linear infinite;}
-    @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 
     .tab-panel{display:none;}
     .tab-panel.active{display:block;}
@@ -219,7 +329,14 @@
 
 <!-- ══ LOGIN ══ -->
 <div id="login-screen">
-  <h1><span style="display:inline-flex;align-items:center;justify-content:center;background:#2dc653;color:#fff;width:22px;height:22px;border-radius:4px;font-size:14px;font-weight:900;margin-right:2px;vertical-align:middle;position:relative;top:-1px;">ს</span>იტყვობანა</h1>
+  <button class="icon-btn" id="login-theme-btn" onclick="toggleTheme()" style="position:fixed;top:16px;right:16px;">🌙</button>
+  <a href="index.html" class="logo-mark">
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="36" height="36" rx="9" fill="#29592D"/>
+      <text x="18" y="27" text-anchor="middle" font-family="'Noto Sans Georgian','Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="25" fill="#FFFBF4">ს</text>
+    </svg>
+    <span class="logo-name">სიტყვობანა<span class="logo-sub">ადმინი</span></span>
+  </a>
   <p>ადმინის პანელი</p>
   <input type="email" id="admin-email" placeholder="ელ-ფოსტა" onkeydown="if(event.key==='Enter')doLogin()"/>
   <input type="password" id="admin-pass" placeholder="პაროლი" onkeydown="if(event.key==='Enter')doLogin()"/>
@@ -230,17 +347,24 @@
 <!-- ══ ADMIN ══ -->
 <div id="admin-screen">
   <div class="topbar">
-    <h1><span style="display:inline-flex;align-items:center;justify-content:center;background:#2dc653;color:#fff;width:22px;height:22px;border-radius:4px;font-size:14px;font-weight:900;margin-right:2px;vertical-align:middle;position:relative;top:-1px;">ს</span>იტყვობანა — ადმინი</h1>
+    <a href="index.html" class="logo-mark">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="8" fill="#29592D"/>
+        <text x="16" y="24" text-anchor="middle" font-family="'Noto Sans Georgian','Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="22" fill="#FFFBF4">ს</text>
+      </svg>
+      <span class="logo-name">სიტყვობანა</span>
+    </a>
     <div class="topbar-right">
       <span id="db-status">🟡 დაკავშირება...</span>
+      <button class="icon-btn" id="theme-btn" onclick="toggleTheme()">🌙</button>
       <button class="logout-btn" onclick="doLogout()">გასვლა</button>
     </div>
   </div>
 
   <!-- Firebase rules warning -->
-  <div id="rules-banner" style="display:none;background:rgba(229,83,83,.15);border-bottom:1px solid rgba(229,83,83,.3);padding:10px 24px;font-size:12px;color:#e55353;gap:10px;align-items:center;">
-    ⚠️ Firebase-ის წვდომა შეზღუდულია. გადადი Firebase Console → Realtime Database → Rules და დააყენე <code style="background:rgba(0,0,0,.3);padding:2px 6px;border-radius:4px;">".read":true, ".write":true</code>
-    <button onclick="this.parentElement.style.display='none'" style="margin-left:auto;background:none;border:none;color:#e55353;cursor:pointer;font-size:16px">✕</button>
+  <div id="rules-banner" style="display:none;">
+    ⚠️ Firebase-ის წვდომა შეზღუდულია. გადადი Firebase Console → Realtime Database → Rules და დააყენე <code>".read":true, ".write":true</code>
+    <button onclick="this.parentElement.style.display='none'" style="margin-left:auto;background:none;border:none;color:var(--red);cursor:pointer;font-size:16px">✕</button>
   </div>
 
   <div class="tabs">
@@ -272,25 +396,26 @@
           <input type="text" id="new-word" placeholder="ქართული სიტყვა" maxlength="15"/>
         </div>
         <button class="add-btn" onclick="addWord()">+ დამატება</button>
-        <button class="add-btn" onclick="toggleBulk()" style="background:var(--surface2);color:var(--dim);border:1px solid var(--border)">📋 მასობრივი დამატება</button>
+        <button class="add-btn secondary" onclick="toggleBulk()">📋 მასობრივი დამატება</button>
       </div>
 
       <!-- BULK IMPORT -->
-      <div id="bulk-panel" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;">
+      <div id="bulk-panel" style="display:none;">
         <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--accent)">📋 მასობრივი დამატება</div>
-        <p style="font-size:12px;color:var(--muted);margin-bottom:10px">შეიყვანე სიტყვები — თითო სიტყვა თითო სტრიქონზე. მხოლოდ ქართული, მინიმუმ 4 ასო.</p>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">შეიყვანე სიტყვები — თითო სიტყვა თითო სტრიქონზე. მხოლოდ ქართული, მინიმუმ 4 ასო.</p>
         <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
           <div style="flex:1;min-width:200px;">
-            <label>სიტყვები (ერთი სტრიქონზე ერთი)</label>
-            <textarea id="bulk-words" placeholder="სახლი&#10;წყალი&#10;ვარდი&#10;ღვინო..." style="width:100%;height:150px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);padding:10px;font-size:13px;resize:vertical;outline:none;font-family:system-ui;margin-top:4px;"></textarea>
+            <label style="font-size:11px;color:var(--text-muted);">სიტყვები (ერთი სტრიქონზე ერთი)</label>
+            <textarea id="bulk-words" placeholder="სახლი&#10;წყალი&#10;ვარდი&#10;ღვინო..."></textarea>
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;min-width:160px;">
-            <div id="bulk-preview" style="font-size:11px;color:var(--muted);padding:8px;background:var(--bg);border-radius:var(--radius);min-height:40px;"></div>
+            <div id="bulk-preview"></div>
             <button class="add-btn" onclick="bulkImport()" style="margin-top:auto">⚡ ყველას დამატება</button>
           </div>
         </div>
-        <div id="bulk-result" style="font-size:12px;color:var(--green);display:none;padding:8px;background:rgba(45,198,83,.1);border-radius:var(--radius);"></div>
+        <div id="bulk-result" style="font-size:12px;color:var(--green);display:none;padding:8px;background:rgba(41,89,45,.08);border-radius:var(--radius);"></div>
       </div>
+
       <div class="filter-bar">
         <button class="filter-btn active" onclick="filterWords('all',this)">ყველა</button>
         <button class="filter-btn" onclick="filterWords('5',this)">5 ასო (დღის)</button>
@@ -300,42 +425,43 @@
       </div>
 
       <!-- POSITIONAL SEARCH -->
-      <div id="pos-search-bar" style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;">
-        <span style="font-size:11px;color:var(--muted);letter-spacing:1px;white-space:nowrap;font-weight:600;">📍 ადგილის ძებნა</span>
+      <div id="pos-search-bar">
+        <span style="font-size:11px;color:var(--text-muted);letter-spacing:1px;white-space:nowrap;font-weight:600;">📍 ადგილის ძებნა</span>
         <div style="display:flex;gap:6px;align-items:flex-end;">
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
-            <span style="font-size:10px;color:var(--muted);">1</span>
-            <input class="pos-inp" data-pos="0" maxlength="2" placeholder="?" oninput="onPosInput(this)" style="width:40px;height:40px;text-align:center;font-size:18px;font-weight:700;padding:0;border-radius:var(--radius);background:var(--surface2);border:2px solid var(--border);color:var(--text);outline:none;transition:border-color .15s;font-family:inherit;"/>
+            <span style="font-size:10px;color:var(--text-muted);">1</span>
+            <input class="pos-inp" data-pos="0" maxlength="2" placeholder="?" oninput="onPosInput(this)"/>
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
-            <span style="font-size:10px;color:var(--muted);">2</span>
-            <input class="pos-inp" data-pos="1" maxlength="2" placeholder="?" oninput="onPosInput(this)" style="width:40px;height:40px;text-align:center;font-size:18px;font-weight:700;padding:0;border-radius:var(--radius);background:var(--surface2);border:2px solid var(--border);color:var(--text);outline:none;transition:border-color .15s;font-family:inherit;"/>
+            <span style="font-size:10px;color:var(--text-muted);">2</span>
+            <input class="pos-inp" data-pos="1" maxlength="2" placeholder="?" oninput="onPosInput(this)"/>
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
-            <span style="font-size:10px;color:var(--muted);">3</span>
-            <input class="pos-inp" data-pos="2" maxlength="2" placeholder="?" oninput="onPosInput(this)" style="width:40px;height:40px;text-align:center;font-size:18px;font-weight:700;padding:0;border-radius:var(--radius);background:var(--surface2);border:2px solid var(--border);color:var(--text);outline:none;transition:border-color .15s;font-family:inherit;"/>
+            <span style="font-size:10px;color:var(--text-muted);">3</span>
+            <input class="pos-inp" data-pos="2" maxlength="2" placeholder="?" oninput="onPosInput(this)"/>
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
-            <span style="font-size:10px;color:var(--muted);">4</span>
-            <input class="pos-inp" data-pos="3" maxlength="2" placeholder="?" oninput="onPosInput(this)" style="width:40px;height:40px;text-align:center;font-size:18px;font-weight:700;padding:0;border-radius:var(--radius);background:var(--surface2);border:2px solid var(--border);color:var(--text);outline:none;transition:border-color .15s;font-family:inherit;"/>
+            <span style="font-size:10px;color:var(--text-muted);">4</span>
+            <input class="pos-inp" data-pos="3" maxlength="2" placeholder="?" oninput="onPosInput(this)"/>
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
-            <span style="font-size:10px;color:var(--muted);">5</span>
-            <input class="pos-inp" data-pos="4" maxlength="2" placeholder="?" oninput="onPosInput(this)" style="width:40px;height:40px;text-align:center;font-size:18px;font-weight:700;padding:0;border-radius:var(--radius);background:var(--surface2);border:2px solid var(--border);color:var(--text);outline:none;transition:border-color .15s;font-family:inherit;"/>
+            <span style="font-size:10px;color:var(--text-muted);">5</span>
+            <input class="pos-inp" data-pos="4" maxlength="2" placeholder="?" oninput="onPosInput(this)"/>
           </div>
         </div>
-        <button onclick="clearPosSearch()" style="padding:6px 12px;border-radius:var(--radius);font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--muted);transition:all .2s;" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">✕ გასუფთავება</button>
+        <button class="pos-clear-btn" onclick="clearPosSearch()">✕ გასუფთავება</button>
         <span id="pos-match-count" style="font-size:11px;color:var(--green);display:none;font-weight:600;"></span>
       </div>
+
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
         <div style="display:flex;align-items:center;gap:10px;">
-          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);cursor:pointer;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);cursor:pointer;">
             <input type="checkbox" id="select-all-words" onchange="toggleSelectAll(this.checked)" style="width:14px;height:14px;cursor:pointer;accent-color:var(--red)"/>
             ყველას მონიშვნა
           </label>
-          <span id="word-count" style="font-size:12px;color:var(--muted);"></span>
+          <span id="word-count" style="font-size:12px;color:var(--text-muted);"></span>
         </div>
-        <button id="bulk-delete-btn" onclick="bulkDeleteWords()" style="display:none;background:rgba(229,83,83,.15);color:var(--red);border:1px solid rgba(229,83,83,.3);padding:6px 14px;border-radius:var(--radius);font-size:12px;font-weight:600;cursor:pointer;">
+        <button id="bulk-delete-btn" onclick="bulkDeleteWords()" style="display:none;background:rgba(217,58,58,.12);color:var(--red);border:none;padding:6px 14px;border-radius:var(--radius);font-size:12px;font-weight:600;cursor:pointer;box-shadow:var(--shadow-out-xs);">
           🗑 მონიშნულების წაშლა (<span id="selected-count">0</span>)
         </button>
       </div>
@@ -375,6 +501,35 @@
 
   </div>
 </div>
+
+<script>
+// ── THEME TOGGLE ──
+function _isDark() {
+  const t = document.documentElement.getAttribute('data-theme');
+  if (t === 'dark') return true;
+  if (t === 'light') return false;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+function _updateThemeBtn() {
+  const ico = _isDark() ? '☀️' : '🌙';
+  ['theme-btn', 'login-theme-btn'].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) b.textContent = ico;
+  });
+}
+function toggleTheme() {
+  const t = document.documentElement.getAttribute('data-theme');
+  const mq = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  let next;
+  if (!t) { next = mq ? 'light' : 'dark'; }
+  else if (t === 'dark') { next = 'light'; }
+  else { next = 'dark'; }
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('sityvobana-theme', next);
+  _updateThemeBtn();
+}
+document.addEventListener('DOMContentLoaded', _updateThemeBtn);
+</script>
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -576,7 +731,7 @@ function loadWords() {
 window.onPosInput = function(inp) {
   const chars = [...inp.value].filter(c => /^[\u10D0-\u10FF]$/.test(c));
   inp.value = chars[0] || '';
-  inp.style.borderColor = inp.value ? 'var(--accent)' : 'var(--border)';
+  inp.style.boxShadow = inp.value ? 'inset 3px 3px 6px var(--nm-d), inset -3px -3px 6px var(--nm-l), 0 0 0 2px var(--accent)' : '';
   inp.style.color = inp.value ? 'var(--accent)' : 'var(--text)';
   renderWords();
 };
@@ -584,7 +739,7 @@ window.onPosInput = function(inp) {
 window.clearPosSearch = function() {
   document.querySelectorAll('.pos-inp').forEach(inp => {
     inp.value = '';
-    inp.style.borderColor = 'var(--border)';
+    inp.style.boxShadow = '';
     inp.style.color = 'var(--text)';
   });
   document.getElementById('pos-match-count').style.display = 'none';
@@ -645,14 +800,14 @@ window.renderWords = function() {
           return `<tr id="row-${id}">
             <td><input type="checkbox" class="word-cb" data-id="${id}" onchange="updateBulkDeleteBtn()" style="width:14px;height:14px;cursor:pointer;accent-color:var(--red)"/></td>
             <td><span class="word-ka" id="word-display-${id}">${w.word||'—'}</span>
-                <input type="text" id="word-edit-${id}" value="${w.word||''}" 
-                  style="display:none;background:var(--surface2);border:1px solid var(--accent);color:var(--text);padding:4px 8px;border-radius:4px;font-size:14px;width:100px;"
+                <input type="text" id="word-edit-${id}" value="${w.word||''}"
+                  style="display:none;background:var(--bg);box-shadow:var(--shadow-in-xs);border:none;color:var(--text);padding:4px 8px;border-radius:4px;font-size:14px;width:100px;outline:none;"
                   onkeydown="if(event.key==='Enter')saveWordEdit('${id}');if(event.key==='Escape')cancelWordEdit('${id}')"/>
             </td>
-            <td style="font-size:13px;color:var(--dim)">${len}</td>
+            <td style="font-size:13px;color:var(--text-dim)">${len}</td>
             <td>${usage}</td>
-            <td style="font-size:11px;color:var(--muted)">${w.source||'manual'}</td>
-            <td style="font-size:11px;color:var(--muted)">${formatDate(w.addedAt)}</td>
+            <td style="font-size:11px;color:var(--text-muted)">${w.source||'manual'}</td>
+            <td style="font-size:11px;color:var(--text-muted)">${formatDate(w.addedAt)}</td>
             <td style="display:flex;gap:4px;">
               <button class="del-word-btn" onclick="startWordEdit('${id}')" title="რედაქტირება" style="color:var(--accent)">✏️</button>
               <button class="del-word-btn" onclick="deleteWord('${id}','${w.word}')" title="წაშლა">🗑</button>
@@ -876,7 +1031,7 @@ function renderHistory() {
     <thead><tr><th>თარიღი</th><th>სიტყვა</th><th></th></tr></thead>
     <tbody>${entries.map(([date,word])=>`
       <tr>
-        <td style="color:var(--dim)">${date}</td>
+        <td style="color:var(--text-dim)">${date}</td>
         <td class="word-ka">${word}</td>
         <td><button class="del-word-btn" onclick="deleteHistoryEntry('${date}')" title="წაშლა">🗑</button></td>
       </tr>`).join('')}
@@ -924,12 +1079,12 @@ function renderLeaderboard() {
     <tbody>${entries.map(([id,e],i)=>{
       const sc = e.score || Math.max(10,(7-(e.guesses||6))*100);
       return `<tr>
-        <td style="color:var(--muted)">${i+1}</td>
+        <td style="color:var(--text-muted)">${i+1}</td>
         <td style="font-weight:600">${e.name||'ანონიმი'}</td>
-        <td style="color:var(--muted);font-size:11px">${e.date||'—'}</td>
-        ${isFP?`<td style="color:var(--muted)">${e.wordsGuessed||'—'}</td>`:''}
-        <td style="color:var(--muted)">${e.guesses||'—'}</td>
-        <td style="color:var(--muted)">${e.hintsUsed!=null?e.hintsUsed:'—'}</td>
+        <td style="color:var(--text-muted);font-size:11px">${e.date||'—'}</td>
+        ${isFP?`<td style="color:var(--text-muted)">${e.wordsGuessed||'—'}</td>`:''}
+        <td style="color:var(--text-muted)">${e.guesses||'—'}</td>
+        <td style="color:var(--text-muted)">${e.hintsUsed!=null?e.hintsUsed:'—'}</td>
         <td style="color:var(--accent);font-weight:700">${sc}</td>
         <td><button class="del-word-btn" onclick="deleteLbEntry('${id}')" title="წაშლა">🗑</button></td>
       </tr>`;}).join('')}

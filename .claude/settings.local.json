@@ -6,7 +6,10 @@
       "Bash(git add:*)",
       "Bash(git commit -m ':*)",
       "Bash(git push:*)",
-      "Bash(grep -v \"^[[:space:]]*//\")"
+      "Bash(grep -v \"^[[:space:]]*//\")",
+      "Bash(more +386)",
+      "Bash(python3 -c ':*)",
+      "Bash(powershell -Command \"Get-Content 'C:/Users/schkh/OneDrive/Desktop/Coding/sityvobana/github/sityvobana/landing.html' | Select-Object -Last 30\")"
     ]
   }
 }
