@@ -1998,10 +1998,10 @@ init();
 // Init tag inputs that are already in DOM
 ['tag-suggest-modal','tag-suggest-result','tag-suggest-freeplay'].forEach(initTagInput);
 
-// Handle freeplay param from landing page
-if(new URLSearchParams(location.search).get('freeplay')) {
-  setTimeout(()=>startFreePlay(), 900);
-}
+// Handle URL params from landing page
+const _lp = new URLSearchParams(location.search);
+if(_lp.get('freeplay')) setTimeout(()=>startFreePlay(), 900);
+if(_lp.get('login'))    setTimeout(()=>openModal('auth-modal'), 900);
 </script>
 </body>
 </html>
