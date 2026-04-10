@@ -646,11 +646,11 @@ function loadSuggestions() {
     document.getElementById('db-status').textContent = '🟢 დაკავშირებულია';
     document.getElementById('rules-banner').style.display = 'none';
   }, err => {
-    document.getElementById('db-status').textContent = '🔴 შეცდომა';
+    document.getElementById('db-status').textContent = '🔴 შეცდომა: ' + (err.code || err.message);
     if (err.code === 'PERMISSION_DENIED') {
       document.getElementById('rules-banner').style.display = 'flex';
     }
-    document.getElementById('sugg-list').innerHTML = `<div class="empty">⚠️ წვდომა აკრძალულია — Firebase-ის წესები არ არის დაყენებული</div>`;
+    document.getElementById('sugg-list').innerHTML = `<div class="empty">⚠️ ${err.code || err.message}</div>`;
   });
 }
 
