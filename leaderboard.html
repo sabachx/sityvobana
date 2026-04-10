@@ -367,12 +367,10 @@ async function loadScores() {
 
     if(entries.length === 0) { showEmpty(); return; }
 
-    // Sort by score (higher = better) or guesses (lower = better for daily)
-    if(currentTab === 'daily') {
-      entries.sort((a,b) => (a.guesses||99) - (b.guesses||99) || (a.time||999) - (b.time||999));
-    } else {
-      entries.sort((a,b) => (b.score||0) - (a.score||0));
-    }
+    // Sort by score descending for all modes (score already encodes fewer guesses = higher)
+    // For entries missing score (legacy), compute from guesses
+    entries.forEach(e => { if(!e.score && e.guesses) e.score = Math.max(10, (7-(e.guesses||6))*100); });
+    entries.sort((a,b) => (b.score||0) - (a.score||0));
 
     // Deduplicate by player name — keep best score
     const seen = {};
@@ -408,12 +406,8 @@ function renderBoard(entries) {
     const medal = MEDALS[i] || `${rank}.`;
     const rankClass = RANK_CLASSES[i] || '';
 
-    let scoreHtml = '';
-    if(currentTab === 'daily') {
-      scoreHtml = `<div class="score-num">${e.guesses || '?'}</div><div class="score-label">მცდელობა</div>`;
-    } else {
-      scoreHtml = `<div class="score-num">${e.score || 0}</div><div class="score-label">ქულა</div>`;
-    }
+    const sc = e.score || Math.max(10, (7-(e.guesses||6))*100);
+    const scoreHtml = `<div class="score-num">${sc}</div><div class="score-label">ქულა</div>`;
 
     let sub = '';
     if(e.date) sub = e.date;

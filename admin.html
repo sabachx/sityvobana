@@ -914,20 +914,25 @@ async function loadLeaderboard() {
 function renderLeaderboard() {
   const container = document.getElementById('lb-list');
   const entries = Object.entries(allLb).sort((a,b)=>{
-    if(lbMode==='daily') return (a[1].guesses||99)-(b[1].guesses||99);
-    return (b[1].score||0)-(a[1].score||0);
+    const sc = e => e.score || Math.max(10,(7-(e.guesses||6))*100);
+    return sc(b[1]) - sc(a[1]);
   });
   if(!entries.length){ container.innerHTML='<div class="empty">ჩანაწერები არ არის</div>'; return; }
+  const isFP = lbMode==='freeplay';
   container.innerHTML = `<table class="data-table">
-    <thead><tr><th>#</th><th>მოთამაშე</th><th>თარიღი</th><th>${lbMode==='daily'?'მცდელობა':'ქულა'}</th><th></th></tr></thead>
-    <tbody>${entries.map(([id,e],i)=>`
-      <tr>
+    <thead><tr><th>#</th><th>მოთამაშე</th><th>თარიღი</th>${isFP?'<th>სიტყვები</th>':''}<th>მცდელობები</th><th>ჰინთები</th><th>ქულა</th><th></th></tr></thead>
+    <tbody>${entries.map(([id,e],i)=>{
+      const sc = e.score || Math.max(10,(7-(e.guesses||6))*100);
+      return `<tr>
         <td style="color:var(--muted)">${i+1}</td>
         <td style="font-weight:600">${e.name||'ანონიმი'}</td>
         <td style="color:var(--muted);font-size:11px">${e.date||'—'}</td>
-        <td style="color:var(--accent);font-weight:700">${lbMode==='daily'?(e.guesses||'?'):(e.score||0)}</td>
+        ${isFP?`<td style="color:var(--muted)">${e.wordsGuessed||'—'}</td>`:''}
+        <td style="color:var(--muted)">${e.guesses||'—'}</td>
+        <td style="color:var(--muted)">${e.hintsUsed!=null?e.hintsUsed:'—'}</td>
+        <td style="color:var(--accent);font-weight:700">${sc}</td>
         <td><button class="del-word-btn" onclick="deleteLbEntry('${id}')" title="წაშლა">🗑</button></td>
-      </tr>`).join('')}
+      </tr>`;}).join('')}
     </tbody></table>`;
 }
 window.setLbMode = function(mode, el) {

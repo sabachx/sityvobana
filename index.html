@@ -347,6 +347,8 @@
     .btn-primary { background:var(--accent); color:#FFFBF4; box-shadow: var(--shadow-out-sm); }
     .btn-primary:hover { opacity:.9; color:#FFFBF4; }
     .btn-green { background:var(--green); color:#FFFBF4; box-shadow: var(--shadow-out-sm); }
+    .btn-green:hover { color:#FFFBF4; }
+    .btn-green:active { box-shadow: var(--shadow-in-sm); color:#FFFBF4; }
     .divider { display:flex; align-items:center; gap:8px; color:var(--text-muted); font-size:11px; margin:10px 0; }
     .divider::before,.divider::after { content:''; flex:1; height:1px; background:var(--border); }
 
@@ -1502,11 +1504,12 @@ async function showResult(won,attempts){
 
   // Submit score — await daily so it's in Firebase before we fetch the distribution
   if(won && typeof window.submitScore === 'function'){
+    const wordScore = Math.max(10, (7 - attempts) * 100 - hintsUsed * 50);
     if(!isFreePlay){
-      await window.submitScore('daily', { guesses: attempts, word: targetWord });
+      await window.submitScore('daily', { guesses: attempts, hintsUsed, score: wordScore, word: targetWord });
     } else {
-      const score = Math.max(100, (7 - attempts) * 100);
-      window.submitScore('freeplay', { score, guesses: attempts, word: targetWord });
+      _fpWords++; _fpAttempts += attempts; _fpHints += hintsUsed; _fpScore += wordScore;
+      window.submitScore('freeplay', { score: _fpScore, guesses: _fpAttempts, hintsUsed: _fpHints, wordsGuessed: _fpWords, word: targetWord });
     }
   }
   const distTitle = document.getElementById('dist-title');
@@ -1538,7 +1541,8 @@ function toggleResultSuggest() {
   if(!isOpen) setTimeout(()=>{ const w=document.getElementById('tag-suggest-freeplay'); if(w) w.querySelector('.tag-text-input')?.focus(); }, 50);
 }
 
-async function startFreePlay() {
+async function startFreePlay(continueSession=false) {
+  if(!continueSession){ _fpWords=0; _fpAttempts=0; _fpHints=0; _fpScore=0; }
   // ── Switch UI immediately (feels instant) ──
   isFreePlay = true;
   isChallenge = true;
@@ -1608,7 +1612,7 @@ function updateModeBar() {
 }
 
 function nextFreePlay() {
-  startFreePlay();
+  startFreePlay(true); // continue session
 }
 
 // ── COUNTDOWN ──
@@ -1678,13 +1682,27 @@ function shareLink(id,title){
 
 // ── HINT ──
 let hintsUsed=0, _hintedPos=new Set();
+// ── FREEPLAY SESSION TRACKING ──
+let _fpWords=0, _fpAttempts=0, _fpHints=0, _fpScore=0;
 function useHint(){
   if(gameOver||revealInProgress) return;
   if(hintsUsed>=2){showToast('მინიშნებები ამოიწურა 😅');return;}
-  const tA=[...targetWord], conf=new Set();
-  guesses.forEach(g=>[...g].forEach((l,i)=>{if(l===tA[i])conf.add(i);}));
-  // Exclude positions already confirmed correct AND already hinted
-  const avail=Array.from({length:wordLength},(_,i)=>i).filter(i=>!conf.has(i)&&!_hintedPos.has(i));
+  const tA=[...targetWord], conf=new Set(), presentLetters=new Set();
+  guesses.forEach(g=>{
+    const gA=[...g];
+    gA.forEach((l,i)=>{
+      if(l===tA[i]) conf.add(i);
+      else if(tA.includes(l)) presentLetters.add(l);
+    });
+  });
+  // Positions of known-present (yellow) letters that aren't confirmed/hinted yet
+  const yellowAvail=[];
+  presentLetters.forEach(letter=>{
+    tA.forEach((l,i)=>{ if(l===letter&&!conf.has(i)&&!_hintedPos.has(i)) yellowAvail.push(i); });
+  });
+  // Fall back to any unconfirmed/unhinted position if no yellow available
+  const allAvail=Array.from({length:wordLength},(_,i)=>i).filter(i=>!conf.has(i)&&!_hintedPos.has(i));
+  const avail=yellowAvail.length ? yellowAvail : allAvail;
   if(!avail.length){showToast('ყველა ადგილი ცნობილია 🎯');return;}
   const pos=avail[Math.floor(Math.random()*avail.length)];
   _hintedPos.add(pos);
@@ -1811,6 +1829,14 @@ function initTagInput(wrapId) {
     } else if (e.key === 'Enter') {
       e.preventDefault();
       _commitTag(wrapId);
+      // If there are chips, submit and close the modal
+      setTimeout(async () => {
+        if (_tagChips[wrapId] && _tagChips[wrapId].size > 0) {
+          await submitTagSuggestion(wrapId);
+          const overlay = wrap.closest('.modal-overlay');
+          if (overlay) closeModal(overlay.id);
+        }
+      }, 30);
     } else if (e.key === 'Backspace' && !inp.value) {
       const arr = [..._tagChips[wrapId]];
       if (arr.length) _removeTag(wrapId, arr[arr.length - 1]);
