@@ -399,6 +399,9 @@
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
 <script>
+// Mark landing as visited so index.html doesn't redirect back here
+localStorage.setItem('sitqva_visited', '1');
+
 // ── THEME ──
 function _isDark() {
   const t = document.documentElement.getAttribute('data-theme');

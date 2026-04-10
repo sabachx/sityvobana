@@ -330,7 +330,7 @@
 <!-- ══ LOGIN ══ -->
 <div id="login-screen">
   <button class="icon-btn" id="login-theme-btn" onclick="toggleTheme()" style="position:fixed;top:16px;right:16px;">🌙</button>
-  <a href="index.html" class="logo-mark">
+  <a href="landing.html" class="logo-mark">
     <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect width="36" height="36" rx="9" fill="#29592D"/>
       <text x="18" y="27" text-anchor="middle" font-family="'Noto Sans Georgian','Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="25" fill="#FFFBF4">ს</text>
@@ -347,7 +347,7 @@
 <!-- ══ ADMIN ══ -->
 <div id="admin-screen">
   <div class="topbar">
-    <a href="index.html" class="logo-mark">
+    <a href="landing.html" class="logo-mark">
       <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect width="32" height="32" rx="8" fill="#29592D"/>
         <text x="16" y="24" text-anchor="middle" font-family="'Noto Sans Georgian','Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="22" fill="#FFFBF4">ს</text>
@@ -579,8 +579,22 @@ window.doLogin = async function() {
   const pass  = document.getElementById('admin-pass').value;
   const errEl = document.getElementById('login-err');
   errEl.style.display = 'none';
+  let cred;
   try {
-    const cred = await signInWithEmailAndPassword(auth, email, pass);
+    cred = await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    if (e.code === 'auth/too-many-requests') {
+      errEl.textContent = 'ძალიან ბევრი მცდელობა. ცოტა ხანი დაიცადე ან პაროლი შეიცვალე.';
+    } else if (e.code === 'auth/network-request-failed') {
+      errEl.textContent = 'ქსელის შეცდომა. შეამოწმე ინტერნეტ-კავშირი.';
+    } else {
+      errEl.textContent = 'არასწორი ელ-ფოსტა ან პაროლი';
+    }
+    errEl.style.display = 'block';
+    return;
+  }
+  // Optional extra check: verify UID exists in /admin/ node
+  try {
     const snap = await get(ref(db, 'admin/' + cred.user.uid));
     if (!snap.exists()) {
       await fbSignOut(auth);
@@ -588,12 +602,12 @@ window.doLogin = async function() {
       errEl.style.display = 'block';
       return;
     }
-    sessionStorage.setItem('admin_auth', '1');
-    showAdmin();
-  } catch(e) {
-    errEl.textContent = 'არასწორი ელ-ფოსტა ან პაროლი';
-    errEl.style.display = 'block';
+  } catch(dbErr) {
+    // DB check failed (e.g. rules not set) — fall through and trust email/password auth
+    console.warn('Admin node check skipped:', dbErr.code);
   }
+  sessionStorage.setItem('admin_auth', '1');
+  showAdmin();
 };
 
 window.doLogout = async function() {

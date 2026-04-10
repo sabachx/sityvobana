@@ -1,11 +1,1 @@
-{
-  "version": "0.0.1",
-  "configurations": [
-    {
-      "name": "sityvobana",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["serve", "-p", "3333", "."],
-      "port": 3333
-    }
-  ]
-}
+{"version":"0.0.1","configurations":[{"name":"sityvobana","runtimeExecutable":"npx","runtimeArgs":["serve","-l","3333","."],"port":3333}]}

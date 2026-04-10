@@ -511,12 +511,12 @@
 </div>
 
 <header>
-  <div class="logo-mark" aria-label="სიტყვობანა">
+  <a href="landing.html" class="logo-mark" aria-label="სიტყვობანა">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 38 38">
       <rect width="38" height="38" rx="10" fill="#29592D"/>
       <text x="19" y="29" text-anchor="middle" font-family="'Noto Sans Georgian','Helvetica Neue',Arial,sans-serif" font-size="27" font-weight="900" fill="#FFFBF4">ს</text>
     </svg>
-  </div>
+  </a>
   <div class="header-actions">
     <button class="icon-btn" onclick="openModal('how-modal')" aria-label="როგორ ვითამაშოთ">❓</button>
     <button class="icon-btn hint-btn" id="hint-btn" onclick="useHint()" aria-label="მინიშნება">💡</button>
@@ -1183,7 +1183,26 @@ async function init() {
   buildBoard();
   buildKeyboard();
   updateStats();
-  checkTodayPlayed();
+  // Restore free-play result if user navigated away (e.g. to leaderboard) and came back
+  const _fpSaved = (()=>{ try{ return JSON.parse(sessionStorage.getItem('sitqva_fp_result')||'null'); }catch(e){ return null; } })();
+  if(_fpSaved && _fpSaved.targetWord){
+    isFreePlay=true; isChallenge=true; gameOver=true;
+    targetWord=_fpSaved.targetWord; wordLength=[..._fpSaved.targetWord].length;
+    guesses=_fpSaved.guesses||[];
+    applyWordLength(); buildBoard(); buildKeyboard();
+    guesses.forEach((guess,ri)=>{
+      const res=evaluateGuess(guess,targetWord);
+      [...guess].forEach((l,ci)=>{
+        const t=document.getElementById(`tile-${ri}-${ci}`);
+        t.textContent=l; t.classList.add(res[ci]); updateKeyColor(l,res[ci]);
+      });
+    });
+    currentRow=guesses.length;
+    updateModeBar();
+    setTimeout(()=>showResult(_fpSaved.won,_fpSaved.attempts,true), 400);
+  } else {
+    checkTodayPlayed();
+  }
   updateModeBar();
   setupMobileCapture();
   focusCapture();
@@ -1301,7 +1320,7 @@ function restoreBoard(data) {
     });
     currentRow=ri+1;
   });
-  if(data.gameOver){ gameOver=true; const won=data.guesses.length>0&&data.guesses[data.guesses.length-1]===targetWord; if(!won) setTimeout(()=>showResult(false),300); }
+  if(data.gameOver){ gameOver=true; const won=data.guesses.length>0&&data.guesses[data.guesses.length-1]===targetWord; setTimeout(()=>showResult(won,data.guesses.length,true),300); }
 }
 
 // ── KEYBOARD ──
@@ -1481,7 +1500,7 @@ async function fetchWordDistribution(word) {
 }
 
 // ── RESULT ──
-async function showResult(won,attempts){
+async function showResult(won,attempts,skipSubmit=false){
   document.getElementById('result-title').textContent = won ? '🎉 გაიმარჯვე!' : (isFreePlay ? '😔 სცადე ისევ!' : '😔 სცადე ხვალ!');
   document.getElementById('result-word').textContent=targetWord;
   document.getElementById('result-sub').textContent = won ? `გამოიცანი ${attempts} მცდელობაში` : (isFreePlay ? 'სიტყვა იყო:' : 'დღის სიტყვაა:');
@@ -1503,7 +1522,7 @@ async function showResult(won,attempts){
   if(panel) panel.style.display = 'none';
 
   // Submit score — await daily so it's in Firebase before we fetch the distribution
-  if(won && typeof window.submitScore === 'function'){
+  if(won && !skipSubmit && typeof window.submitScore === 'function'){
     const wordScore = Math.max(10, (7 - attempts) * 100 - hintsUsed * 50);
     if(!isFreePlay){
       await window.submitScore('daily', { guesses: attempts, hintsUsed, score: wordScore, word: targetWord });
@@ -1522,6 +1541,8 @@ async function showResult(won,attempts){
     renderDistribution(state.distribution, won ? attempts : 0);
   }
   updateStats(); startCountdown(); openModal('result-modal');
+  // Persist free-play result so modal re-appears if user navigates away and returns
+  if(isFreePlay){ try{ sessionStorage.setItem('sitqva_fp_result',JSON.stringify({targetWord,guesses:guesses.slice(),won:!!won,attempts:attempts||0})); }catch(e){} }
 }
 function shareResult(){
   const won=guesses.length>0&&guesses[guesses.length-1]===targetWord;
@@ -1542,7 +1563,7 @@ function toggleResultSuggest() {
 }
 
 async function startFreePlay(continueSession=false) {
-  if(!continueSession){ _fpWords=0; _fpAttempts=0; _fpHints=0; _fpScore=0; }
+  if(!continueSession){ _fpWords=0; _fpAttempts=0; _fpHints=0; _fpScore=0; sessionStorage.removeItem('sitqva_fp_result'); }
   // ── Switch UI immediately (feels instant) ──
   isFreePlay = true;
   isChallenge = true;
@@ -1577,6 +1598,7 @@ async function startFreePlay(continueSession=false) {
 }
 
 async function switchToDaily() {
+  sessionStorage.removeItem('sitqva_fp_result');
   isFreePlay = false; isChallenge = false;
   gameOver = false; guesses = []; currentRow = 0; currentCol = 0; currentGuess = [];
   wordLength = 5; isSubmitting = false;
@@ -1612,6 +1634,7 @@ function updateModeBar() {
 }
 
 function nextFreePlay() {
+  sessionStorage.removeItem('sitqva_fp_result');
   startFreePlay(true); // continue session
 }
 
