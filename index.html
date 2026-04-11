@@ -1201,6 +1201,11 @@ async function init() {
     setTimeout(()=>showResult(_fpSaved.won,_fpSaved.attempts,true), 400);
   } else {
     checkTodayPlayed();
+    // Restore daily result modal only within the same browser tab (sessionStorage)
+    const _drSaved = (()=>{ try{ return JSON.parse(sessionStorage.getItem('sitqva_daily_result')||'null'); }catch(e){ return null; } })();
+    if(_drSaved && gameOver){
+      setTimeout(()=>showResult(_drSaved.won,_drSaved.attempts,true), 400);
+    }
   }
   updateModeBar();
   setupMobileCapture();
@@ -1319,7 +1324,7 @@ function restoreBoard(data) {
     });
     currentRow=ri+1;
   });
-  if(data.gameOver){ gameOver=true; const won=data.guesses.length>0&&data.guesses[data.guesses.length-1]===targetWord; setTimeout(()=>showResult(won,data.guesses.length,true),300); }
+  if(data.gameOver){ gameOver=true; }
 }
 
 // ── KEYBOARD ──
@@ -1540,8 +1545,11 @@ async function showResult(won,attempts,skipSubmit=false){
     renderDistribution(state.distribution, won ? attempts : 0);
   }
   updateStats(); startCountdown(); openModal('result-modal');
-  // Persist free-play result so modal re-appears if user navigates away and returns
-  if(isFreePlay){ try{ sessionStorage.setItem('sitqva_fp_result',JSON.stringify({targetWord,guesses:guesses.slice(),won:!!won,attempts:attempts||0})); }catch(e){} }
+  // Persist result so modal re-appears if user navigates away and returns (same tab only)
+  try{
+    const _rkey = isFreePlay ? 'sitqva_fp_result' : 'sitqva_daily_result';
+    sessionStorage.setItem(_rkey, JSON.stringify({targetWord,guesses:guesses.slice(),won:!!won,attempts:attempts||0}));
+  }catch(e){}
 }
 function shareResult(){
   const won=guesses.length>0&&guesses[guesses.length-1]===targetWord;
@@ -1598,6 +1606,7 @@ async function startFreePlay(continueSession=false) {
 
 async function switchToDaily() {
   sessionStorage.removeItem('sitqva_fp_result');
+  sessionStorage.removeItem('sitqva_daily_result');
   isFreePlay = false; isChallenge = false;
   gameOver = false; guesses = []; currentRow = 0; currentCol = 0; currentGuess = [];
   wordLength = 5; isSubmitting = false;
