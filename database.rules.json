@@ -1,0 +1,57 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "words": {
+      ".read": true,
+      ".write": "auth != null && root.child('admin').child(auth.uid).exists()",
+      ".indexOn": ["word"]
+    },
+
+    "used_words": {
+      ".read": true,
+      ".write": false
+    },
+
+    "suggestions": {
+      ".read": "auth != null && root.child('admin').child(auth.uid).exists()",
+      ".indexOn": ["word"],
+      "$id": {
+        ".write": "(auth != null && root.child('admin').child(auth.uid).exists()) || (!data.exists() && newData.exists())",
+        ".validate": "(auth != null && root.child('admin').child(auth.uid).exists()) || (newData.hasChildren(['word','status']) && newData.child('word').isString() && newData.child('word').val().length >= 2 && newData.child('word').val().length <= 24 && newData.child('status').val() === 'pending')"
+      }
+    },
+
+    "leaderboard": {
+      ".read": true,
+      "$mode": {
+        "$id": {
+          ".write": "(auth != null && root.child('admin').child(auth.uid).exists()) || (auth != null && newData.child('uid').val() === auth.uid && (!data.exists() || data.child('uid').val() === auth.uid))",
+          ".validate": "newData.hasChildren(['uid','name','score']) && newData.child('uid').isString() && newData.child('name').isString() && newData.child('name').val().length <= 40 && newData.child('score').isNumber()"
+        }
+      }
+    },
+
+    "challenges": {
+      "$id": {
+        ".read": true,
+        ".write": "!data.exists() && newData.exists()",
+        ".validate": "newData.hasChild('word') && newData.child('word').isString() && newData.child('word').val().length >= 2 && newData.child('word').val().length <= 24"
+      }
+    },
+
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+
+    "admin": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid"
+      }
+    }
+  }
+}

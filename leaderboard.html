@@ -332,6 +332,9 @@ let currentPeriod = 'today';
 const MEDALS = ['1.','2.','3.'];
 const RANK_CLASSES = ['top-1','top-2','top-3'];
 
+// Escape any DB-sourced value before inserting into HTML (prevents stored XSS via player names/scores).
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
 function getPlayerName() {
   if(currentUser) return currentUser.displayName || currentUser.email.split('@')[0];
   return localStorage.getItem('sitqva_challenger_name') || null;
@@ -428,12 +431,12 @@ function renderBoard(rows) {
     return `<tr class="${RANK_CLASSES[i]||''}${isMe?' me':''}">
       <td class="lb-rank">${medal}</td>
       <td class="lb-player">
-        <div class="lb-name">${name}${isMe?' ←':''}</div>
+        <div class="lb-name">${esc(name)}${isMe?' ←':''}</div>
       </td>
-      <td>${r.words ?? '—'}</td>
-      <td>${r.guesses ?? '—'}</td>
-      <td>${r.hints ?? 0}</td>
-      <td class="lb-points">${r.points}</td>
+      <td>${esc(r.words ?? '—')}</td>
+      <td>${esc(r.guesses ?? '—')}</td>
+      <td>${esc(r.hints ?? 0)}</td>
+      <td class="lb-points">${esc(r.points)}</td>
     </tr>`;
   }).join('');
   document.getElementById('board-container').innerHTML = `<div class="lb-table-wrap"><table class="lb-table">

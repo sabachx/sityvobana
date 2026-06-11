@@ -594,7 +594,9 @@ window.doLogin = async function() {
     errEl.style.display = 'block';
     return;
   }
-  // Optional extra check: verify UID exists in /admin/ node
+  // Authorization: the account must be listed under /admin/{uid}. Email/password
+  // auth alone is NOT sufficient — registration is open, so any user can authenticate.
+  // Fail closed: if the check cannot confirm admin status, deny access.
   try {
     const snap = await get(ref(db, 'admin/' + cred.user.uid));
     if (!snap.exists()) {
@@ -604,8 +606,12 @@ window.doLogin = async function() {
       return;
     }
   } catch(dbErr) {
-    // DB check failed (e.g. rules not set) — fall through and trust email/password auth
-    console.warn('Admin node check skipped:', dbErr.code);
+    // Could not verify admin status (e.g. permission denied) — deny, do not trust auth alone.
+    await fbSignOut(auth);
+    console.warn('Admin check failed, access denied:', dbErr.code);
+    errEl.textContent = 'წვდომის შემოწმება ვერ მოხერხდა. სცადე თავიდან.';
+    errEl.style.display = 'block';
+    return;
   }
   sessionStorage.setItem('admin_auth', '1');
   showAdmin();
@@ -620,13 +626,14 @@ window.doLogout = async function() {
 // Handle page reloads — user already authenticated
 onAuthStateChanged(auth, async user => {
   if (user && sessionStorage.getItem('admin_auth')) {
-    const snap = await get(ref(db, 'admin/' + user.uid));
-    if (!snap.exists()) {
+    try {
+      const snap = await get(ref(db, 'admin/' + user.uid));
+      if (!snap.exists()) throw new Error('not-admin');
+      showAdmin();
+    } catch(e) {
       await fbSignOut(auth);
       sessionStorage.removeItem('admin_auth');
-      return;
     }
-    showAdmin();
   }
 });
 
@@ -672,23 +679,25 @@ window.renderSuggestions = function() {
     return;
   }
 
+  const okStatus = st => ['pending','approved','rejected'].includes(st) ? st : 'pending';
   list.innerHTML = entries.map(([id, s]) => `
-    <div class="sugg-card" id="sc-${id}">
-      <div class="sugg-word">${s.word || '—'}</div>
+    <div class="sugg-card" id="sc-${esc(id)}">
+      <div class="sugg-word">${esc(s.word || '—')}</div>
       <div class="sugg-meta">
-        <span>${formatDate(s.date)}</span><br>
-        <span class="status-pill sp-${s.status||'pending'}">${statusLabel(s.status)}</span>
+        <span>${esc(formatDate(s.date))}</span><br>
+        <span class="status-pill sp-${okStatus(s.status)}">${esc(statusLabel(s.status))}</span>
       </div>
       <div class="sugg-actions">
-        ${s.status !== 'approved' ? `<button class="act-btn act-approve" onclick="approveSugg('${id}','${s.word}')">✓ დამტკიცება</button>` : ''}
-        ${s.status !== 'rejected' ? `<button class="act-btn act-reject" onclick="rejectSugg('${id}')">✕ უარყოფა</button>` : ''}
-        ${s.status === 'rejected' ? `<button class="act-btn act-pending" onclick="pendingSugg('${id}')">↩ განხილვაზე</button>` : ''}
+        ${s.status !== 'approved' ? `<button class="act-btn act-approve" onclick="approveSugg('${esc(id)}')">✓ დამტკიცება</button>` : ''}
+        ${s.status !== 'rejected' ? `<button class="act-btn act-reject" onclick="rejectSugg('${esc(id)}')">✕ უარყოფა</button>` : ''}
+        ${s.status === 'rejected' ? `<button class="act-btn act-pending" onclick="pendingSugg('${esc(id)}')">↩ განხილვაზე</button>` : ''}
       </div>
     </div>
   `).join('');
 };
 
-window.approveSugg = async function(id, word) {
+window.approveSugg = async function(id) {
+  const word = (allSuggestions[id] || {}).word;
   if (!word || [...word].length < 4) { toast('სიტყვა ძალიან მოკლეა'); return; }
   if (isBlocked(word)) { toast('ეს სიტყვა დაბლოკილია'); return; }
   try {
@@ -812,20 +821,20 @@ window.renderWords = function() {
           const usage = len === 5 ? '<span class="word-type wt-daily">📅 დღის/ბლიცი</span>'
                       : len === 6 ? '<span class="word-type wt-valid">⭐ განსაკ/ბლიცი</span>'
                       : '<span class="word-type">🎲 ბლიცი</span>';
-          return `<tr id="row-${id}">
-            <td><input type="checkbox" class="word-cb" data-id="${id}" onchange="updateBulkDeleteBtn()" style="width:14px;height:14px;cursor:pointer;accent-color:var(--red)"/></td>
-            <td><span class="word-ka" id="word-display-${id}">${w.word||'—'}</span>
-                <input type="text" id="word-edit-${id}" value="${w.word||''}"
+          return `<tr id="row-${esc(id)}">
+            <td><input type="checkbox" class="word-cb" data-id="${esc(id)}" onchange="updateBulkDeleteBtn()" style="width:14px;height:14px;cursor:pointer;accent-color:var(--red)"/></td>
+            <td><span class="word-ka" id="word-display-${esc(id)}">${esc(w.word||'—')}</span>
+                <input type="text" id="word-edit-${esc(id)}" value="${esc(w.word||'')}"
                   style="display:none;background:var(--bg);box-shadow:var(--shadow-in-xs);border:none;color:var(--text);padding:4px 8px;border-radius:4px;font-size:14px;width:100px;outline:none;"
-                  onkeydown="if(event.key==='Enter')saveWordEdit('${id}');if(event.key==='Escape')cancelWordEdit('${id}')"/>
+                  onkeydown="if(event.key==='Enter')saveWordEdit('${esc(id)}');if(event.key==='Escape')cancelWordEdit('${esc(id)}')"/>
             </td>
             <td style="font-size:13px;color:var(--text-dim)">${len}</td>
             <td>${usage}</td>
-            <td style="font-size:11px;color:var(--text-muted)">${w.source||'manual'}</td>
-            <td style="font-size:11px;color:var(--text-muted)">${formatDate(w.addedAt)}</td>
+            <td style="font-size:11px;color:var(--text-muted)">${esc(w.source||'manual')}</td>
+            <td style="font-size:11px;color:var(--text-muted)">${esc(formatDate(w.addedAt))}</td>
             <td style="display:flex;gap:4px;">
-              <button class="del-word-btn" onclick="startWordEdit('${id}')" title="რედაქტირება" style="color:var(--accent)">✏️</button>
-              <button class="del-word-btn" onclick="deleteWord('${id}','${w.word}')" title="წაშლა">🗑</button>
+              <button class="del-word-btn" onclick="startWordEdit('${esc(id)}')" title="რედაქტირება" style="color:var(--accent)">✏️</button>
+              <button class="del-word-btn" onclick="deleteWord('${esc(id)}')" title="წაშლა">🗑</button>
             </td>
           </tr>`;
         }).join('')}
@@ -860,7 +869,8 @@ window.addWord = async function() {
   }
 };
 
-window.deleteWord = async function(id, word) {
+window.deleteWord = async function(id) {
+  const word = (allWords[id] || {}).word || '';
   if (!confirm(`წაშალო "${word}"?`)) return;
   try { await remove(ref(db, `words/${id}`)); toast(`"${word}" წაშლილია`); }
   catch(e) { toast(`შეცდომა: ${e.message}`); }
@@ -1013,9 +1023,9 @@ function updateStats() {
   document.getElementById('recent-sugg').innerHTML = recent.length
     ? recent.map(s=>`
         <div class="sugg-card">
-          <div class="sugg-word">${s.word}</div>
-          <div class="sugg-meta"><span>${formatDate(s.date)}</span></div>
-          <span class="status-pill sp-${s.status||'pending'}">${statusLabel(s.status)}</span>
+          <div class="sugg-word">${esc(s.word)}</div>
+          <div class="sugg-meta"><span>${esc(formatDate(s.date))}</span></div>
+          <span class="status-pill sp-${['pending','approved','rejected'].includes(s.status)?s.status:'pending'}">${esc(statusLabel(s.status))}</span>
         </div>`).join('')
     : '<div class="empty">შეთავაზება არ არის</div>';
 }
@@ -1054,8 +1064,8 @@ function renderHistory() {
     <thead><tr><th>თარიღი</th><th>სიტყვა</th><th></th></tr></thead>
     <tbody>${entries.map(([date,e])=>`
       <tr>
-        <td style="color:var(--text-dim)">${date}</td>
-        <td class="word-ka">${e.word}</td>
+        <td style="color:var(--text-dim)">${esc(date)}</td>
+        <td class="word-ka">${esc(e.word)}</td>
         <td>${e.special?'⭐':''}</td>
       </tr>`).join('')}
     </tbody></table>`;
@@ -1105,13 +1115,13 @@ function renderLeaderboard() {
       const sc = e.score || Math.max(10,(7-(e.guesses||6))*100);
       return `<tr>
         <td style="color:var(--text-muted)">${i+1}</td>
-        <td style="font-weight:600">${e.name||'ანონიმი'}</td>
-        <td style="color:var(--text-muted);font-size:11px">${e.date||'—'}</td>
-        ${isFP?`<td style="color:var(--text-muted)">${e.wordsGuessed||'—'}</td>`:''}
-        <td style="color:var(--text-muted)">${e.guesses||'—'}</td>
-        <td style="color:var(--text-muted)">${e.hintsUsed!=null?e.hintsUsed:'—'}</td>
-        <td style="color:var(--accent);font-weight:700">${sc}</td>
-        <td><button class="del-word-btn" onclick="deleteLbEntry('${id}')" title="წაშლა">🗑</button></td>
+        <td style="font-weight:600">${esc(e.name||'ანონიმი')}</td>
+        <td style="color:var(--text-muted);font-size:11px">${esc(e.date||'—')}</td>
+        ${isFP?`<td style="color:var(--text-muted)">${esc(e.wordsGuessed||'—')}</td>`:''}
+        <td style="color:var(--text-muted)">${esc(e.guesses||'—')}</td>
+        <td style="color:var(--text-muted)">${e.hintsUsed!=null?esc(e.hintsUsed):'—'}</td>
+        <td style="color:var(--accent);font-weight:700">${esc(sc)}</td>
+        <td><button class="del-word-btn" onclick="deleteLbEntry('${esc(id)}')" title="წაშლა">🗑</button></td>
       </tr>`;}).join('')}
     </tbody></table>`;
 }
@@ -1130,6 +1140,12 @@ window.deleteLbEntry = async function(id) {
 };
 
 // ── UTILS ──
+// Escape DB-sourced values before inserting into innerHTML. The /suggestions, /words,
+// /used_words and /leaderboard nodes can be written by clients, so every value rendered
+// here is untrusted and must be escaped to prevent stored XSS in the admin's session.
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 function isBlocked(word) {
   return BLOCKED_WORDS.some(b => word.includes(b));
 }

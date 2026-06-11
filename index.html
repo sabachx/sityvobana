@@ -93,8 +93,8 @@
       flex-shrink:1; min-width:0; overflow:hidden; white-space:nowrap;
       text-decoration:none; color:var(--text);
       font-family:var(--serif); font-weight:900;
-      font-size:clamp(15px, 4.6vw, 21px); line-height:1; letter-spacing:.5px;
-      padding-top:6px; margin-right:8px;
+      font-size:clamp(15px, 4.6vw, 21px); line-height:1.4; letter-spacing:.5px;
+      padding-top:4px; margin-right:8px;
     }
     .header-actions { display:flex; gap:6px; align-items:center; padding-top:4px; }
     .icon-btn {
@@ -256,7 +256,8 @@
       flex:1; touch-action:manipulation;
       box-shadow: inset 0 0 0 1px var(--text);
     }
-    .key:active { background:var(--paper-aged); }
+    .key:active, .key.phys-press { background:var(--paper-aged); transform:scale(.93); }
+    .enter-key.phys-press { background:var(--text-dim); }
     .enter-key { flex:1.5; background:var(--text); color:var(--bg); }
     .enter-key:active { background:var(--text-dim); }
     .del-key   { flex:1.3; font-size:17px; }
@@ -489,6 +490,10 @@
     .how-tile.absent  { background:var(--paper-aged); box-shadow: inset 0 0 0 1px var(--rule); color:var(--text-muted); text-decoration:line-through; }
     .how-desc { font-size:12px; color:var(--text-dim); margin-bottom:3px; }
     .how-desc span { color:var(--text); font-weight:600; }
+    .how-legend { margin-bottom:10px; }
+    .how-legend-row { display:flex; align-items:center; gap:8px; padding:3px 0; }
+    .how-legend-row .sq { flex-shrink:0; }
+    .how-legend-row .how-desc { margin-bottom:0; }
     .shortcut-grid { display:grid; grid-template-columns:1fr 1fr; gap:3px 12px; margin-top:6px; }
     .shortcut-row { font-size:11px; color:var(--text-dim); padding:2px 0; }
     .shortcut-row b { color:var(--accent); }
@@ -690,11 +695,15 @@
     <div class="how-row">
       <div class="how-tile absent">თ</div><div class="how-tile present">ვ</div><div class="how-tile present">ა</div><div class="how-tile correct">ლ</div><div class="how-tile correct">ი</div>
     </div>
-    <p class="how-desc"><span>ლ</span>, <span>ი</span> — სწორი ადგილი <span class="sq c"></span> · <span>ვ</span>, <span>ა</span> — სიტყვაშია, სხვა ადგილას <span class="sq p"></span> · <span>თ</span> — სიტყვაში არ არის <span class="sq a"></span></p>
+    <div class="how-legend">
+      <div class="how-legend-row"><span class="sq c"></span><span class="how-desc"><span>ლ</span>, <span>ი</span> — სწორი ადგილი</span></div>
+      <div class="how-legend-row"><span class="sq p"></span><span class="how-desc"><span>ვ</span>, <span>ა</span> — სიტყვაშია, სხვა ადგილას</span></div>
+      <div class="how-legend-row"><span class="sq a"></span><span class="how-desc"><span>თ</span> — სიტყვაში არ არის</span></div>
+    </div>
     <div class="how-row">
       <div class="how-tile correct">ვ</div><div class="how-tile correct">ა</div><div class="how-tile correct">შ</div><div class="how-tile correct">ლ</div><div class="how-tile correct">ი</div>
     </div>
-    <p class="how-desc">ყველა ასო სწორ ადგილასაა <span class="sq c"></span></p>
+    <div class="how-legend-row"><span class="sq c"></span><span class="how-desc">ყველა ასო სწორ ადგილასაა</span></div>
     <p style="margin-top:10px;font-size:10px;color:var(--text-muted)">ყოველდღე ახალი სიტყვა · New word every midnight</p>
     <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
       <p style="font-size:10px;color:var(--text-muted);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase">Laptop keyboard shortcuts</p>
@@ -1266,7 +1275,9 @@ const KB_LAYERS = {
     ["⇧","ძ","ხ","ჩ","ვ","ბ","ნ","მ","ENTER"]
   ]
 };
-let kbShift = false;
+let kbShift = false;      // sticky one-shot shift (on-screen ⇧ tap)
+let physShift = false;    // momentary shift (physical Shift key held on desktop)
+function shiftOn(){ return kbShift || physShift; }
 
 // Latin → Georgian (normal keys + Shift combos for the 7 extras)
 const L2G = {
@@ -1449,13 +1460,13 @@ function restoreBoard(data) {
 const keyColors={};
 function buildKeyboard() {
   const kb=document.getElementById('keyboard'); kb.innerHTML='';
-  KB_LAYERS[kbShift?'shift':'normal'].forEach(row=>{
+  KB_LAYERS[shiftOn()?'shift':'normal'].forEach(row=>{
     const rowEl=document.createElement('div'); rowEl.className='kb-row';
     row.forEach(key=>{
       const btn=document.createElement('button');
       if(key==='ENTER'){ btn.className='key enter-key'; btn.innerHTML=`<svg width="22" height="17" viewBox="0 0 22 17" fill="none"><path d="M19 3.5 L19 9.5 L4.5 9.5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 5 L3.5 9.5 L9 14" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`; btn.id='key-ENTER'; btn.setAttribute('aria-label','დადასტურება'); }
       else if(key==='⌫'){ btn.className='key del-key'; btn.textContent='⌫'; btn.id='key-DEL'; btn.setAttribute('aria-label','წაშლა'); }
-      else if(key==='⇧'){ btn.className='key shift-key'+(kbShift?' active':''); btn.textContent='⇧'; btn.id='key-SHIFT'; btn.setAttribute('aria-label','შიფტი'); btn.setAttribute('aria-pressed',kbShift?'true':'false'); }
+      else if(key==='⇧'){ btn.className='key shift-key'+(shiftOn()?' active':''); btn.textContent='⇧'; btn.id='key-SHIFT'; btn.setAttribute('aria-label','შიფტი'); btn.setAttribute('aria-pressed',shiftOn()?'true':'false'); }
       else { btn.className='key'; btn.textContent=key; btn.id='key-'+key; if(keyColors[key]) btn.classList.add(keyColors[key]); }
       btn.onclick=()=>handleKey(key);
       rowEl.appendChild(btn);
@@ -1484,15 +1495,28 @@ function handleKey(key) {
     if(kbShift){ kbShift=false; buildKeyboard(); }
   }
 }
+// Briefly press the matching on-screen key so the keyboard responds to physical typing
+function flashKey(id){
+  const btn=document.getElementById(id);
+  if(!btn) return;
+  btn.classList.add('phys-press');
+  clearTimeout(btn._fp); btn._fp=setTimeout(()=>btn.classList.remove('phys-press'),130);
+}
 document.addEventListener('keydown',e=>{
   if(e.ctrlKey||e.metaKey||e.altKey) return;
   if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
   const k=e.key;
-  if(k==='Backspace'||k==='Delete'){e.preventDefault();handleKey('⌫');return;}
-  if(k==='Enter'){e.preventDefault();handleKey('ENTER');return;}
-  if(/^[\u10D0-\u10FF]$/.test(k)){handleKey(k);return;}
-  const geo=L2G[k]; if(geo) handleKey(geo);
+  if(k==='Shift'){ if(!e.repeat && !physShift){ physShift=true; buildKeyboard(); } return; }
+  if(k==='Backspace'||k==='Delete'){e.preventDefault();flashKey('key-DEL');handleKey('⌫');return;}
+  if(k==='Enter'){e.preventDefault();flashKey('key-ENTER');handleKey('ENTER');return;}
+  if(/^[\u10D0-\u10FF]$/.test(k)){flashKey('key-'+k);handleKey(k);return;}
+  const geo=L2G[k]; if(geo){flashKey('key-'+geo);handleKey(geo);}
 });
+document.addEventListener('keyup',e=>{
+  if(e.key==='Shift' && physShift){ physShift=false; buildKeyboard(); }
+});
+// Releasing Shift outside the window (e.g. Alt+Tab) never fires keyup, so reset on blur
+window.addEventListener('blur',()=>{ if(physShift){ physShift=false; buildKeyboard(); } });
 function addLetter(l) {
   if(currentCol>=wordLength) return;
   const t=document.getElementById(`tile-${currentRow}-${currentCol}`);
