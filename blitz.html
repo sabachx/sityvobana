@@ -3,57 +3,42 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <meta name="theme-color" content="#FFFBF4" media="(prefers-color-scheme: light)"/>
-  <meta name="theme-color" content="#1e2330" media="(prefers-color-scheme: dark)"/>
+  <meta name="theme-color" content="#F6F0E1"/>
   <title>⚡ ბლიც სიტყვობანა</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@700;900&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;500;700;900&family=Noto+Serif+Georgian:wght@700;900&display=swap" rel="stylesheet"/>
   <!-- BLITZ MODE DISABLED: remove this guard to re-enable. Redirect runs before any game logic, timers, or Firebase code. -->
   <script>var BLITZ_DISABLED=true;if(BLITZ_DISABLED){location.replace('index.html');}</script>
   <script>(function(){var t=localStorage.getItem('sityvobana-theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
   <style>
     /* ── PALETTE ── */
     :root {
-      --bg:#FFFBF4;
-      --nm-d:#d0c8b5;
-      --nm-l:#ffffff;
-      --text:#1C1815;
-      --text-dim:#6A6058;
-      --text-muted:#9A9088;
-      --accent:#DF5B30;
-      --accent2:#c44e26;
-      --green:#29592D;
-      --present:#7A5820;
-      --red:#D93A3A;
-      --blitz:#DF5B30;
-      --radius:10px;
-      --border:rgba(0,0,0,.08);
-      --shadow-out-xs: 3px 3px 6px var(--nm-d), -3px -3px 6px var(--nm-l);
-      --shadow-out-sm: 5px 5px 10px var(--nm-d), -5px -5px 10px var(--nm-l);
-      --shadow-in-xs: inset 3px 3px 6px var(--nm-d), inset -3px -3px 6px var(--nm-l);
-      --shadow-in-sm: inset 5px 5px 10px var(--nm-d), inset -5px -5px 10px var(--nm-l);
+      --bg:#F6F0E1;
+      --paper-aged:#E9E1CC;
+      --rule:#B8B09C;
+      --nm-d:var(--rule);
+      --nm-l:var(--bg);
+      --text:#1A1813;
+      --text-dim:#5C564A;
+      --text-muted:#9A937F;
+      --accent:#1A1813;
+      --accent2:#5C564A;
+      --green:#1A1813;
+      --present:#5C564A;
+      --red:#1A1813;
+      --blitz:#1A1813;
+      --radius:0px;
+      --border:rgba(26,24,19,.18);
+      --serif:'Noto Serif Georgian', Georgia, serif;
+      --shadow-out-xs: 0 0 0 1px var(--text);
+      --shadow-out-sm: 0 0 0 1px var(--text);
+      --shadow-in-xs: inset 0 0 0 1px var(--rule);
+      --shadow-in-sm: inset 0 0 0 1px var(--rule);
       /* Compat aliases */
       --surface:var(--bg); --surface2:var(--bg); --bg2:var(--bg);
       --dim:var(--text-dim); --muted:var(--text-muted);
       --yellow:var(--present); --grey:var(--bg); --grey-used:var(--bg);
-    }
-    @media (prefers-color-scheme: dark) {
-      :root:not([data-theme="light"]) {
-        --bg:#1e2330; --nm-d:#141820; --nm-l:#282e40;
-        --text:#FFFBF4; --text-dim:#a0a5b8; --text-muted:#585d74;
-        --border:rgba(255,255,255,.08);
-      }
-    }
-    [data-theme="dark"] {
-      --bg:#1e2330; --nm-d:#141820; --nm-l:#282e40;
-      --text:#FFFBF4; --text-dim:#a0a5b8; --text-muted:#585d74;
-      --border:rgba(255,255,255,.08);
-    }
-    [data-theme="light"] {
-      --bg:#FFFBF4; --nm-d:#d0c8b5; --nm-l:#ffffff;
-      --text:#1C1815; --text-dim:#6A6058; --text-muted:#9A9088;
-      --border:rgba(0,0,0,.08);
     }
 
     *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -64,11 +49,6 @@
       display:flex;flex-direction:column;align-items:center;
       overflow:hidden;padding-bottom:env(safe-area-inset-bottom);
       transition:background .2s,color .2s;
-    }
-    body::before{
-      content:'';position:fixed;inset:0;pointer-events:none;
-      background:radial-gradient(ellipse at 25% 25%,rgba(223,91,48,.06) 0%,transparent 50%),
-                 radial-gradient(ellipse at 75% 75%,rgba(41,89,45,.04) 0%,transparent 50%);
     }
 
     /* SCREENS */
@@ -121,7 +101,7 @@
     .btn-blitz:hover{background:var(--accent2);color:#fff;box-shadow:var(--shadow-out-sm);}
     .btn-blitz:disabled{opacity:.4;pointer-events:none;}
     .btn-green{background:var(--green);color:#fff;box-shadow:var(--shadow-out-xs);}
-    .btn-green:hover{background:#1e4020;color:#fff;box-shadow:var(--shadow-out-sm);}
+    .btn-green:hover{background:var(--text-dim);color:#fff;box-shadow:var(--shadow-out-sm);}
     .btn-accent{background:var(--accent);color:#fff;box-shadow:var(--shadow-out-xs);}
     input[type=text]{
       width:100%;background:var(--bg);box-shadow:var(--shadow-in-xs);border:none;
@@ -271,8 +251,8 @@
       color:var(--text);background:var(--bg);transition:box-shadow .1s;flex-shrink:0;
     }
     .bt.filled{box-shadow:var(--shadow-out-sm);animation:tpop .1s ease;}
-    .bt.correct{background:#29592D;box-shadow:none;color:#fff;}
-    .bt.present{background:#7A5820;box-shadow:none;color:#fff;}
+    .bt.correct{background:var(--text);box-shadow:none;color:var(--bg);}
+    .bt.present{background:var(--bg);box-shadow:inset 0 0 0 2.5px var(--text);color:var(--text);}
     .bt.absent{background:var(--bg);box-shadow:var(--shadow-in-xs);color:var(--text-muted);}
     .bt.reveal{animation:tflip .4s ease forwards;}
     .bt.shake{animation:tshake .35s ease;}
@@ -320,9 +300,9 @@
     .key:active{transform:scale(.91);box-shadow:var(--shadow-in-xs);}
     .ekey{flex:1.8;font-size:10.5px;}
     .dkey{flex:1.3;font-size:17px;}
-    .key.correct{background:#29592D;color:#fff;box-shadow:none;}
-    .key.present{background:#7A5820;color:#fff;box-shadow:none;}
-    .key.absent{background:var(--bg);box-shadow:var(--shadow-in-xs);color:var(--text-muted);}
+    .key.correct{background:var(--text);color:var(--bg);box-shadow:none;}
+    .key.present{background:var(--bg);box-shadow:inset 0 0 0 2.5px var(--text);color:var(--text);}
+    .key.absent{background:var(--paper-aged);box-shadow:inset 0 0 0 1px var(--rule);color:var(--text-muted);text-decoration:line-through;}
 
     /* solved flash */
     .sf{
@@ -330,7 +310,7 @@
       display:flex;align-items:center;justify-content:center;z-index:50;pointer-events:none;
       animation:sfade .85s ease forwards;
     }
-    .sf span{font-size:44px;font-weight:800;color:#29592D;animation:spop .5s ease forwards;}
+    .sf span{font-size:44px;font-weight:800;color:var(--text);animation:spop .5s ease forwards;}
     @keyframes sfade{0%{opacity:1}75%{opacity:1}100%{opacity:0}}
     @keyframes spop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.2)}100%{transform:scale(1);opacity:1}}
 
@@ -400,8 +380,8 @@
   <div class="hdr">
     <a href="landing.html" class="logo-mark">
       <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="30" height="30" rx="7" fill="#29592D"/>
-        <text x="15" y="22" text-anchor="middle" font-family="'Noto Sans Georgian','Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="20" fill="#FFFBF4">ს</text>
+        <rect width="30" height="30" rx="0" fill="#1A1813"/>
+        <text x="15" y="22" text-anchor="middle" font-family="'Noto Sans Georgian','Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="20" fill="#F6F0E1">ს</text>
       </svg>
       <div><span class="logo-name">⚡ ბლიცი</span><span class="logo-sub">მულტიპლეიერი</span></div>
     </a>
@@ -443,8 +423,8 @@
   <div class="hdr">
     <a href="landing.html" class="logo-mark">
       <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="30" height="30" rx="7" fill="#29592D"/>
-        <text x="15" y="22" text-anchor="middle" font-family="'Noto Sans Georgian','Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="20" fill="#FFFBF4">ს</text>
+        <rect width="30" height="30" rx="0" fill="#1A1813"/>
+        <text x="15" y="22" text-anchor="middle" font-family="'Noto Sans Georgian','Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="20" fill="#F6F0E1">ს</text>
       </svg>
       <div><span class="logo-name">⚡ ბლიცი</span><span class="logo-sub">ლობი</span></div>
     </a>
@@ -478,8 +458,8 @@
   <div class="hdr">
     <a href="landing.html" class="logo-mark">
       <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="30" height="30" rx="7" fill="#29592D"/>
-        <text x="15" y="22" text-anchor="middle" font-family="'Noto Sans Georgian','Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="20" fill="#FFFBF4">ს</text>
+        <rect width="30" height="30" rx="0" fill="#1A1813"/>
+        <text x="15" y="22" text-anchor="middle" font-family="'Noto Sans Georgian','Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="20" fill="#F6F0E1">ს</text>
       </svg>
       <div><span class="logo-name">⚡ ბლიცი</span><span class="logo-sub" id="g-mode-lbl">5-ასოიანი</span></div>
     </a>
@@ -508,8 +488,8 @@
   <div class="hdr">
     <a href="landing.html" class="logo-mark">
       <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="30" height="30" rx="7" fill="#29592D"/>
-        <text x="15" y="22" text-anchor="middle" font-family="'Noto Sans Georgian','Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="20" fill="#FFFBF4">ს</text>
+        <rect width="30" height="30" rx="0" fill="#1A1813"/>
+        <text x="15" y="22" text-anchor="middle" font-family="'Noto Sans Georgian','Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="20" fill="#F6F0E1">ს</text>
       </svg>
       <div><span class="logo-name">⚡ ბლიცი</span><span class="logo-sub">შედეგები</span></div>
     </a>

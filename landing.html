@@ -3,144 +3,92 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#FFFBF4" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#1e2330" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#F6F0E1" />
   <title>სიტყვობანა</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2329592D'/%3E%3Ctext x='16' y='23' text-anchor='middle' font-family='sans-serif' font-weight='900' font-size='20' fill='%23FFFBF4'%3Eს%3C/text%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%231A1813'/%3E%3Ctext x='16' y='23' text-anchor='middle' font-family='Georgia,serif' font-weight='900' font-size='20' fill='%23F6F0E1'%3Eს%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;700;900&family=Tenor+Sans&display=swap" rel="stylesheet">
-  <script>(function(){var t=localStorage.getItem('sityvobana-theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;500;700;900&family=Noto+Serif+Georgian:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
-    /* ── PALETTE ── */
+    /* ── NEWSPAPER PALETTE ── */
     :root {
-      --bg:      #FFFBF4;
-      --nm-d:    #d0c8b5;
-      --nm-l:    #ffffff;
-      --text:    #1C1815;
-      --text-dim:#6A6058;
-      --text-muted:#9A9088;
-      --accent:  #DF5B30;
-      --accent2: #c44e26;
-      --green:   #29592D;
-      --present: #7A5820;
-      --red:     #D93A3A;
-      --radius:  10px;
-      --border:  rgba(0,0,0,.08);
-      --shadow-out-xs: 3px 3px 6px var(--nm-d), -3px -3px 6px var(--nm-l);
-      --shadow-out-sm: 5px 5px 10px var(--nm-d), -5px -5px 10px var(--nm-l);
-      --shadow-in-xs:  inset 3px 3px 6px var(--nm-d), inset -3px -3px 6px var(--nm-l);
+      --bg:        #F6F0E1;
+      --paper-aged:#E9E1CC;
+      --rule:      #B8B09C;
+      --text:      #1A1813;
+      --text-dim:  #5C564A;
+      --text-muted:#9A937F;
+      --accent:    #1A1813;
+      --green:     #1A1813;
+      --radius:    0px;
+      --border:    rgba(26,24,19,.18);
+      --serif: 'Noto Serif Georgian', Georgia, serif;
+      --sans: 'Noto Sans Georgian', system-ui, sans-serif;
       /* Compat aliases */
       --surface:var(--bg); --dim:var(--text-dim); --muted:var(--text-muted);
-      --gold:var(--accent); --gold2:var(--accent2);
-    }
-    @media (prefers-color-scheme: dark) {
-      :root:not([data-theme="light"]) {
-        --bg:#1e2330; --nm-d:#141820; --nm-l:#282e40;
-        --text:#FFFBF4; --text-dim:#a0a5b8; --text-muted:#585d74;
-        --border:rgba(255,255,255,.08);
-      }
-    }
-    [data-theme="dark"] {
-      --bg:#1e2330; --nm-d:#141820; --nm-l:#282e40;
-      --text:#FFFBF4; --text-dim:#a0a5b8; --text-muted:#585d74;
-      --border:rgba(255,255,255,.08);
-    }
-    [data-theme="light"] {
-      --bg:#FFFBF4; --nm-d:#d0c8b5; --nm-l:#ffffff;
-      --text:#1C1815; --text-dim:#6A6058; --text-muted:#9A9088;
-      --border:rgba(0,0,0,.08);
     }
 
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
-    html, body { height:100%; overflow:hidden; }
+    html, body { height:100%; }
 
     body {
       background:var(--bg);
       color:var(--text);
-      font-family:'Tenor Sans', system-ui, sans-serif;
+      font-family:var(--sans);
       display:flex;
       flex-direction:column;
       align-items:center;
-      justify-content:center;
-      padding:24px 20px;
-      padding-bottom:calc(24px + env(safe-area-inset-bottom));
-      position:relative;
-      transition:background .2s, color .2s;
+      overflow-y:auto;
+      padding:18px 20px 84px;
+      padding-bottom:calc(84px + env(safe-area-inset-bottom));
     }
 
-    /* subtle bg glow */
-    body::before {
-      content:'';
-      position:fixed; inset:0; pointer-events:none;
-      background:
-        radial-gradient(ellipse at 20% 50%, rgba(223,91,48,.06) 0%, transparent 55%),
-        radial-gradient(ellipse at 80% 50%, rgba(41,89,45,.04) 0%, transparent 55%);
-    }
+    .sheet { width:100%; max-width:420px; margin:auto; }
 
-    /* ── THEME TOGGLE ── */
-    .theme-toggle {
-      position:fixed; top:16px; right:16px;
-      background:var(--bg); box-shadow:var(--shadow-out-xs);
-      border:none; cursor:pointer; padding:7px 10px; border-radius:var(--radius);
-      font-size:16px; line-height:1; transition:box-shadow .15s; z-index:100;
+    /* ── MASTHEAD ── */
+    .meta-strip {
+      border-top:1px solid var(--text);
+      border-bottom:3px double var(--text);
+      padding:4px 2px;
+      display:flex; justify-content:space-between; align-items:center;
+      font-size:10px; letter-spacing:1.5px; color:var(--text-dim);
+      opacity:0; animation:fadeUp .6s .05s ease forwards;
     }
-    .theme-toggle:active { box-shadow:var(--shadow-in-xs); }
+    .masthead {
+      text-align:center; padding:16px 0 12px;
+      opacity:0; animation:fadeUp .6s .15s ease forwards;
+    }
+    .masthead h1 {
+      font-family:var(--serif); font-weight:900;
+      font-size:clamp(34px, 10vw, 44px); line-height:1; letter-spacing:1px;
+    }
+    .masthead .sub {
+      font-size:10px; letter-spacing:3px; color:var(--text-dim); margin-top:9px;
+    }
+    .nav-strip {
+      border-top:1px solid var(--text);
+      border-bottom:1px solid var(--text);
+      padding:7px 0;
+      display:flex; justify-content:center; gap:20px;
+      font-size:11px; letter-spacing:2px;
+      opacity:0; animation:fadeUp .6s .25s ease forwards;
+    }
+    .nav-strip a { color:var(--text-dim); text-decoration:none; }
+    .nav-strip a:hover { color:var(--text); }
+    .nav-strip a.current { color:var(--text); border-bottom:2px solid var(--text); padding-bottom:2px; }
 
-    /* ── LOGO TILES ── */
-    .logo-tiles {
-      display:flex;
-      gap:4px;
-      flex-wrap:nowrap;
-      justify-content:center;
-      max-width:340px;
-      opacity:0;
-      animation:fadeUp .7s .1s ease forwards;
-    }
-    .logo-tile {
-      width:clamp(28px, 8vw, 40px);
-      height:clamp(28px, 8vw, 40px);
-      border-radius:5px;
-      background:#29592D;
-      display:flex; align-items:center; justify-content:center;
-      font-family:'Noto Sans Georgian', sans-serif;
-      font-size:clamp(14px, 4vw, 21px);
-      font-weight:900;
-      color:#FFFBF4;
-      animation:tileFlip .4s ease both;
-    }
-    .logo-tile:nth-child(1)  { animation-delay: .15s; }
-    .logo-tile:nth-child(2)  { animation-delay: .22s; }
-    .logo-tile:nth-child(3)  { animation-delay: .29s; }
-    .logo-tile:nth-child(4)  { animation-delay: .36s; }
-    .logo-tile:nth-child(5)  { animation-delay: .43s; }
-    .logo-tile:nth-child(6)  { animation-delay: .50s; }
-    .logo-tile:nth-child(7)  { animation-delay: .57s; }
-    .logo-tile:nth-child(8)  { animation-delay: .64s; }
-    .logo-tile:nth-child(9)  { animation-delay: .71s; }
-    .logo-tile:nth-child(10) { animation-delay: .78s; }
-
-    /* ── DIVIDER ── */
-    .divider {
-      width:40px; height:1px;
-      background:linear-gradient(to right, transparent, var(--accent2), transparent);
-      margin:20px auto;
-      opacity:0;
-      animation:fadeUp .7s .9s ease forwards;
-    }
-
-    /* ── TAGLINE ── */
+    /* ── TAGLINE: lede ── */
     .tagline {
-      font-family:'Noto Sans Georgian', sans-serif;
-      font-weight:400;
-      font-size:clamp(12px, 2.8vw, 15px);
+      font-family:var(--serif); font-style:italic;
+      font-size:clamp(13px, 3.2vw, 15px);
       color:var(--text-dim);
       text-align:center;
-      max-width:300px;
-      line-height:1.6;
+      max-width:320px;
+      line-height:1.7;
+      margin:22px auto 0;
       opacity:0;
-      animation:fadeUp .7s 1.0s ease forwards;
+      animation:fadeUp .7s .4s ease forwards;
     }
 
     /* ── DEMO TILES ── */
@@ -148,29 +96,28 @@
       display:flex;
       gap:7px;
       margin:20px auto 0;
+      justify-content:center;
       opacity:0;
-      animation:fadeUp .6s 1.1s ease forwards;
+      animation:fadeUp .6s .55s ease forwards;
     }
     .tile {
-      width:44px; height:44px;
-      border-radius:5px;
-      box-shadow:var(--shadow-out-xs);
+      width:46px; height:46px;
+      border-radius:0;
+      box-shadow:inset 0 0 0 1px var(--text);
       display:flex; align-items:center; justify-content:center;
-      font-family:'Noto Sans Georgian', sans-serif;
-      font-size:20px; font-weight:700;
+      font-family:var(--serif);
+      font-size:21px; font-weight:700;
       color:var(--text);
       background:var(--bg);
       animation:tileFlip .45s ease both;
     }
-    .tile:nth-child(1) { animation-delay: 1.2s; }
-    .tile:nth-child(2) { animation-delay: 1.3s; }
-    .tile:nth-child(3) { animation-delay: 1.4s; }
-    .tile:nth-child(4) { animation-delay: 1.5s; }
-    .tile:nth-child(5) { animation-delay: 1.6s; }
-    /* correct (green icon tile) */
-    .tile-icon  { background:#29592D !important; box-shadow:none !important; color:#FFFBF4 !important; }
-    /* present (brown/yellow) */
-    .tile-yellow{ background:#7A5820 !important; box-shadow:none !important; color:#FFFBF4 !important; }
+    .tile:nth-child(1) { animation-delay: .7s; }
+    .tile:nth-child(2) { animation-delay: .8s; }
+    .tile:nth-child(3) { animation-delay: .9s; }
+    .tile:nth-child(4) { animation-delay: 1.0s; }
+    .tile:nth-child(5) { animation-delay: 1.1s; }
+    .tile-icon  { background:var(--text) !important; box-shadow:none !important; color:var(--bg) !important; }
+    .tile-yellow{ background:var(--bg) !important; box-shadow:inset 0 0 0 2.5px var(--text) !important; color:var(--text) !important; }
 
     @keyframes tileFlip {
       from { transform:rotateX(-90deg); opacity:0; }
@@ -181,56 +128,45 @@
     .buttons {
       display:flex;
       flex-direction:column;
-      gap:10px;
+      gap:9px;
       width:100%;
       max-width:300px;
-      margin-top:32px;
+      margin:28px auto 0;
       opacity:0;
-      animation:fadeUp .6s 1.8s ease forwards;
+      animation:fadeUp .6s 1.2s ease forwards;
     }
 
     .btn {
-      display:flex; align-items:center; justify-content:center;
-      width:100%; padding:14px 20px;
-      border-radius:var(--radius);
-      font-family:'Tenor Sans', sans-serif;
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      width:100%; padding:13px 20px;
+      border-radius:0;
+      font-family:var(--sans);
       font-size:12px; font-weight:700;
       letter-spacing:2.5px; text-transform:uppercase;
-      cursor:pointer; transition:all .2s;
-      text-decoration:none; border:none;
+      cursor:pointer; transition:all .15s;
+      text-decoration:none; border:1px solid var(--text);
+      background:var(--bg); color:var(--text);
     }
+    .btn:hover { background:var(--paper-aged); }
 
     .btn-play {
-      background:var(--accent);
-      color:#fff;
-      box-shadow:var(--shadow-out-xs);
+      background:var(--text);
+      color:var(--bg);
     }
-    .btn-play:hover { background:var(--accent2); box-shadow:var(--shadow-out-sm); }
-    .btn-play span { position:relative; z-index:1; }
+    .btn-play:hover { background:var(--text-dim); color:var(--bg); }
+    .btn-play .arrow { font-weight:400; font-size:14px; }
 
-    .btn-secondary {
-      background:var(--bg);
-      color:var(--text-dim);
-      box-shadow:var(--shadow-out-xs);
-    }
-    .btn-secondary:hover { box-shadow:var(--shadow-out-sm); color:var(--accent); }
-
-    .btn-accent-outline {
-      background:var(--bg);
-      color:var(--accent);
-      box-shadow:var(--shadow-out-xs);
-    }
-    .btn-accent-outline:hover { box-shadow:var(--shadow-out-sm); }
+    .btn-secondary { color:var(--text-dim); }
 
     .btn-ghost {
       background:transparent;
-      box-shadow:none;
       border:none;
       color:var(--text-muted);
       font-size:11px; letter-spacing:1.5px;
       padding:8px;
+      text-decoration:underline; text-underline-offset:3px;
     }
-    .btn-ghost:hover { color:var(--text-dim); }
+    .btn-ghost:hover { color:var(--text-dim); background:transparent; }
 
     /* ── SUBSCRIBE INLINE ── */
     .subscribe-wrap {
@@ -238,39 +174,40 @@
       display:none;
       opacity:0;
       animation:fadeUp .3s ease forwards;
-      margin-top:32px;
+      margin:28px auto 0;
     }
     .subscribe-wrap.open { display:block; }
 
     .sub-row {
       display:flex;
-      box-shadow:var(--shadow-out-xs);
-      border-radius:var(--radius);
+      border:1px solid var(--text);
+      border-radius:0;
       overflow:hidden;
-      transition:box-shadow .2s;
+      background:var(--bg);
     }
-    .sub-row:focus-within { box-shadow:var(--shadow-in-xs); }
+    .sub-row:focus-within { outline:2px solid var(--text); outline-offset:1px; }
     .sub-input {
       flex:1; padding:12px 14px;
       background:var(--bg);
       border:none; outline:none;
-      font-family:'Tenor Sans', sans-serif;
+      font-family:var(--sans);
       font-size:13px; color:var(--text);
+      min-width:0;
     }
     .sub-input::placeholder { color:var(--text-muted); }
     .sub-btn {
       padding:12px 14px;
-      background:var(--accent); border:none;
-      font-family:'Tenor Sans', sans-serif;
+      background:var(--text); border:none;
+      font-family:var(--sans);
       font-size:10px; font-weight:700;
       letter-spacing:1.5px; text-transform:uppercase;
-      color:#fff; cursor:pointer;
+      color:var(--bg); cursor:pointer;
       transition:background .2s; white-space:nowrap;
     }
-    .sub-btn:hover { background:var(--accent2); }
+    .sub-btn:hover { background:var(--text-dim); }
     .sub-ok {
       display:none;
-      text-align:center; color:var(--green);
+      text-align:center; color:var(--text);
       font-size:13px; padding:12px;
       letter-spacing:.5px;
     }
@@ -282,25 +219,25 @@
     /* ── FOOTER ── */
     .footer {
       position:fixed; bottom:0; left:0; right:0;
-      padding:12px 24px calc(12px + env(safe-area-inset-bottom));
+      padding:10px 24px calc(10px + env(safe-area-inset-bottom));
       display:flex; align-items:center; justify-content:center;
       gap:16px;
-      font-size:10px; color:var(--text-muted); letter-spacing:1px;
-      border-top:1px solid var(--border);
+      font-size:10px; color:var(--text-dim); letter-spacing:1.5px;
+      border-top:3px double var(--text);
       background:var(--bg);
       opacity:0;
-      animation:fadeUp .5s 1.8s ease forwards;
+      animation:fadeUp .5s 1.2s ease forwards;
     }
-    .footer a { color:var(--text-muted); text-decoration:none; }
-    .footer a:hover { color:var(--accent); }
-    .footer-dot { color:var(--border); }
+    .footer a { color:var(--text-dim); text-decoration:none; }
+    .footer a:hover { color:var(--text); }
+    .footer-dot { color:var(--rule); }
 
     /* ── TOAST ── */
     #toast {
       position:fixed; top:24px; left:50%;
       transform:translateX(-50%) translateY(-10px);
       background:var(--text); color:var(--bg);
-      padding:9px 18px; border-radius:20px;
+      padding:9px 18px; border-radius:0;
       font-size:12px; font-weight:700; letter-spacing:.5px;
       opacity:0; transition:all .25s; pointer-events:none;
       white-space:nowrap; max-width:90vw; text-align:center;
@@ -317,11 +254,12 @@
     body.sub-open .buttons { display:none; }
     body.sub-open .subscribe-wrap { display:block; }
 
-    @media (max-height:600px) {
-      .divider { margin:14px auto; }
-      .tiles { margin-top:16px; }
-      .buttons, .subscribe-wrap { margin-top:20px; }
-      .tile { width:36px; height:36px; font-size:18px; }
+    @media (max-height:640px) {
+      .masthead { padding:10px 0 8px; }
+      .tagline { margin-top:14px; }
+      .tiles { margin-top:14px; }
+      .buttons, .subscribe-wrap { margin-top:18px; }
+      .tile { width:38px; height:38px; font-size:18px; }
     }
   </style>
   <!-- Google Analytics -->
@@ -337,55 +275,56 @@
 
 <div id="toast"></div>
 
-<!-- THEME TOGGLE -->
-<button class="theme-toggle" id="theme-btn" onclick="toggleTheme()">🌙</button>
+<div class="sheet">
 
-<!-- LOGO — სიტყვობანა spelled in green tiles -->
-<div class="logo-tiles" id="logo-tiles">
-  <div class="logo-tile">ს</div>
-  <div class="logo-tile">ი</div>
-  <div class="logo-tile">ტ</div>
-  <div class="logo-tile">ყ</div>
-  <div class="logo-tile">ვ</div>
-  <div class="logo-tile">ო</div>
-  <div class="logo-tile">ბ</div>
-  <div class="logo-tile">ა</div>
-  <div class="logo-tile">ნ</div>
-  <div class="logo-tile">ა</div>
-</div>
-
-<div class="divider"></div>
-
-<!-- TAGLINE -->
-<p class="tagline">გამოიცანი დამალული ქართული სიტყვა ექვს მცდელობაში — ყოველდღე ახალი გამოწვევა.</p>
-
-<!-- DEMO TILES — ს green (correct), ვ brown (present) -->
-<div class="tiles">
-  <div class="tile tile-icon">ს</div>
-  <div class="tile">ხ</div>
-  <div class="tile">ი</div>
-  <div class="tile tile-yellow">ვ</div>
-  <div class="tile">ი</div>
-</div>
-
-<!-- BUTTONS -->
-<div class="buttons">
-  <a href="index.html" class="btn btn-play"><span>▶ &nbsp;ითამაშე</span></a>
-  <a href="leaderboard.html" class="btn btn-accent-outline">🏆 &nbsp;ლიდერბორდი</a>
-  <a href="index.html?freeplay=1" class="btn btn-accent-outline">🎮 &nbsp;თავისუფალი თამაში</a>
-  <a href="index.html?login=1" class="btn btn-secondary" id="landing-login-btn">შესვლა</a>
-  <button class="btn btn-ghost" onclick="openSubscribe()">✉ &nbsp;გამოიწერე</button>
-</div>
-
-<!-- SUBSCRIBE PANEL -->
-<div class="subscribe-wrap" id="sub-wrap">
-  <div class="sub-row" id="sub-form">
-    <input class="sub-input" type="email" id="sub-email" placeholder="შენი@ელფოსტა.com" />
-    <button class="sub-btn" onclick="handleSubscribe()">გაგზავნა</button>
+  <!-- MASTHEAD -->
+  <div class="meta-strip">
+    <span id="edition-no">№ 1</span>
+    <span>ᲧᲝᲕᲔᲚᲓᲦᲘᲣᲠᲘ ᲒᲐᲛᲝᲪᲔᲛᲐ</span>
+    <span id="dateline">2026</span>
   </div>
-  <p class="sub-ok" id="sub-ok">✓ გამოწერილია! ხვალ გელოდებით.</p>
-  <p class="sub-note">სპამი არ გამოვაგზავნით · გამოწერის გაუქმება ნებისმიერ დროს</p>
-  <button class="btn btn-ghost" style="margin-top:6px" onclick="closeSubscribe()">← უკან</button>
+  <div class="masthead">
+    <h1>სიტყვობანა</h1>
+    <div class="sub">ქართული სიტყვების თამაში</div>
+  </div>
+  <div class="nav-strip">
+    <a href="index.html" class="current">თამაში</a>
+    <a href="leaderboard.html">ლიდერბორდი</a>
+    <a href="index.html?freeplay=1">თავისუფალი</a>
+  </div>
+
+  <!-- TAGLINE -->
+  <p class="tagline">გამოიცანი დამალული ქართული სიტყვა ექვს მცდელობაში — ყოველდღე ახალი გამოწვევა.</p>
+
+  <!-- DEMO TILES — ს solid ink (correct), ვ outlined (present) -->
+  <div class="tiles">
+    <div class="tile tile-icon">ს</div>
+    <div class="tile">ხ</div>
+    <div class="tile">ი</div>
+    <div class="tile tile-yellow">ვ</div>
+    <div class="tile">ი</div>
+  </div>
+
+  <!-- BUTTONS -->
+  <div class="buttons">
+    <a href="index.html" class="btn btn-play"><span>ითამაშე</span><span class="arrow">→</span></a>
+    <a href="leaderboard.html" class="btn">ლიდერბორდი</a>
+    <a href="index.html?freeplay=1" class="btn btn-secondary">თავისუფალი თამაში</a>
+    <a href="index.html?login=1" class="btn btn-secondary" id="landing-login-btn">შესვლა</a>
+    <button class="btn btn-ghost" onclick="openSubscribe()">გამოიწერე</button>
+  </div>
+
+  <!-- SUBSCRIBE PANEL -->
+  <div class="subscribe-wrap" id="sub-wrap">
+    <div class="sub-row" id="sub-form">
+      <input class="sub-input" type="email" id="sub-email" placeholder="შენი@ელფოსტა.com" />
+      <button class="sub-btn" onclick="handleSubscribe()">გაგზავნა</button>
+    </div>
+    <p class="sub-ok" id="sub-ok">✓ გამოწერილია! ხვალ გელოდებით.</p>
+    <p class="sub-note">სპამი არ გამოვაგზავნით · გამოწერის გაუქმება ნებისმიერ დროს</p>
+    <button class="btn btn-ghost" style="margin-top:6px" onclick="closeSubscribe()">← უკან</button>
+  </div>
+
 </div>
 
 <!-- FOOTER -->
@@ -402,29 +341,17 @@
 // Mark landing as visited so index.html doesn't redirect back here
 localStorage.setItem('sitqva_visited', '1');
 
-// ── THEME ──
-function _isDark() {
-  const t = document.documentElement.getAttribute('data-theme');
-  if (t === 'dark') return true;
-  if (t === 'light') return false;
-  return window.matchMedia('(prefers-color-scheme: dark)').matches;
-}
-function _updateThemeBtn() {
-  const b = document.getElementById('theme-btn');
-  if (b) b.textContent = _isDark() ? '☀️' : '🌙';
-}
-function toggleTheme() {
-  const t = document.documentElement.getAttribute('data-theme');
-  const mq = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  let next;
-  if (!t) { next = mq ? 'light' : 'dark'; }
-  else if (t === 'dark') { next = 'light'; }
-  else { next = 'dark'; }
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('sityvobana-theme', next);
-  _updateThemeBtn();
-}
-_updateThemeBtn();
+// ── MASTHEAD DATELINE ──
+(function(){
+  const now = new Date();
+  const KA_MONTHS = ['იანვარი','თებერვალი','მარტი','აპრილი','მაისი','ივნისი','ივლისი','აგვისტო','სექტემბერი','ოქტომბერი','ნოემბერი','დეკემბერი'];
+  document.getElementById('dateline').textContent =
+    now.getDate() + ' ' + KA_MONTHS[now.getMonth()] + ', ' + now.getFullYear();
+  // Edition number = days since launch
+  const launch = new Date('2025-03-14');
+  const days = Math.max(1, Math.floor((now - launch) / 86400000) + 1);
+  document.getElementById('edition-no').textContent = '№ ' + days;
+})();
 
 // ── SUBSCRIBE ──
 function openSubscribe() {

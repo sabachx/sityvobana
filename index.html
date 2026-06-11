@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#1e2330" />
+  <meta name="theme-color" content="#F6F0E1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="სიტყვობანა" />
@@ -11,39 +11,38 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@700;900&display=swap" rel="stylesheet" />
-  <script>
-    // DARK MODE ONLY (for now): ignore saved/system preference and force dark
-    document.documentElement.setAttribute('data-theme','dark');
-  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;500;700;900&family=Noto+Serif+Georgian:wght@700;900&display=swap" rel="stylesheet" />
   <style>
     /* ── VARIABLES ── */
     :root {
-      /* Palette */
-      --bg: #FFFBF4;
-      --text: #11120d;
-      --text-dim: #565449;
-      --text-muted: #8A8278;
-      --accent: #29592D;
-      --accent2: #DF5B30;
-      --green: #29592D;
-      --present: #7A5820;
-      --border: rgba(88,84,73,.1);
+      /* Newspaper palette: ink on aged paper */
+      --bg: #F6F0E1;
+      --paper-aged: #E9E1CC;
+      --rule: #B8B09C;
+      --text: #1A1813;
+      --text-dim: #5C564A;
+      --text-muted: #9A937F;
+      --accent: #1A1813;
+      --accent2: #1A1813;
+      --green: #1A1813;
+      --present: #5C564A;
+      --border: rgba(26,24,19,.18);
       /* Backwards-compat aliases used in inline styles */
       --surface: var(--bg);
       --muted: var(--text-muted);
       --gold: var(--accent);
-      /* Neumorphic shadow pieces */
-      --nm-d: #d0c8b5;
-      --nm-l: #ffffff;
-      --shadow-out:    6px  6px 16px var(--nm-d), -6px  -6px 16px var(--nm-l);
-      --shadow-out-sm: 4px  4px  9px var(--nm-d), -4px  -4px  9px var(--nm-l);
-      --shadow-out-xs: 2px  2px  5px var(--nm-d), -2px  -2px  5px var(--nm-l);
-      --shadow-in:    inset 6px  6px 12px var(--nm-d), inset -6px  -6px 12px var(--nm-l);
-      --shadow-in-sm: inset 4px  4px  8px var(--nm-d), inset -4px  -4px  8px var(--nm-l);
-      --shadow-in-xs: inset 2px  2px  5px var(--nm-d), inset -2px  -2px  5px var(--nm-l);
+      /* Hairline rules replace neumorphic shadows */
+      --nm-d: var(--rule);
+      --nm-l: var(--bg);
+      --shadow-out:    0 0 0 1px var(--text);
+      --shadow-out-sm: 0 0 0 1px var(--text);
+      --shadow-out-xs: 0 0 0 1px var(--text);
+      --shadow-in:    inset 0 0 0 1px var(--rule);
+      --shadow-in-sm: inset 0 0 0 1px var(--rule);
+      --shadow-in-xs: inset 0 0 0 1px var(--rule);
       /* Layout */
-      --radius: 12px;
+      --radius: 0px;
+      --serif: 'Noto Serif Georgian', Georgia, serif;
       /* Capped by width AND height so board + header + keyboard always fit the viewport */
       --tile-size: min(62px, calc((100vw - 56px) / 5), calc((100vh - 260px) / 6));
       --tile-size: min(62px, calc((100vw - 56px) / 5), calc((100dvh - 260px) / 6));
@@ -52,38 +51,18 @@
       --kb-h: 44px;
       --kb-fs: 16px;
     }
-    /* Dark mode: system preference (unless overridden to light) */
-    @media (prefers-color-scheme: dark) {
-      :root:not([data-theme="light"]) {
-        --bg: #1e2330;
-        --text: #FFFBF4;
-        --text-dim: #a0a5b8;
-        --text-muted: #585d74;
-        --border: rgba(255,251,244,.06);
-        --nm-d: #141820;
-        --nm-l: #282e40;
-      }
+    /* ── LINE ICONS ── */
+    .ic {
+      width:1.1em; height:1.1em; flex-shrink:0;
+      stroke:currentColor; fill:none;
+      stroke-width:1.7; stroke-linecap:square; stroke-linejoin:miter;
+      vertical-align:-0.16em; display:inline-block;
     }
-    /* Dark mode: explicit user override */
-    :root[data-theme="dark"] {
-      --bg: #1e2330;
-      --text: #FFFBF4;
-      --text-dim: #a0a5b8;
-      --text-muted: #585d74;
-      --border: rgba(255,251,244,.06);
-      --nm-d: #141820;
-      --nm-l: #282e40;
-    }
-    /* Light mode: explicit user override */
-    :root[data-theme="light"] {
-      --bg: #FFFBF4;
-      --text: #11120d;
-      --text-dim: #565449;
-      --text-muted: #8A8278;
-      --border: rgba(88,84,73,.1);
-      --nm-d: #d0c8b5;
-      --nm-l: #ffffff;
-    }
+    /* mini tile squares (how-to-play legend) */
+    .sq { display:inline-block; width:11px; height:11px; vertical-align:-1px; }
+    .sq.c { background:var(--text); }
+    .sq.p { background:var(--bg); box-shadow:inset 0 0 0 2px var(--text); }
+    .sq.a { background:var(--paper-aged); box-shadow:inset 0 0 0 1px var(--rule); }
 
     /* ── RESET + BASE ── */
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -91,49 +70,53 @@
     html,body { height:100%; overflow:hidden; }
     body {
       background:var(--bg); color:var(--text);
-      font-family:system-ui,-apple-system,sans-serif;
+      font-family:'Noto Sans Georgian',system-ui,-apple-system,sans-serif;
       display:flex; flex-direction:column; align-items:center;
       overflow:hidden;
       padding-bottom:env(safe-area-inset-bottom);
     }
 
-    /* ── HEADER ── */
+    /* ── HEADER: compact masthead ── */
     header {
       width:100%; max-width:500px;
-      padding:10px 14px;
+      padding:8px 14px 7px;
       display:flex; align-items:center; justify-content:space-between;
       flex-shrink:0; z-index:10; position:relative;
       background:var(--bg);
+      border-bottom:3px double var(--text);
+    }
+    header::before {
+      content:''; position:absolute; top:3px; left:14px; right:14px;
+      height:1px; background:var(--text);
     }
     .logo-mark {
-      width:38px; height:38px; border-radius:10px;
-      flex-shrink:0; overflow:hidden;
-      box-shadow: var(--shadow-out-sm);
+      flex-shrink:1; min-width:0; overflow:hidden; white-space:nowrap;
+      text-decoration:none; color:var(--text);
+      font-family:var(--serif); font-weight:900;
+      font-size:clamp(15px, 4.6vw, 21px); line-height:1; letter-spacing:.5px;
+      padding-top:6px; margin-right:8px;
     }
-    .logo-mark svg { display:block; width:100%; height:100%; }
-    .header-actions { display:flex; gap:8px; align-items:center; }
+    .header-actions { display:flex; gap:6px; align-items:center; padding-top:4px; }
     .icon-btn {
       background:var(--bg); color:var(--text-dim);
-      width:40px; height:40px; border-radius:50%; cursor:pointer;
+      width:36px; height:36px; border-radius:0; cursor:pointer;
       display:flex; align-items:center; justify-content:center;
-      font-size:16px; transition:box-shadow .15s, color .15s; flex-shrink:0;
-      border:none;
-      box-shadow: var(--shadow-out-sm);
+      font-size:15px; transition:box-shadow .15s, color .15s; flex-shrink:0;
+      border:1px solid var(--text);
     }
     .icon-btn:hover { color:var(--text); }
-    .icon-btn:active { box-shadow: var(--shadow-in-sm); }
+    .icon-btn:active { background:var(--paper-aged); }
     .hint-btn.used { opacity:.3; pointer-events:none; }
     .user-btn {
-      background:var(--accent);
-      border:none; color:#FFFBF4;
-      width:40px; height:40px; border-radius:50%; cursor:pointer;
+      background:var(--text);
+      border:1px solid var(--text); color:var(--bg);
+      width:36px; height:36px; border-radius:0; cursor:pointer;
       display:flex; align-items:center; justify-content:center;
-      font-size:14px; font-weight:700; transition:opacity .2s; flex-shrink:0;
+      font-size:13px; font-weight:700; transition:opacity .2s; flex-shrink:0;
       font-family:inherit;
-      box-shadow: var(--shadow-out-sm);
     }
     .user-btn:hover { opacity:.88; }
-    .user-btn.signed-in { background:var(--green); }
+    .user-btn.signed-in { background:var(--text); }
 
     /* ── STREAK BAR + MODE BAR ── */
     #streak-bar, #mode-bar { display:none !important; }
@@ -152,14 +135,14 @@
       transform:translateX(100%);
       transition:transform .25s cubic-bezier(.4,0,.2,1);
       display:flex; flex-direction:column; overflow-y:auto;
-      box-shadow: -10px 0 30px var(--nm-d);
+      border-left:1px solid var(--text);
     }
     #side-menu.open { transform:translateX(0); }
     .menu-hdr {
       display:flex; align-items:center; justify-content:space-between;
       padding:14px 16px; flex-shrink:0;
     }
-    .menu-hdr-logo { width:32px; height:32px; border-radius:8px; overflow:hidden; box-shadow: var(--shadow-out-xs); flex-shrink:0; }
+    .menu-hdr-logo { width:32px; height:32px; border-radius:0; overflow:hidden; flex-shrink:0; }
     .menu-hdr-logo svg { display:block; width:100%; height:100%; }
     .menu-section { padding:14px 16px; border-top:1px solid var(--border); }
     .menu-section-title {
@@ -195,10 +178,10 @@
     }
     .menu-link-row:last-child { border-bottom:none; }
     .menu-link-row:hover { color:var(--text); }
-    .menu-link-row .ico { font-size:18px; width:26px; text-align:center; flex-shrink:0; }
+    .menu-link-row .ico { font-size:17px; width:26px; text-align:center; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
     .stat-pill {
       display:flex; align-items:center; gap:5px;
-      background:var(--bg); border:none; border-radius:20px; padding:4px 10px;
+      background:var(--bg); border:none; border-radius:0; padding:4px 10px;
       font-size:11px; color:var(--text-dim);
       box-shadow: var(--shadow-out-xs);
     }
@@ -206,7 +189,7 @@
     .signin-mini-btn {
       display:inline-flex; align-items:center; gap:5px;
       background:var(--bg); border:none;
-      color:var(--text-dim); border-radius:20px;
+      color:var(--text-dim); border-radius:0;
       padding:5px 12px; font-size:11px; font-weight:600;
       cursor:pointer; transition:box-shadow .15s, color .15s; white-space:nowrap;
       box-shadow: var(--shadow-out-xs);
@@ -218,7 +201,7 @@
       position:fixed; top:68px; left:50%;
       transform:translateX(-50%) translateY(-8px);
       background:var(--text); color:var(--bg);
-      padding:9px 18px; border-radius:20px;
+      padding:9px 18px; border-radius:0;
       font-weight:600; font-size:13px;
       z-index:1000; opacity:0; transition:all .25s;
       pointer-events:none; white-space:nowrap;
@@ -235,17 +218,18 @@
     .row { display:grid; grid-template-columns:repeat(5,var(--tile-size)); gap:var(--gap); }
     .tile {
       width:var(--tile-size); height:var(--tile-size);
-      border:none; border-radius:10px;
+      border:none; border-radius:0;
       display:flex; align-items:center; justify-content:center;
+      font-family:var(--serif);
       font-size:calc(var(--tile-size) * .42); font-weight:700;
       color:var(--text); background:var(--bg);
-      box-shadow: var(--shadow-out-xs);
+      box-shadow: inset 0 0 0 1px var(--text);
       transition:box-shadow .15s;
     }
-    .tile.filled  { box-shadow: var(--shadow-out-sm); animation:pop .1s ease; }
-    .tile.correct { background:var(--green);   box-shadow:none; color:#FFFBF4; }
-    .tile.present { background:var(--present); box-shadow:none; color:#FFFBF4; }
-    .tile.absent  { background:var(--bg); box-shadow: var(--shadow-in-sm); color:var(--text-dim); }
+    .tile.filled  { box-shadow: inset 0 0 0 2px var(--text); animation:pop .1s ease; }
+    .tile.correct { background:var(--text); box-shadow:none; color:var(--bg); }
+    .tile.present { background:var(--bg); box-shadow: inset 0 0 0 2.5px var(--text); color:var(--text); }
+    .tile.absent  { background:var(--paper-aged); box-shadow: inset 0 0 0 1px var(--rule); color:var(--text-muted); text-decoration:line-through; }
     .tile.reveal  { animation:flip .45s ease forwards; }
     .tile.shake   { animation:shake .35s ease; }
     .tile.win-bounce { animation:bounce .4s ease; }
@@ -263,23 +247,24 @@
     .kb-row { display:flex; justify-content:center; gap:var(--kb-gap); margin-bottom:var(--kb-gap); }
     .key {
       height:var(--kb-h); min-width:0; padding:0 2px;
-      border-radius:8px; border:none;
+      border-radius:0; border:none;
       background:var(--bg); color:var(--text);
       font-size:var(--kb-fs); font-weight:600;
       cursor:pointer; display:flex; align-items:center; justify-content:center;
-      transition:box-shadow .12s, color .12s;
+      transition:box-shadow .12s, color .12s, background .12s;
       user-select:none; -webkit-user-select:none;
       flex:1; touch-action:manipulation;
-      box-shadow: var(--shadow-out-sm);
+      box-shadow: inset 0 0 0 1px var(--text);
     }
-    .key:active { box-shadow: var(--shadow-in-xs); }
-    .enter-key { flex:1.5; }
+    .key:active { background:var(--paper-aged); }
+    .enter-key { flex:1.5; background:var(--text); color:var(--bg); }
+    .enter-key:active { background:var(--text-dim); }
     .del-key   { flex:1.3; font-size:17px; }
     .shift-key { flex:1.3; font-size:17px; }
-    .shift-key.active { box-shadow:var(--shadow-in-sm); color:var(--accent); }
-    .key.correct { background:var(--green);   color:#FFFBF4; box-shadow:none; }
-    .key.present { background:var(--present); color:#FFFBF4; box-shadow:none; }
-    .key.absent  { background:var(--bg); box-shadow: var(--shadow-in-sm); color:var(--text-muted); }
+    .shift-key.active { box-shadow: inset 0 0 0 2.5px var(--text); color:var(--text); }
+    .key.correct { background:var(--text); color:var(--bg); box-shadow:none; }
+    .key.present { background:var(--bg); box-shadow: inset 0 0 0 2.5px var(--text); color:var(--text); }
+    .key.absent  { background:var(--paper-aged); box-shadow: inset 0 0 0 1px var(--rule); color:var(--text-muted); text-decoration:line-through; }
 
     /* ── CHALLENGE BANNER ── */
     #challenge-banner {
@@ -302,12 +287,12 @@
     }
     .modal-overlay.open { opacity:1; pointer-events:all; }
     .modal {
-      background:var(--bg); border:none;
-      border-radius:20px; padding:24px 20px;
+      background:var(--bg); border:1px solid var(--text);
+      border-radius:0; padding:24px 20px;
       width:100%; max-width:370px; max-height:92vh;
       overflow-y:auto; transform:translateY(16px);
       transition:transform .25s; position:relative;
-      box-shadow: var(--shadow-out), 0 24px 48px rgba(9,10,7,.3);
+      outline:3px double var(--text); outline-offset:3px;
     }
     /* Result modal: compact, no scroll */
     #result-modal .modal {
@@ -326,14 +311,17 @@
     .modal-overlay.open .modal { transform:translateY(0); }
     .modal-close {
       position:absolute; top:10px; right:10px;
-      background:var(--bg); border:none;
-      color:var(--text-dim); width:36px; height:36px;
-      border-radius:50%; cursor:pointer; font-size:15px;
+      background:var(--bg); border:1px solid var(--text);
+      color:var(--text); width:32px; height:32px;
+      border-radius:0; cursor:pointer; font-size:14px;
       display:flex; align-items:center; justify-content:center;
-      box-shadow: var(--shadow-out-xs);
     }
-    .modal-close:active { box-shadow: var(--shadow-in-xs); }
-    .modal h2 { font-size:17px; margin-bottom:14px; color:var(--accent); letter-spacing:.5px; }
+    .modal-close:active { background:var(--paper-aged); }
+    .modal h2 {
+      font-family:var(--serif); font-size:19px; margin-bottom:14px;
+      color:var(--text); letter-spacing:.5px;
+      border-bottom:1px solid var(--text); padding-bottom:8px; padding-right:36px;
+    }
     .modal p  { color:var(--text-dim); font-size:12px; line-height:1.6; margin-bottom:10px; }
 
     /* ── BUTTONS ── */
@@ -348,11 +336,11 @@
     }
     .btn:hover { color:var(--accent); }
     .btn:active { box-shadow: var(--shadow-in-sm); }
-    .btn-primary { background:var(--accent); color:#FFFBF4; box-shadow: var(--shadow-out-sm); }
-    .btn-primary:hover { opacity:.9; color:#FFFBF4; }
-    .btn-green { background:var(--green); color:#FFFBF4; box-shadow: var(--shadow-out-sm); }
-    .btn-green:hover { color:#FFFBF4; }
-    .btn-green:active { box-shadow: var(--shadow-in-sm); color:#FFFBF4; }
+    .btn-primary { background:var(--accent); color:#F6F0E1; box-shadow: var(--shadow-out-sm); }
+    .btn-primary:hover { opacity:.9; color:#F6F0E1; }
+    .btn-green { background:var(--green); color:#F6F0E1; box-shadow: var(--shadow-out-sm); }
+    .btn-green:hover { color:#F6F0E1; }
+    .btn-green:active { box-shadow: var(--shadow-in-sm); color:#F6F0E1; }
     .divider { display:flex; align-items:center; gap:8px; color:var(--text-muted); font-size:11px; margin:10px 0; }
     .divider::before,.divider::after { content:''; flex:1; height:1px; background:var(--border); }
 
@@ -369,7 +357,7 @@
     label { font-size:11px; color:var(--text-muted); margin-bottom:3px; display:block; }
 
     /* ── RESULT MODAL ── */
-    .result-word { text-align:center; font-size:32px; font-weight:700; color:var(--accent); letter-spacing:4px; margin-bottom:2px; }
+    .result-word { text-align:center; font-family:var(--serif); font-size:32px; font-weight:900; color:var(--text); letter-spacing:4px; margin-bottom:2px; }
     .result-sub  { text-align:center; font-size:11px; color:var(--text-muted); margin-bottom:14px; }
     #next-word-timer { text-align:center; font-size:11px; color:var(--text-muted); margin-bottom:12px; }
     #next-word-timer span { color:var(--accent); font-weight:700; font-size:14px; }
@@ -383,15 +371,15 @@
     .dist-chart h3 { font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; text-align:center; }
     .dist-row { display:flex; align-items:center; gap:7px; margin-bottom:5px; }
     .dist-label { font-size:11px; font-weight:700; color:var(--text-dim); width:12px; text-align:center; flex-shrink:0; }
-    .dist-bar-wrap { flex:1; background:var(--bg); border-radius:4px; height:22px; overflow:hidden; box-shadow: var(--shadow-in-xs); }
+    .dist-bar-wrap { flex:1; background:var(--bg); border-radius:0; height:22px; overflow:hidden; box-shadow: var(--shadow-in-xs); }
     .dist-bar {
       height:100%; min-width:24px;
-      background:var(--text-dim); border-radius:4px;
+      background:var(--text-dim); border-radius:0;
       display:flex; align-items:center; justify-content:flex-end;
-      padding-right:6px; font-size:11px; font-weight:700; color:#FFFBF4;
+      padding-right:6px; font-size:11px; font-weight:700; color:#F6F0E1;
       transition:width .6s ease;
     }
-    .dist-bar.highlight { background:var(--accent); color:#FFFBF4; }
+    .dist-bar.highlight { background:var(--accent); color:#F6F0E1; }
 
     /* ── STATS MODAL ── */
     .stats-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px; }
@@ -405,7 +393,7 @@
     .stats-timer { font-size:11px; color:var(--text-muted); text-align:left; }
     .stats-timer span { display:block; color:var(--accent); font-weight:700; font-size:16px; }
     .stats-share-btn {
-      border:none; background:var(--accent2); color:#FFFBF4; cursor:pointer;
+      border:none; background:var(--accent2); color:#F6F0E1; cursor:pointer;
       font-family:inherit; font-weight:700; font-size:13px;
       padding:10px 18px; border-radius:var(--radius);
       box-shadow:var(--shadow-out-xs);
@@ -419,17 +407,16 @@
     }
     .badge-item {
       flex:0 0 auto; width:74px; text-align:center; cursor:pointer;
-      background:var(--bg); border-radius:12px; padding:10px 5px 8px;
+      background:var(--bg); border-radius:0; padding:10px 5px 8px;
       box-shadow:var(--shadow-out-xs); position:relative; border:none; font-family:inherit;
     }
-    .badge-item .b-ico { font-size:26px; display:block; }
+    .badge-item .b-ico { font-size:24px; display:block; line-height:1.1; }
     .badge-item .b-name { font-size:9px; color:var(--text-dim); display:block; margin-top:4px; line-height:1.25; overflow-wrap:break-word; }
-    .badge-item.locked .b-ico { filter:grayscale(1); opacity:.35; }
+    .badge-item.locked .b-ico { opacity:.3; }
     .badge-item.locked .b-name { opacity:.5; }
-    .badge-item.locked::after { content:'🔒'; position:absolute; top:4px; right:4px; font-size:10px; }
     #badge-tip {
       display:none; font-size:11px; color:var(--text-dim); text-align:center;
-      background:var(--bg); border-radius:8px; padding:8px 10px; margin-top:4px;
+      background:var(--bg); border-radius:0; padding:8px 10px; margin-top:4px;
       box-shadow:var(--shadow-in-xs); line-height:1.5;
     }
     #badge-tip.show { display:block; }
@@ -438,9 +425,9 @@
     #badge-toast {
       position:fixed; top:18px; left:50%; transform:translateX(-50%) translateY(-90px);
       background:var(--bg); color:var(--text);
-      border-radius:16px; padding:12px 20px;
+      border-radius:0; padding:12px 20px;
       display:flex; align-items:center; gap:12px;
-      box-shadow:var(--shadow-out), 0 12px 32px rgba(9,10,7,.35);
+      border:1px solid var(--text); outline:3px double var(--text); outline-offset:3px;
       z-index:1200; transition:transform .45s cubic-bezier(.34,1.56,.64,1);
       pointer-events:none;
     }
@@ -452,8 +439,8 @@
 
     /* ── FREE PLAY BANNER ── */
     #freeplay-banner {
-      display:none; font-size:11px; font-weight:700; color:var(--accent);
-      background:var(--bg); border-radius:20px; padding:4px 14px;
+      display:none; font-size:11px; font-weight:700; color:var(--text);
+      background:var(--bg); border-radius:0; padding:4px 14px;
       box-shadow:var(--shadow-in-xs); margin:2px auto 0;
       flex-shrink:0; z-index:10;
     }
@@ -474,7 +461,7 @@
     .chal-input-wrap { display:flex; gap:6px; margin-bottom:8px; }
     .chal-input-wrap input { margin-bottom:0; flex:1; }
     .chal-input-wrap button {
-      background:var(--accent); color:#FFFBF4; border:none;
+      background:var(--accent); color:#F6F0E1; border:none;
       border-radius:var(--radius); padding:0 14px;
       font-weight:700; cursor:pointer; font-size:12px; white-space:nowrap;
       box-shadow: var(--shadow-out-xs);
@@ -491,15 +478,15 @@
     /* ── HOW TO PLAY ── */
     .how-row { display:flex; gap:5px; margin-bottom:10px; }
     .how-tile {
-      width:34px; height:34px; border-radius:7px;
+      width:34px; height:34px; border-radius:0;
       display:flex; align-items:center; justify-content:center;
-      font-size:17px; font-weight:700;
+      font-family:var(--serif); font-size:17px; font-weight:700;
       background:var(--bg); color:var(--text); border:none;
-      box-shadow: var(--shadow-out-xs);
+      box-shadow: inset 0 0 0 1px var(--text);
     }
-    .how-tile.correct { background:var(--green);   box-shadow:none; color:#FFFBF4; }
-    .how-tile.present { background:var(--present); box-shadow:none; color:#FFFBF4; }
-    .how-tile.absent  { background:var(--bg); box-shadow: var(--shadow-in-xs); color:var(--text-dim); }
+    .how-tile.correct { background:var(--text); box-shadow:none; color:var(--bg); }
+    .how-tile.present { background:var(--bg); box-shadow: inset 0 0 0 2.5px var(--text); color:var(--text); }
+    .how-tile.absent  { background:var(--paper-aged); box-shadow: inset 0 0 0 1px var(--rule); color:var(--text-muted); text-decoration:line-through; }
     .how-desc { font-size:12px; color:var(--text-dim); margin-bottom:3px; }
     .how-desc span { color:var(--text); font-weight:600; }
     .shortcut-grid { display:grid; grid-template-columns:1fr 1fr; gap:3px 12px; margin-top:6px; }
@@ -528,8 +515,8 @@
     .tag-input-wrap:focus-within { box-shadow: var(--shadow-in), 0 0 0 2px var(--accent); }
     .tag-chip {
       display:inline-flex; align-items:center; gap:4px;
-      background:rgba(41,89,45,.12); border:1px solid rgba(41,89,45,.3);
-      color:var(--accent); border-radius:20px;
+      background:var(--paper-aged); border:1px solid var(--text);
+      color:var(--text); border-radius:0;
       padding:3px 6px 3px 10px; font-size:13px; font-weight:600;
       letter-spacing:.5px; white-space:nowrap; animation:chipIn .15s ease;
     }
@@ -550,7 +537,7 @@
 
     /* ── MODE PILLS ── */
     .mode-pill {
-      padding:6px 14px; border-radius:20px; border:none;
+      padding:6px 14px; border-radius:0; border:none;
       background:var(--bg); color:var(--text-dim);
       font-size:11px; font-weight:600; font-family:inherit;
       cursor:pointer; transition:box-shadow .15s, color .15s; white-space:nowrap;
@@ -569,51 +556,71 @@
     @media (max-height:780px) { :root{ --kb-h:40px; --kb-fs:15px; } }
     @media (max-height:680px) { :root{ --kb-h:36px; --kb-fs:14px; --kb-gap:3px; } #board-wrap{padding:3px 0;} }
     @media (max-height:620px) { :root{ --kb-h:32px; --kb-fs:13px; --kb-gap:2px; } }
-    @media (max-width:400px)  { :root{ --kb-fs:14px; --kb-gap:3px; } #keyboard{padding:0 3px calc(4px + env(safe-area-inset-bottom));} }
+    @media (max-width:400px)  { :root{ --kb-fs:14px; --kb-gap:3px; } #keyboard{padding:0 3px calc(4px + env(safe-area-inset-bottom));} .icon-btn,.user-btn{width:32px;height:32px;font-size:13px;} .header-actions{gap:4px;} }
     @media (max-width:350px)  { :root{ --kb-h:38px; --kb-fs:12px; --kb-gap:2px; } .icon-btn,.user-btn{width:32px;height:32px;font-size:13px;} .header-actions{gap:5px;} }
   </style>
 </head>
 <body>
 
+<!-- LINE ICON SPRITE -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="i-stats" viewBox="0 0 24 24"><path d="M5 20v-6M11 20V5M17 20v-9M3 20h18"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><path d="M9 9.5a3 3 0 1 1 4.7 2.5c-1 .7-1.7 1.4-1.7 2.5v.5"/><circle cx="12" cy="18.5" r="1" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 1 3.6 10.8c-.4.3-.6.8-.6 1.4v.8H9v-.8c0-.6-.2-1.1-.6-1.4A6 6 0 0 1 12 3z"/><path d="M9.5 19h5M10.5 21.5h3"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.4-3.4 4-5 7-5s5.6 1.6 7 5"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 3c2.8 3.2 5 5.8 5 9a5 5 0 0 1-10 0c0-3.2 2.2-5.8 5-9z"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 5H5a3 3 0 0 0 3 4M16 5h3a3 3 0 0 1-3 4"/><path d="M12 13v4M8 20h8"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15"/><path d="M4 10h16M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-dice" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16"/><circle cx="9" cy="9" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="1.2" fill="currentColor" stroke="none"/><circle cx="9" cy="15" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="15" r="1.2" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-swords" viewBox="0 0 24 24"><path d="M5 5l12 12M19 5L7 17"/><path d="M15 19l4-4M5 15l4 4"/></symbol>
+  <symbol id="i-sword" viewBox="0 0 24 24"><path d="M19 5L9.5 14.5M6.5 12.5l5 5M5 19l3-3"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3L6 13.5h5L10 21l7-10.5h-5L13 3z"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13"/><path d="M4 6.5l8 6 8-6"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 14V4M8.5 7.5L12 4l3.5 3.5M5 12v7.5h14V12"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11"/><path d="M5 15.5V4.5h11"/></symbol>
+  <symbol id="i-pen" viewBox="0 0 24 24"><path d="M4 20l1-4L16.5 4.5a1.77 1.77 0 0 1 2.5 2.5L7.5 18.5 4 20z"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="6" y="11" width="12" height="9"/><path d="M9 11V8a3 3 0 0 1 6 0v3"/></symbol>
+  <symbol id="i-medal" viewBox="0 0 24 24"><circle cx="12" cy="15" r="5"/><path d="M9 11L6.5 4M15 11l2.5-7"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 13.5A8 8 0 0 1 10.5 4 8 8 0 1 0 20 13.5z"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+</svg>
+
 <div id="challenge-banner">
-  <span>⚔️</span>
+  <span><svg class="ic"><use href="#i-swords"/></svg></span>
   <span><span class="from" id="challenge-from">მეგობარი</span>-მ გამოგიწვია!</span>
 </div>
 
 <header>
-  <a href="landing.html" class="logo-mark" aria-label="სიტყვობანა">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 38 38">
-      <rect width="38" height="38" rx="10" fill="#29592D"/>
-      <text x="19" y="29" text-anchor="middle" font-family="'Noto Sans Georgian','Helvetica Neue',Arial,sans-serif" font-size="27" font-weight="900" fill="#FFFBF4">ს</text>
-    </svg>
-  </a>
+  <a href="landing.html" class="logo-mark" aria-label="სიტყვობანა">სიტყვობანა</a>
   <div class="header-actions">
-    <button class="icon-btn" onclick="openStatsModal()" aria-label="სტატისტიკა">📊</button>
-    <button class="icon-btn" onclick="openModal('how-modal')" aria-label="როგორ ვითამაშოთ">❓</button>
-    <button class="icon-btn hint-btn" id="hint-btn" onclick="useHint()" aria-label="მინიშნება">💡</button>
+    <button class="icon-btn" onclick="openStatsModal()" aria-label="სტატისტიკა"><svg class="ic"><use href="#i-stats"/></svg></button>
+    <button class="icon-btn" onclick="openModal('how-modal')" aria-label="როგორ ვითამაშოთ"><svg class="ic"><use href="#i-help"/></svg></button>
+    <button class="icon-btn hint-btn" id="hint-btn" onclick="useHint()" aria-label="მინიშნება"><svg class="ic"><use href="#i-bulb"/></svg></button>
     <button class="user-btn" id="user-avatar" onclick="openModal('auth-modal')" aria-label="პროფილი">
-      <span id="user-avatar-inner" aria-hidden="true">👤</span>
+      <span id="user-avatar-inner" aria-hidden="true"><svg class="ic"><use href="#i-user"/></svg></span>
     </button>
-    <button class="icon-btn" onclick="openMenu()" aria-label="მენიუ" style="font-size:18px;">☰</button>
+    <button class="icon-btn" onclick="openMenu()" aria-label="მენიუ" style="font-size:18px;"><svg class="ic"><use href="#i-menu"/></svg></button>
   </div>
 </header>
 
 <div id="streak-bar">
   <!-- Shown when logged in -->
   <div id="stats-pills" style="display:none;gap:10px;justify-content:center;width:100%;">
-    <div class="stat-pill"><span>🔥</span><span>სტრიქი:</span><span class="val" id="stat-streak">0</span></div>
-    <div class="stat-pill"><span>🏆</span><span>საუკეთესო:</span><span class="val" id="stat-best">0</span></div>
-    <div class="stat-pill"><span>🎯</span><span>ნათამაშები:</span><span class="val" id="stat-played">0</span></div>
+    <div class="stat-pill"><span><svg class="ic"><use href="#i-flame"/></svg></span><span>სტრიქი:</span><span class="val" id="stat-streak">0</span></div>
+    <div class="stat-pill"><span><svg class="ic"><use href="#i-trophy"/></svg></span><span>საუკეთესო:</span><span class="val" id="stat-best">0</span></div>
+    <div class="stat-pill"><span><svg class="ic"><use href="#i-target"/></svg></span><span>ნათამაშები:</span><span class="val" id="stat-played">0</span></div>
   </div>
 </div>
 <div id="mode-bar" style="display:flex;gap:6px;align-items:center;width:100%;max-width:500px;justify-content:center;flex-wrap:wrap;padding:0 12px 4px;">
-  <button class="mode-pill" id="pill-daily" onclick="goDaily()">📅 დღის სიტყვა</button>
-  <button class="mode-pill" id="pill-free" onclick="goFree()">🎮 თავისუფალი</button>
-  <button class="mode-pill" onclick="openModal('challenge-modal')">⚔️ გამოწვევა</button>
-  <!-- BLITZ DISABLED --><button class="mode-pill" style="display:none" onclick="openModal('blitz-intro-modal')">⚡ ბლიცი</button>
+  <button class="mode-pill" id="pill-daily" onclick="goDaily()"><svg class="ic"><use href="#i-cal"/></svg> დღის სიტყვა</button>
+  <button class="mode-pill" id="pill-free" onclick="goFree()"><svg class="ic"><use href="#i-dice"/></svg> თავისუფალი</button>
+  <button class="mode-pill" onclick="openModal('challenge-modal')"><svg class="ic"><use href="#i-swords"/></svg> გამოწვევა</button>
+  <!-- BLITZ DISABLED --><button class="mode-pill" style="display:none" onclick="openModal('blitz-intro-modal')"><svg class="ic"><use href="#i-bolt"/></svg> ბლიცი</button>
 </div>
 <!-- Free play indicator: visible whenever the round is not counted -->
-<div id="freeplay-banner">🎮 თავისუფალი თამაში</div>
+<div id="freeplay-banner"><svg class="ic"><use href="#i-dice"/></svg> თავისუფალი თამაში</div>
 
 <!-- SIDE MENU -->
 <div id="menu-overlay" onclick="closeMenu()"></div>
@@ -621,8 +628,8 @@
   <div class="menu-hdr">
     <div class="menu-hdr-logo" aria-label="სიტყვობანა">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-        <rect width="32" height="32" rx="8" fill="#29592D"/>
-        <text x="16" y="25" text-anchor="middle" font-family="'Noto Sans Georgian','Helvetica Neue',Arial,sans-serif" font-size="23" font-weight="900" fill="#FFFBF4">ს</text>
+        <rect width="32" height="32" rx="0" fill="#1A1813"/>
+        <text x="16" y="25" text-anchor="middle" font-family="'Noto Serif Georgian','Noto Sans Georgian',Georgia,serif" font-size="23" font-weight="900" fill="#F6F0E1">ს</text>
       </svg>
     </div>
     <button class="icon-btn" onclick="closeMenu()" style="font-size:15px;">✕</button>
@@ -631,32 +638,32 @@
   <div class="menu-section">
     <div class="menu-section-title">თამაშის რეჟიმი</div>
     <div class="menu-mode-grid">
-      <button class="menu-mode-pill" id="mpill-daily" onclick="goDaily();closeMenu()">📅 დღის სიტყვა</button>
-      <button class="menu-mode-pill" id="mpill-free" onclick="goFree();closeMenu()">🎮 თავისუფალი</button>
-      <button class="menu-mode-pill" onclick="openModal('challenge-modal');closeMenu()">⚔️ გამოწვევა</button>
-      <!-- BLITZ DISABLED --><button class="menu-mode-pill" style="display:none" onclick="openModal('blitz-intro-modal');closeMenu()">⚡ ბლიცი</button>
+      <button class="menu-mode-pill" id="mpill-daily" onclick="goDaily();closeMenu()"><svg class="ic"><use href="#i-cal"/></svg> დღის სიტყვა</button>
+      <button class="menu-mode-pill" id="mpill-free" onclick="goFree();closeMenu()"><svg class="ic"><use href="#i-dice"/></svg> თავისუფალი</button>
+      <button class="menu-mode-pill" onclick="openModal('challenge-modal');closeMenu()"><svg class="ic"><use href="#i-swords"/></svg> გამოწვევა</button>
+      <!-- BLITZ DISABLED --><button class="menu-mode-pill" style="display:none" onclick="openModal('blitz-intro-modal');closeMenu()"><svg class="ic"><use href="#i-bolt"/></svg> ბლიცი</button>
     </div>
   </div>
 
   <div class="menu-section" id="menu-stats-section" style="display:none">
     <div class="menu-section-title">სტატისტიკა</div>
     <div class="menu-stats-row">
-      <div class="menu-stat-box"><span class="v" id="ms-streak">0</span><span class="l">🔥 სტრიქი</span></div>
-      <div class="menu-stat-box"><span class="v" id="ms-best">0</span><span class="l">🏆 საუკეთესო</span></div>
-      <div class="menu-stat-box"><span class="v" id="ms-played">0</span><span class="l">🎯 ნათამაშები</span></div>
+      <div class="menu-stat-box"><span class="v" id="ms-streak">0</span><span class="l"><svg class="ic"><use href="#i-flame"/></svg> სტრიქი</span></div>
+      <div class="menu-stat-box"><span class="v" id="ms-best">0</span><span class="l"><svg class="ic"><use href="#i-trophy"/></svg> საუკეთესო</span></div>
+      <div class="menu-stat-box"><span class="v" id="ms-played">0</span><span class="l"><svg class="ic"><use href="#i-target"/></svg> ნათამაშები</span></div>
     </div>
   </div>
 
   <div class="menu-section">
-    <button class="menu-link-row" onclick="window.location.href='leaderboard.html'"><span class="ico">🏆</span>ლიდერბორდი</button>
-    <button class="menu-link-row" onclick="openModal('challenge-modal');closeMenu()"><span class="ico">⚔️</span>გამოიწვიე მეგობარი</button>
-    <button class="menu-link-row" onclick="openModal('suggest-modal');closeMenu()"><span class="ico">✉️</span>სიტყვის შეთავაზება</button>
-    <button class="menu-link-row" onclick="openModal('how-modal');closeMenu()"><span class="ico">❓</span>როგორ ვითამაშოთ</button>
+    <button class="menu-link-row" onclick="window.location.href='leaderboard.html'"><span class="ico"><svg class="ic"><use href="#i-trophy"/></svg></span>ლიდერბორდი</button>
+    <button class="menu-link-row" onclick="openModal('challenge-modal');closeMenu()"><span class="ico"><svg class="ic"><use href="#i-swords"/></svg></span>გამოიწვიე მეგობარი</button>
+    <button class="menu-link-row" onclick="openModal('suggest-modal');closeMenu()"><span class="ico"><svg class="ic"><use href="#i-mail"/></svg></span>სიტყვის შეთავაზება</button>
+    <button class="menu-link-row" onclick="openModal('how-modal');closeMenu()"><span class="ico"><svg class="ic"><use href="#i-help"/></svg></span>როგორ ვითამაშოთ</button>
   </div>
   <!-- THEME TOGGLE HIDDEN: dark mode only for now -->
   <div class="menu-section" style="margin-top:auto;display:none;">
     <button class="menu-link-row" id="theme-toggle-btn" onclick="toggleTheme()" style="justify-content:space-between;">
-      <span style="display:flex;align-items:center;gap:10px;"><span class="ico" id="theme-ico">🌙</span><span id="theme-lbl">მუქი თემა</span></span>
+      <span style="display:flex;align-items:center;gap:10px;"><span class="ico" id="theme-ico"><svg class="ic"><use href="#i-moon"/></svg></span><span id="theme-lbl">მუქი თემა</span></span>
       <span id="theme-pill" style="font-size:10px;background:var(--bg);box-shadow:var(--shadow-out-xs);border-radius:20px;padding:3px 10px;color:var(--text-muted)">AUTO</span>
     </button>
   </div>
@@ -683,14 +690,14 @@
     <div class="how-row">
       <div class="how-tile absent">თ</div><div class="how-tile present">ვ</div><div class="how-tile present">ა</div><div class="how-tile correct">ლ</div><div class="how-tile correct">ი</div>
     </div>
-    <p class="how-desc"><span>ლ</span>, <span>ი</span> — სწორი ადგილი 🟩 · <span>ვ</span>, <span>ა</span> — სიტყვაშია, სხვა ადგილას 🟨 · <span>თ</span> — სიტყვაში არ არის ⬛</p>
+    <p class="how-desc"><span>ლ</span>, <span>ი</span> — სწორი ადგილი <span class="sq c"></span> · <span>ვ</span>, <span>ა</span> — სიტყვაშია, სხვა ადგილას <span class="sq p"></span> · <span>თ</span> — სიტყვაში არ არის <span class="sq a"></span></p>
     <div class="how-row">
       <div class="how-tile correct">ვ</div><div class="how-tile correct">ა</div><div class="how-tile correct">შ</div><div class="how-tile correct">ლ</div><div class="how-tile correct">ი</div>
     </div>
-    <p class="how-desc">ყველა ასო სწორ ადგილასაა 🟩</p>
+    <p class="how-desc">ყველა ასო სწორ ადგილასაა <span class="sq c"></span></p>
     <p style="margin-top:10px;font-size:10px;color:var(--text-muted)">ყოველდღე ახალი სიტყვა · New word every midnight</p>
     <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
-      <p style="font-size:10px;color:var(--text-muted);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase">⌨️ Laptop keyboard shortcuts</p>
+      <p style="font-size:10px;color:var(--text-muted);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase">Laptop keyboard shortcuts</p>
       <div class="shortcut-grid">
         <div class="shortcut-row"><b>Shift+W</b> → ჭ</div>
         <div class="shortcut-row"><b>Shift+R</b> → ღ</div>
@@ -762,15 +769,15 @@
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0;">
         <div style="background:var(--bg);border-radius:var(--radius);padding:8px;text-align:center;box-shadow:var(--shadow-in-xs);">
           <div style="font-size:18px;font-weight:700;color:var(--accent);" id="ps-streak">0</div>
-          <div style="font-size:9px;color:var(--text-muted);">🔥 სტრიქი</div>
+          <div style="font-size:9px;color:var(--text-muted);"><svg class="ic"><use href="#i-flame"/></svg> სტრიქი</div>
         </div>
         <div style="background:var(--bg);border-radius:var(--radius);padding:8px;text-align:center;box-shadow:var(--shadow-in-xs);">
           <div style="font-size:18px;font-weight:700;color:var(--accent);" id="ps-best">0</div>
-          <div style="font-size:9px;color:var(--text-muted);">🏆 საუკეთესო</div>
+          <div style="font-size:9px;color:var(--text-muted);"><svg class="ic"><use href="#i-trophy"/></svg> საუკეთესო</div>
         </div>
         <div style="background:var(--bg);border-radius:var(--radius);padding:8px;text-align:center;box-shadow:var(--shadow-in-xs);">
           <div style="font-size:18px;font-weight:700;color:var(--accent);" id="ps-played">0</div>
-          <div style="font-size:9px;color:var(--text-muted);">🎯 ნათამაშები</div>
+          <div style="font-size:9px;color:var(--text-muted);"><svg class="ic"><use href="#i-target"/></svg> ნათამაშები</div>
         </div>
       </div>
       <button class="btn" onclick="signOut()" style="color:var(--text-muted);">გამოსვლა</button>
@@ -781,21 +788,21 @@
 <!-- RESULT -->
 <div class="modal-overlay" id="result-modal" role="dialog" aria-modal="true" aria-labelledby="result-title">
   <div class="modal">
-    <h2 id="result-title">🎉 გაიმარჯვე!</h2>
+    <h2 id="result-title">გაიმარჯვე!</h2>
     <div class="result-sub" id="result-sub"></div>
     <div class="result-word" id="result-word"></div>
     <div id="next-word-timer">შემდეგი სიტყვა: <span id="countdown">00:00:00</span></div>
     <div class="dist-chart">
-      <h3 id="dist-title">📊 გამოცნობის სტატისტიკა</h3>
+      <h3 id="dist-title"><svg class="ic"><use href="#i-stats"/></svg> გამოცნობის სტატისტიკა</h3>
       <div id="dist-bars"></div>
     </div>
     <!-- Daily mode buttons -->
     <div id="result-daily-btns">
-      <button class="btn btn-green" onclick="nextFreePlay();closeModal('result-modal')">🎮 გააგრძელე თამაში</button>
-      <button class="btn" onclick="shareResult()" style="background:var(--accent2);color:#FFFBF4;">📤 გააზიარე</button>
-      <button class="btn" onclick="window.location.href='leaderboard.html'" style="color:var(--accent)">🏆 ლიდერბორდი</button>
+      <button class="btn btn-green" onclick="nextFreePlay();closeModal('result-modal')"><svg class="ic"><use href="#i-dice"/></svg> გააგრძელე თამაში</button>
+      <button class="btn" onclick="shareResult()" style="background:var(--accent2);color:#F6F0E1;"><svg class="ic"><use href="#i-share"/></svg> გააზიარე</button>
+      <button class="btn" onclick="window.location.href='leaderboard.html'" style="color:var(--accent)"><svg class="ic"><use href="#i-trophy"/></svg> ლიდერბორდი</button>
       <div class="suggest-wrap">
-        <h3>💡 დაამატე სიტყვა</h3>
+        <h3><svg class="ic"><use href="#i-bulb"/></svg> დაამატე სიტყვა</h3>
         <div class="tag-input-wrap" id="tag-suggest-result">
           <input class="tag-text-input" placeholder="სიტყვა, სიტყვა..." type="text" />
         </div>
@@ -805,12 +812,12 @@
 
     <!-- Free play mode buttons -->
     <div id="result-freeplay-btns" style="display:none;">
-      <button class="btn btn-green" onclick="closeModal('result-modal');nextFreePlay()">🎮 გააგრძელე თამაში</button>
-      <button class="btn" onclick="shareResult()" style="background:var(--accent2);color:#FFFBF4;">📤 გააზიარე</button>
-      <button class="btn" onclick="window.location.href='leaderboard.html'" style="color:var(--accent)">🏆 ლიდერბორდი</button>
+      <button class="btn btn-green" onclick="closeModal('result-modal');nextFreePlay()"><svg class="ic"><use href="#i-dice"/></svg> გააგრძელე თამაში</button>
+      <button class="btn" onclick="shareResult()" style="background:var(--accent2);color:#F6F0E1;"><svg class="ic"><use href="#i-share"/></svg> გააზიარე</button>
+      <button class="btn" onclick="window.location.href='leaderboard.html'" style="color:var(--accent)"><svg class="ic"><use href="#i-trophy"/></svg> ლიდერბორდი</button>
 
       <!-- გამოგვიგზავნე სიტყვა -->
-      <button class="btn" id="suggest-toggle-btn" onclick="toggleResultSuggest()">✉️ გამოგვიგზავნე სიტყვა</button>
+      <button class="btn" id="suggest-toggle-btn" onclick="toggleResultSuggest()"><svg class="ic"><use href="#i-mail"/></svg> გამოგვიგზავნე სიტყვა</button>
       <div id="result-suggest-panel" style="display:none;margin-top:6px;">
         <div class="tag-input-wrap" id="tag-suggest-freeplay">
           <input class="tag-text-input" placeholder="სიტყვა, სიტყვა..." type="text" />
@@ -825,18 +832,18 @@
 <div class="modal-overlay" id="stats-modal" role="dialog" aria-modal="true" aria-labelledby="stats-modal-title">
   <div class="modal">
     <button class="modal-close" onclick="closeModal('stats-modal')" aria-label="დახურვა">✕</button>
-    <h2 id="stats-modal-title">📊 სტატისტიკა</h2>
+    <h2 id="stats-modal-title"><svg class="ic"><use href="#i-stats"/></svg> სტატისტიკა</h2>
     <div class="stats-cards">
-      <div class="stats-card"><div class="v" id="sm-streak">0</div><div class="l">სთრიქი 🔥</div></div>
+      <div class="stats-card"><div class="v" id="sm-streak">0</div><div class="l">სთრიქი <svg class="ic"><use href="#i-flame"/></svg></div></div>
       <div class="stats-card"><div class="v" id="sm-winrate">0%</div><div class="l">მოგება</div></div>
       <div class="stats-card"><div class="v" id="sm-best">0</div><div class="l">საუკეთესო</div></div>
     </div>
     <div class="dist-chart">
-      <h3>📊 გამოცნობის განაწილება</h3>
+      <h3><svg class="ic"><use href="#i-stats"/></svg> გამოცნობის განაწილება</h3>
       <div id="stats-dist-bars"></div>
     </div>
     <div class="dist-chart" style="margin-bottom:4px">
-      <h3>🏅 ბეჯები</h3>
+      <h3><svg class="ic"><use href="#i-medal"/></svg> ბეჯები</h3>
       <div class="badges-row" id="badges-row"></div>
       <div id="badge-tip"></div>
     </div>
@@ -853,11 +860,11 @@
 <div class="modal-overlay" id="challenge-modal" role="dialog" aria-modal="true" aria-labelledby="challenge-modal-title">
   <div class="modal">
     <button class="modal-close" onclick="closeModal('challenge-modal')" aria-label="დახურვა">✕</button>
-    <h2 id="challenge-modal-title">⚔️ გამოიწვიე მეგობარი</h2>
+    <h2 id="challenge-modal-title"><svg class="ic"><use href="#i-swords"/></svg> გამოიწვიე მეგობარი</h2>
     <div class="chal-tabs">
-      <div class="chal-tab active" onclick="switchChalTab('custom')">✍️ შენი სიტყვა</div>
-      <div class="chal-tab" onclick="switchChalTab('daily')">📅 დღის სიტყვა</div>
-      <!-- BLITZ DISABLED --><div class="chal-tab" onclick="switchChalTab('blitz')" style="display:none;color:var(--accent2)">⚡ ბლიცი</div>
+      <div class="chal-tab active" onclick="switchChalTab('custom')"><svg class="ic"><use href="#i-pen"/></svg> შენი სიტყვა</div>
+      <div class="chal-tab" onclick="switchChalTab('daily')"><svg class="ic"><use href="#i-cal"/></svg> დღის სიტყვა</div>
+      <!-- BLITZ DISABLED --><div class="chal-tab" onclick="switchChalTab('blitz')" style="display:none;color:var(--accent2)"><svg class="ic"><use href="#i-bolt"/></svg> ბლიცი</div>
     </div>
     <!-- Custom -->
     <div class="chal-panel active" id="cpanel-custom">
@@ -867,28 +874,28 @@
         <button onclick="genChallenge('custom')">შექმნა</button>
       </div>
       <div class="chal-link" id="chal-link-custom"></div>
-      <button class="btn btn-green" id="copy-custom" onclick="copyLink('chal-link-custom')" style="display:none">📋 ლინკის კოპირება</button>
-      <button class="btn" id="share-custom" onclick="shareLink('chal-link-custom','სიტყვობანა – გამოწვევა!')" style="display:none">📤 გაზიარება</button>
+      <button class="btn btn-green" id="copy-custom" onclick="copyLink('chal-link-custom')" style="display:none"><svg class="ic"><use href="#i-copy"/></svg> ლინკის კოპირება</button>
+      <button class="btn" id="share-custom" onclick="shareLink('chal-link-custom','სიტყვობანა – გამოწვევა!')" style="display:none"><svg class="ic"><use href="#i-share"/></svg> გაზიარება</button>
     </div>
     <!-- Daily -->
     <div class="chal-panel" id="cpanel-daily">
       <p>გამოიწვიე მეგობარი <strong>დღევანდელი სიტყვის</strong> გამოსაცნობად. შეადარეთ შედეგები!</p>
-      <button class="btn btn-primary" onclick="genChallenge('daily')">🗓️ დღის გამოწვევის ლინკი</button>
+      <button class="btn btn-primary" onclick="genChallenge('daily')"><svg class="ic"><use href="#i-cal"/></svg> დღის გამოწვევის ლინკი</button>
       <div class="chal-link" id="chal-link-daily"></div>
-      <button class="btn btn-green" id="copy-daily" onclick="copyLink('chal-link-daily')" style="display:none">📋 ლინკის კოპირება</button>
-      <button class="btn" id="share-daily" onclick="shareLink('chal-link-daily','სიტყვობანა – დღის გამოწვევა!')" style="display:none">📤 გაზიარება</button>
+      <button class="btn btn-green" id="copy-daily" onclick="copyLink('chal-link-daily')" style="display:none"><svg class="ic"><use href="#i-copy"/></svg> ლინკის კოპირება</button>
+      <button class="btn" id="share-daily" onclick="shareLink('chal-link-daily','სიტყვობანა – დღის გამოწვევა!')" style="display:none"><svg class="ic"><use href="#i-share"/></svg> გაზიარება</button>
     </div>
     <!-- Blitz -->
     <div class="chal-panel" id="cpanel-blitz">
-      <p style="margin-bottom:14px">⚡ <strong>ბლიც გამოწვევა მეგობართან</strong> — შექმენი ოთახი, გააზიარე ლინკი და თამაშობეთ ერთდროულად!</p>
+      <p style="margin-bottom:14px"><svg class="ic"><use href="#i-bolt"/></svg> <strong>ბლიც გამოწვევა მეგობართან</strong> — შექმენი ოთახი, გააზიარე ლინკი და თამაშობეთ ერთდროულად!</p>
       <div style="background:var(--bg);border-radius:var(--radius);padding:12px;margin-bottom:12px;font-size:12px;color:var(--text-dim);line-height:1.8;box-shadow:var(--shadow-in-xs)">
-        👥 2+ მოთამაშე ერთ ოთახში<br>
-        🔤 3 სიტყვა, 5 წუთი<br>
-        🏆 ქულები: ნაკლები მცდელობა + დროის ბონუსი<br>
-        📊 ბოლოს ხედავ ყველა მოთამაშის შედეგს
+        2+ მოთამაშე ერთ ოთახში<br>
+        3 სიტყვა, 5 წუთი<br>
+        <svg class="ic"><use href="#i-trophy"/></svg> ქულები: ნაკლები მცდელობა + დროის ბონუსი<br>
+        <svg class="ic"><use href="#i-stats"/></svg> ბოლოს ხედავ ყველა მოთამაშის შედეგს
       </div>
-      <a href="blitz.html" class="btn" style="background:var(--accent2);color:#FFFBF4;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px">
-        ⚔️ ბლიც გამოწვევა
+      <a href="blitz.html" class="btn" style="background:var(--accent2);color:#F6F0E1;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px">
+        <svg class="ic"><use href="#i-swords"/></svg> ბლიც გამოწვევა
       </a>
     </div>
   </div>
@@ -898,12 +905,12 @@
 <div class="modal-overlay" id="blitz-intro-modal" role="dialog" aria-modal="true" aria-labelledby="blitz-intro-title">
   <div class="modal">
     <button class="modal-close" onclick="closeModal('blitz-intro-modal')" aria-label="დახურვა">✕</button>
-    <h2 id="blitz-intro-title" style="color:var(--accent)">⚡ ბლიც რეჟიმი</h2>
+    <h2 id="blitz-intro-title" style="color:var(--accent)"><svg class="ic"><use href="#i-bolt"/></svg> ბლიც რეჟიმი</h2>
     <div style="background:var(--bg);border-radius:var(--radius);padding:14px;margin-bottom:16px;font-size:13px;color:var(--text-dim);line-height:2;box-shadow:var(--shadow-in-xs)">
-      🔤 3 შემთხვევითი 5-ასოიანი სიტყვა<br>
+      3 შემთხვევითი 5-ასოიანი სიტყვა<br>
       ⏱ ერთი 5-წუთიანი საათი სამივე სიტყვისთვის<br>
-      💡 სიტყვები ენაცვლება ავტომატურად<br>
-      🏁 თამაში მთავრდება — 5 წუთი ან 3 სიტყვა
+      <svg class="ic"><use href="#i-bulb"/></svg> სიტყვები ენაცვლება ავტომატურად<br>
+      თამაში მთავრდება — 5 წუთი ან 3 სიტყვა
     </div>
     <p style="font-weight:600;margin-bottom:8px;font-size:13px">ქულების სისტემა</p>
     <div style="background:var(--bg);border-radius:var(--radius);overflow:hidden;margin-bottom:16px;font-size:13px;box-shadow:var(--shadow-in-xs)">
@@ -917,8 +924,8 @@
         <div style="padding:8px 12px;color:var(--text-dim)">დროის ბონუსი</div><div style="padding:8px 12px;font-weight:700;color:var(--accent)">+1–5 ქულა</div>
       </div>
     </div>
-    <a href="blitz.html?solo=1" class="btn" style="background:var(--accent);color:#FFFBF4;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;font-size:16px;padding:14px" onclick="closeModal('blitz-intro-modal')">
-      ⚡ დაწყება
+    <a href="blitz.html?solo=1" class="btn" style="background:var(--accent);color:#F6F0E1;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;font-size:16px;padding:14px" onclick="closeModal('blitz-intro-modal')">
+      <svg class="ic"><use href="#i-bolt"/></svg> დაწყება
     </a>
   </div>
 </div>
@@ -927,7 +934,7 @@
 <div class="modal-overlay" id="suggest-modal" role="dialog" aria-modal="true" aria-labelledby="suggest-modal-title">
   <div class="modal">
     <button class="modal-close" onclick="closeModal('suggest-modal')" aria-label="დახურვა">✕</button>
-    <h2 id="suggest-modal-title">✉️ დაამატე სიტყვა</h2>
+    <h2 id="suggest-modal-title"><svg class="ic"><use href="#i-mail"/></svg> დაამატე სიტყვა</h2>
     <p>შემოგვთავაზე ქართული სიტყვები! დაწერე და დააჭირე <strong>Space</strong> ან <strong>,</strong> თითოეული სიტყვის შემდეგ.</p>
     <label>სიტყვები (4+ ასო)</label>
     <div class="tag-input-wrap" id="tag-suggest-modal">
@@ -979,7 +986,7 @@ window.signInGoogle = async function() {
   try {
     await signInWithPopup(_auth, _googleProvider);
     closeModal('auth-modal');
-    showToast('კეთილი იყოს შემოსვლა 👋');
+    showToast('კეთილი იყოს შემოსვლა');
   } catch(e) {
     console.error(e);
     showToast('შესვლა ვერ მოხერხდა: ' + (e.message || e.code));
@@ -993,7 +1000,7 @@ window.signInEmail = async function() {
   try {
     await signInWithEmailAndPassword(_auth, email, pass);
     closeModal('auth-modal');
-    showToast('კეთილი იყოს შემოსვლა 👋');
+    showToast('კეთილი იყოს შემოსვლა');
   } catch(e) {
     if(e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') {
       showToast('არასწორი ელ-ფოსტა ან პაროლი');
@@ -1013,7 +1020,7 @@ window.registerEmail = async function() {
     const cred = await createUserWithEmailAndPassword(_auth, email, pass);
     await updateProfile(cred.user, { displayName: name });
     closeModal('auth-modal');
-    showToast('კეთილი იყოს, ' + name + ' 🎉');
+    showToast('კეთილი იყოს, ' + name);
   } catch(e) {
     if(e.code === 'auth/email-already-in-use') {
       showToast('ეს ელ-ფოსტა უკვე გამოყენებულია');
@@ -1665,13 +1672,13 @@ setInterval(()=>{
 
 // ── BADGES ──
 const BADGES = [
-  { id:'streak3',  icon:'🔥',  name:'პირველი სთრიქი', desc:'მოიგე 3 თამაში ზედიზედ',      check:ctx=>state.streak>=3 },
-  { id:'sharp',    icon:'⚔️',  name:'გამჭრიახი',      desc:'გამოიცანი 1-2 მცდელობაში',     check:ctx=>ctx.won&&ctx.attempts<=2 },
-  { id:'master',   icon:'🏆',  name:'ოსტატი',          desc:'მოიგე 10 თამაში ზედიზედ',     check:ctx=>state.streak>=10 },
-  { id:'night',    icon:'🌙',  name:'ღამურა',          desc:'ითამაშე 00:00–05:00 შორის',   check:ctx=>{const h=new Date().getHours();return h>=0&&h<5;} },
-  { id:'wins30',   icon:'🗡️',  name:'რაინდი',          desc:'მოიგე ჯამში 30 თამაში',       check:ctx=>_totalWins()>=30 },
-  { id:'days7',    icon:'🗓️',  name:'ერთგული',         desc:'ითამაშე 7 დღე ზედიზედ',       check:ctx=>_playDayRun()>=7 },
-  { id:'wins50',   icon:'👁️',  name:'ლეგენდა',         desc:'მოიგე ჯამში 50 თამაში',       check:ctx=>_totalWins()>=50 }
+  { id:'streak3',  icon:'<svg class="ic"><use href="#i-flame"/></svg>',  name:'პირველი სთრიქი', desc:'მოიგე 3 თამაში ზედიზედ',      check:ctx=>state.streak>=3 },
+  { id:'sharp',    icon:'<svg class="ic"><use href="#i-swords"/></svg>', name:'გამჭრიახი',      desc:'გამოიცანი 1-2 მცდელობაში',     check:ctx=>ctx.won&&ctx.attempts<=2 },
+  { id:'master',   icon:'<svg class="ic"><use href="#i-trophy"/></svg>', name:'ოსტატი',          desc:'მოიგე 10 თამაში ზედიზედ',     check:ctx=>state.streak>=10 },
+  { id:'night',    icon:'<svg class="ic"><use href="#i-moon"/></svg>',   name:'ღამურა',          desc:'ითამაშე 00:00–05:00 შორის',   check:ctx=>{const h=new Date().getHours();return h>=0&&h<5;} },
+  { id:'wins30',   icon:'<svg class="ic"><use href="#i-sword"/></svg>',  name:'რაინდი',          desc:'მოიგე ჯამში 30 თამაში',       check:ctx=>_totalWins()>=30 },
+  { id:'days7',    icon:'<svg class="ic"><use href="#i-cal"/></svg>',    name:'ერთგული',         desc:'ითამაშე 7 დღე ზედიზედ',       check:ctx=>_playDayRun()>=7 },
+  { id:'wins50',   icon:'<svg class="ic"><use href="#i-eye"/></svg>',    name:'ლეგენდა',         desc:'მოიგე ჯამში 50 თამაში',       check:ctx=>_totalWins()>=50 }
 ];
 
 function _getBadges() { try { return JSON.parse(localStorage.getItem('sitqva_badges')||'{}'); } catch(e){ return {}; } }
@@ -1712,7 +1719,7 @@ function showBadgeToast(b) {
     t.innerHTML = '<span class="bt-ico"></span><span><span class="bt-title">ახალი ბეჯი!</span><br><span class="bt-name"></span></span>';
     document.body.appendChild(t);
   }
-  t.querySelector('.bt-ico').textContent = b.icon;
+  t.querySelector('.bt-ico').innerHTML = b.icon;
   t.querySelector('.bt-name').textContent = b.name;
   requestAnimationFrame(()=>t.classList.add('show'));
   setTimeout(()=>t.classList.remove('show'), 2300);
@@ -1727,7 +1734,7 @@ function renderBadges() {
     el.innerHTML = `<span class="b-ico">${b.icon}</span><span class="b-name">${b.name}</span>`;
     el.onclick = () => {
       const tip = document.getElementById('badge-tip');
-      tip.innerHTML = `${owned[b.id] ? b.icon : '🔒'} <strong>${b.name}</strong> — ${b.desc}`;
+      tip.innerHTML = `${owned[b.id] ? b.icon : '<svg class="ic"><use href="#i-lock"/></svg>'} <strong>${b.name}</strong> — ${b.desc}`;
       tip.classList.add('show');
       clearTimeout(tip._t); tip._t = setTimeout(()=>tip.classList.remove('show'), 3000);
     };
@@ -1749,7 +1756,7 @@ async function fetchWordDistribution(word) {
 async function showResult(won,attempts,skipSubmit=false){
   // Badge check at game end (skipSubmit = restoring an old result, not a fresh game end)
   if(!skipSubmit) checkBadges({ won: !!won, attempts: attempts||0 });
-  document.getElementById('result-title').textContent = won ? '🎉 გაიმარჯვე!' : (isFreePlay ? '😔 სცადე ისევ!' : '😔 სცადე ხვალ!');
+  document.getElementById('result-title').textContent = won ? 'გაიმარჯვე!' : (isFreePlay ? 'სცადე ისევ!' : 'სცადე ხვალ!');
   document.getElementById('result-word').textContent=targetWord;
   document.getElementById('result-sub').textContent = won ? `გამოიცანი ${attempts} მცდელობაში` : (isFreePlay ? 'სიტყვა იყო:' : 'დღის სიტყვაა:');
 
@@ -1783,11 +1790,11 @@ async function showResult(won,attempts,skipSubmit=false){
   if(isFreePlay && !won){ _fpWords=0; _fpAttempts=0; _fpHints=0; _fpScore=0; }
   const distTitle = document.getElementById('dist-title');
   if(!isFreePlay && !isChallenge) {
-    if(distTitle) distTitle.textContent = '🌍 ვინ რამდენ ცდაში გამოიცნო';
+    if(distTitle) distTitle.textContent = 'ვინ რამდენ ცდაში გამოიცნო';
     const globalDist = await fetchWordDistribution(targetWord);
     renderDistribution(globalDist || state.distribution, won ? attempts : 0);
   } else {
-    if(distTitle) distTitle.textContent = '📊 გამოცნობის სტატისტიკა';
+    if(distTitle) distTitle.textContent = 'გამოცნობის სტატისტიკა';
     renderDistribution(state.distribution, won ? attempts : 0);
   }
   updateStats(); startCountdown(); openModal('result-modal');
@@ -1799,11 +1806,11 @@ async function showResult(won,attempts,skipSubmit=false){
 }
 function shareResult(){
   const won=guesses.length>0&&guesses[guesses.length-1]===targetWord;
-  const map={correct:'🟩',present:'🟨',absent:'⬛'};
+  const map={correct:'⬛',present:'🔳',absent:'⬜'};
   let grid=''; guesses.forEach(g=>{grid+=evaluateGuess(g,targetWord).map(r=>map[r]).join('')+'\n';});
   const text=`სიტყვობანა\n${won?guesses.length:'X'}/6\n\n${grid.trim()}\n\n${location.origin}`;
   if(navigator.share) navigator.share({text}).catch(()=>{});
-  else{navigator.clipboard.writeText(text);showToast('კოპირებულია 📋');}
+  else{navigator.clipboard.writeText(text);showToast('კოპირებულია');}
 }
 
 // ── FREE PLAY ──
@@ -1953,11 +1960,11 @@ async function genChallenge(type){
   linkEl.textContent=url; linkEl.classList.add('visible');
   copyBtn.style.display='flex'; shareBtn.style.display='flex';
 }
-function copyLink(id){navigator.clipboard.writeText(document.getElementById(id).textContent);showToast('კოპირებულია 📋');}
+function copyLink(id){navigator.clipboard.writeText(document.getElementById(id).textContent);showToast('კოპირებულია');}
 function shareLink(id,title){
   const url=document.getElementById(id).textContent;
   if(navigator.share) navigator.share({title,url}).catch(()=>{});
-  else{navigator.clipboard.writeText(url);showToast('კოპირებულია 📋');}
+  else{navigator.clipboard.writeText(url);showToast('კოპირებულია');}
 }
 
 // ── HINT ──
@@ -1966,7 +1973,7 @@ let hintsUsed=0, _hintedPos=new Set();
 let _fpWords=0, _fpAttempts=0, _fpHints=0, _fpScore=0;
 function useHint(){
   if(gameOver||revealInProgress) return;
-  if(hintsUsed>=2){showToast('მინიშნებები ამოიწურა 😅');return;}
+  if(hintsUsed>=2){showToast('მინიშნებები ამოიწურა');return;}
   const tA=[...targetWord], conf=new Set(), presentLetters=new Set();
   guesses.forEach(g=>{
     const gA=[...g];
@@ -1983,11 +1990,11 @@ function useHint(){
   // Fall back to any unconfirmed/unhinted position if no yellow available
   const allAvail=Array.from({length:wordLength},(_,i)=>i).filter(i=>!conf.has(i)&&!_hintedPos.has(i));
   const avail=yellowAvail.length ? yellowAvail : allAvail;
-  if(!avail.length){showToast('ყველა ადგილი ცნობილია 🎯');return;}
+  if(!avail.length){showToast('ყველა ადგილი ცნობილია');return;}
   const pos=avail[Math.floor(Math.random()*avail.length)];
   _hintedPos.add(pos);
   const ordinals=['პირველი','მეორე','მესამე','მეოთხე','მეხუთე','მეექვსე','მეშვიდე','მერვე','მეცხრე','მეათე'];
-  showToast(`💡 ${ordinals[pos]||pos+1} ასო: "${tA[pos]}"`,3000);
+  showToast(`${ordinals[pos]||pos+1} ასო: "${tA[pos]}"`,3000);
   hintsUsed++; if(hintsUsed>=2) document.getElementById('hint-btn').classList.add('used');
 }
 
@@ -2039,7 +2046,7 @@ function updateUserUI(){
     statsPills.style.display='flex';
     if(menuStats) menuStats.style.display='block';
   } else {
-    inner.textContent='👤'; av.classList.remove('signed-in');
+    inner.innerHTML='<svg class="ic"><use href="#i-user"/></svg>'; av.classList.remove('signed-in');
     si.style.display='none';so.style.display='block';
     document.getElementById('auth-title').textContent='შესვლა';
     statsPills.style.display='none';
@@ -2171,7 +2178,7 @@ async function submitTagSuggestion(wrapId) {
   if (!window.submitMultipleSuggestions) { showToast('კავშირი მიმდინარეობს, სცადე ისევ'); return; }
   await window.submitMultipleSuggestions(words);
   _clearTagInput(wrapId);
-  showToast('მადლობა სიტყვის გამოგზავნისთვის 🙏');
+  showToast('მადლობა სიტყვის გამოგზავნისთვის');
 }
 
 // ── MOBILE KEYBOARD CAPTURE ──
@@ -2235,7 +2242,7 @@ function _updateThemeBtn() {
   const lbl = document.getElementById('theme-lbl');
   const pill = document.getElementById('theme-pill');
   if (!ico) return;
-  ico.textContent = dark ? '☀️' : '🌙';
+  ico.innerHTML = '<svg class="ic"><use href="#i-moon"/></svg>';
   lbl.textContent = dark ? 'ღია თემა' : 'მუქი თემა';
   pill.textContent = t ? (dark ? 'DARK' : 'LIGHT') : 'AUTO';
 }
@@ -2247,8 +2254,7 @@ function toggleTheme() {
   _updateThemeBtn();
 }
 (function _initTheme() {
-  // DARK MODE ONLY (for now): saved preference ignored, toggle hidden in menu
-  document.documentElement.setAttribute('data-theme', 'dark');
+  // NEWSPAPER THEME: single paper-light theme, toggle hidden in menu
   document.addEventListener('DOMContentLoaded', _updateThemeBtn);
   setTimeout(_updateThemeBtn, 0);
 })();
