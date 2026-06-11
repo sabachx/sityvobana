@@ -9,7 +9,8 @@
       "Bash(grep -v \"^[[:space:]]*//\")",
       "Bash(more +386)",
       "Bash(python3 -c ':*)",
-      "Bash(powershell -Command \"Get-Content 'C:/Users/schkh/OneDrive/Desktop/Coding/sityvobana/github/sityvobana/landing.html' | Select-Object -Last 30\")"
+      "Bash(powershell -Command \"Get-Content 'C:/Users/schkh/OneDrive/Desktop/Coding/sityvobana/github/sityvobana/landing.html' | Select-Object -Last 30\")",
+      "PowerShell(git push)"
     ]
   }
 }
