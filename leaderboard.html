@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#FFFBF4" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#1e2330" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#1e2330" />
   <title>ლიდერბორდი — სიტყვობანა</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2329592D'/%3E%3Ctext x='16' y='23' text-anchor='middle' font-family='Helvetica Neue,Helvetica,Arial,sans-serif' font-weight='700' font-size='20' fill='%23FFFBF4'%3Eს%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -13,8 +12,8 @@
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZYRDVJSMHE"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-ZYRDVJSMHE');</script>
-  <!-- Theme persistence — must run before paint -->
-  <script>(function(){var t=localStorage.getItem('sityvobana-theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
+  <!-- DARK MODE ONLY (for now): ignore saved/system preference and force dark -->
+  <script>document.documentElement.setAttribute('data-theme','dark');</script>
   <style>
     /* ── VARIABLES — LIGHT ── */
     :root {
@@ -205,6 +204,40 @@
     .score-num { font-size: 20px; font-weight: 900; color: var(--accent); }
     .score-label { font-size: 10px; color: var(--text-muted); }
 
+    /* ── LEADERBOARD TABLE (new) ── */
+    .lb-table-wrap {
+      background: var(--bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-out-xs);
+      padding: 6px 10px;
+      overflow-x: auto;
+    }
+    .lb-table { width: 100%; border-collapse: collapse; }
+    .lb-table th {
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
+      color: var(--text-muted); text-align: right;
+      padding: 10px 8px 8px; border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .lb-table th:nth-child(1), .lb-table th:nth-child(2) { text-align: left; }
+    .lb-table td {
+      padding: 10px 8px; border-bottom: 1px solid var(--border);
+      font-size: 14px; text-align: right; white-space: nowrap;
+    }
+    .lb-table tr:last-child td { border-bottom: none; }
+    .lb-table td.lb-rank { text-align: left; font-size: 15px; width: 36px; }
+    .lb-table td.lb-player { text-align: left; max-width: 160px; overflow: hidden; text-overflow: ellipsis; }
+    .lb-table .lb-name { font-weight: 700; color: var(--text); }
+    .lb-table .lb-sub { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+    .lb-table td.lb-points { font-size: 16px; font-weight: 900; color: var(--accent); }
+    .lb-table tr.top-1 .lb-rank { color: #FFB830; }
+    .lb-table tr.top-2 .lb-rank { color: #A8A8A8; }
+    .lb-table tr.top-3 .lb-rank { color: #C47F3A; }
+    .lb-table tr.me .lb-name, .lb-table tr.me td.lb-points { color: var(--accent); }
+    .lb-table tr.me td { background: rgba(41,89,45,.07); }
+    .lb-table tr.me td:first-child { border-radius: 8px 0 0 8px; }
+    .lb-table tr.me td:last-child  { border-radius: 0 8px 8px 0; }
+
     /* ── YOUR RANK ── */
     .your-rank {
       margin-top: 12px;
@@ -271,7 +304,8 @@
       <span class="user-name" id="user-name-lbl"></span>
       <button onclick="doLogout()" class="pill-btn">გამოსვლა</button>
     </div>
-    <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="თემა">🌙</button>
+    <!-- THEME TOGGLE HIDDEN: dark mode only for now -->
+    <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="თემა" style="display:none">🌙</button>
     <button class="pill-btn" onclick="history.back()">← უკან</button>
   </div>
 </header>
@@ -279,15 +313,15 @@
 <div class="tabs">
   <div class="tab active" onclick="switchTab('daily', this)">📅 დღის სიტყვა</div>
   <div class="tab" onclick="switchTab('freeplay', this)">🎮 თავისუფალი</div>
-  <div class="tab" onclick="switchTab('speed', this)">⚡ სიჩქარე</div>
-  <div class="tab" onclick="switchTab('accuracy', this)">🎯 სიზუსტე</div>
+  <!-- BLITZ DISABLED: speed/accuracy boards hidden -->
+  <div class="tab" style="display:none" onclick="switchTab('speed', this)">⚡ სიჩქარე</div>
+  <div class="tab" style="display:none" onclick="switchTab('accuracy', this)">🎯 სიზუსტე</div>
 </div>
 
 <div class="content">
   <div class="period-bar">
     <button class="period-btn active" onclick="setPeriod('today', this)">დღეს</button>
-    <button class="period-btn" onclick="setPeriod('week', this)">კვირა</button>
-    <button class="period-btn" onclick="setPeriod('alltime', this)">ყველა დრო</button>
+    <button class="period-btn" onclick="setPeriod('alltime', this)">ყველა დროის</button>
   </div>
   <div id="board-container">
     <div class="loading"><div class="spinner"></div><br>იტვირთება...</div>
@@ -358,51 +392,79 @@ async function loadScores() {
     if(!snap.exists()) { showEmpty(); return; }
     let entries = Object.entries(snap.val()).map(([id, v]) => ({id, ...v}));
     if(currentPeriod === 'today') entries = entries.filter(e => e.date === todayStr());
-    else if(currentPeriod === 'week') { const w = daysAgoStr(7); entries = entries.filter(e => e.date >= w); }
     if(!entries.length) { showEmpty(); return; }
-    // Compute missing scores from guesses
-    entries.forEach(e => { if(!e.score && e.guesses) e.score = Math.max(10, (7-(e.guesses||6))*100); });
-    entries.sort((a,b) => (b.score||0) - (a.score||0));
-    // Deduplicate by uid or name — keep best
-    const seen = new Map();
-    entries = entries.filter(e => {
-      const key = e.uid || e.name || 'anonymous';
-      if(seen.has(key)) return false;
-      seen.set(key, true); return true;
+    // Normalize old entries: missing hints → 0, missing score → derive from guesses
+    entries.forEach(e => {
+      e.hintsUsed = e.hintsUsed || 0;
+      if(!e.score && e.guesses) e.score = Math.max(10, (7-(e.guesses||6))*100);
+      e.score = e.score || 0;
     });
-    renderBoard(entries.slice(0, 50));
+
+    const key = e => e.uid || e.name || 'anonymous';
+    let rows;
+    if(currentTab === 'freeplay') {
+      // Free play: score is cumulative within one streak (resets on loss).
+      // Rank players by their best single streak — keep the max-score entry.
+      const best = new Map();
+      entries.forEach(e => { const k = key(e); const c = best.get(k); if(!c || e.score > c.score) best.set(k, e); });
+      rows = [...best.values()].map(e => ({
+        uid: e.uid, name: e.name, words: e.wordsGuessed || 1, guesses: e.guesses, hints: e.hintsUsed, points: e.score
+      }));
+    } else if(currentPeriod === 'today') {
+      // Daily / today: each player's best game today
+      const best = new Map();
+      entries.forEach(e => { const k = key(e); const c = best.get(k); if(!c || e.score > c.score) best.set(k, e); });
+      rows = [...best.values()].map(e => ({
+        uid: e.uid, name: e.name, words: 1, guesses: e.guesses, hints: e.hintsUsed, points: e.score
+      }));
+    } else {
+      // Daily / all time: best entry per player per day, then sum points across days
+      const perDay = new Map();
+      entries.forEach(e => {
+        const k = key(e) + '|' + (e.date || '');
+        const c = perDay.get(k); if(!c || e.score > c.score) perDay.set(k, e);
+      });
+      const agg = new Map();
+      perDay.forEach(e => {
+        const k = key(e);
+        const a = agg.get(k) || { uid: e.uid, name: e.name, games: 0, guesses: 0, hints: 0, points: 0 };
+        a.games++; a.guesses += e.guesses || 0; a.hints += e.hintsUsed; a.points += e.score;
+        agg.set(k, a);
+      });
+      rows = [...agg.values()].map(a => ({
+        uid: a.uid, name: a.name,
+        words: a.games, // one guessed word per won day
+        guesses: a.guesses, hints: a.hints, points: a.points
+      }));
+    }
+    rows.sort((a,b) => b.points - a.points);
+    renderBoard(rows.slice(0, 50));
   } catch(e) { console.error(e); showEmpty('კავშირის შეცდომა'); }
 }
 
-function renderBoard(entries) {
+function renderBoard(rows) {
+  if(!rows.length) { showEmpty(); return; }
   const myUid = getPlayerUid();
   const myName = getPlayerName();
-  if(!entries.length) { showEmpty(); return; }
-  let myRank = -1;
-  const rows = entries.map((e, i) => {
-    const rank = i + 1;
-    const name = e.name || 'ანონიმი';
-    const isMe = myUid ? e.uid === myUid : (myName && name === myName);
-    if(isMe) myRank = rank;
-    const medal = MEDALS[i] || `${rank}.`;
-    const rankClass = RANK_CLASSES[i] || '';
-    const sc = e.score || Math.max(10,(7-(e.guesses||6))*100);
-    let sub = '';
-    if(e.date) sub = e.date;
-    if(e.time) sub += sub ? ` · ${formatTime(e.time)}` : formatTime(e.time);
-    return `<div class="board-row ${rankClass}${isMe?' your-rank':''}">
-      <div class="rank">${medal}</div>
-      <div class="player-info">
-        <div class="player-name">${name}${isMe?' 👈':''}</div>
-        ${sub?`<div class="player-sub">${sub}</div>`:''}
-      </div>
-      <div class="player-score">
-        <div class="score-num">${sc}</div>
-        <div class="score-label">ქულა</div>
-      </div>
-    </div>`;
+  const body = rows.map((r, i) => {
+    const name = r.name || 'ანონიმი';
+    const isMe = myUid ? r.uid === myUid : (myName && name === myName);
+    const medal = MEDALS[i] || `${i+1}.`;
+    return `<tr class="${RANK_CLASSES[i]||''}${isMe?' me':''}">
+      <td class="lb-rank">${medal}</td>
+      <td class="lb-player">
+        <div class="lb-name">${name}${isMe?' 👈':''}</div>
+      </td>
+      <td>${r.words ?? '—'}</td>
+      <td>${r.guesses ?? '—'}</td>
+      <td>${r.hints ?? 0}</td>
+      <td class="lb-points">${r.points}</td>
+    </tr>`;
   }).join('');
-  document.getElementById('board-container').innerHTML = `<div class="board">${rows}</div>`;
+  document.getElementById('board-container').innerHTML = `<div class="lb-table-wrap"><table class="lb-table">
+    <thead><tr><th>#</th><th>მოთამაშე</th><th>გამოცნობილი</th><th>მცდელობა</th><th>მინიშნება</th><th>ქულა</th></tr></thead>
+    <tbody>${body}</tbody>
+  </table></div>`;
 }
 
 function formatTime(s) {
