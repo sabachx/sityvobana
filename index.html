@@ -991,13 +991,9 @@ window._fetchChallenge = async function(id) {
   } catch(e) { return null; }
 };
 
-window._recordDailyWord = async function(date, word) {
-  try {
-    const r = ref(_db, `word_history/${date}`);
-    const snap = await get(r);
-    if (!snap.exists()) await set(r, word); // write only if not already recorded
-  } catch(e) {}
-};
+// REMOVED: _recordDailyWord — word history is now sourced from /used_words,
+// written by the daily-word GitHub Action. Player browsers no longer record history
+// (writes used to fail silently for signed-out players and used UTC dates, causing gaps).
 
 // Signal that Firebase module is ready
 window._firebaseReady = true;
@@ -1093,7 +1089,6 @@ async function loadWordsFromAPI() {
     targetWord    = daily.word;
     wordLength    = [...daily.word].length;
     todayIsSpecial = !!daily.special;
-    if (window._recordDailyWord) window._recordDailyWord(new Date().toISOString().slice(0,10), daily.word);
 
     // Show special day badge if applicable
     if (todayIsSpecial && daily.special_label) {

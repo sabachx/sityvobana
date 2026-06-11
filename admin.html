@@ -470,7 +470,8 @@
 
     <!-- HISTORY TAB -->
     <div class="tab-panel" id="tab-history">
-      <div class="add-form">
+      <!-- MANUAL EDITING HIDDEN: history now comes from /used_words (written only by the daily-word Action) -->
+      <div class="add-form" style="display:none">
         <div class="field"><label>თარიღი</label><input type="date" id="hist-date"/></div>
         <div class="field"><label>სიტყვა</label><input type="text" id="hist-word" placeholder="ქართული სიტყვა" maxlength="10"/></div>
         <button class="add-btn" onclick="addHistoryEntry()">+ დამატება / განახლება</button>
@@ -1030,11 +1031,19 @@ window.switchTab = function(name) {
 };
 
 // ── WORD HISTORY ──
+// Source of truth: /used_words — written by the daily-word GitHub Action, locked for clients.
+// (Previously read /word_history, which was populated opportunistically by player browsers
+// and silently missed days. Player browsers are no longer involved.)
 let allHistory = {};
 async function loadHistory() {
   document.getElementById('history-list').innerHTML = '<div class="loading"><span class="spin">⏳</span> იტვირთება...</div>';
-  const snap = await get(ref(db, 'word_history'));
-  allHistory = snap.exists() ? snap.val() : {};
+  const snap = await get(ref(db, 'used_words'));
+  allHistory = {};
+  if (snap.exists()) {
+    Object.values(snap.val()).forEach(e => {
+      if (e && e.date && e.word) allHistory[e.date] = e;
+    });
+  }
   renderHistory();
 }
 function renderHistory() {
@@ -1043,15 +1052,16 @@ function renderHistory() {
   if(!entries.length){ container.innerHTML='<div class="empty">ისტორია ცარიელია</div>'; return; }
   container.innerHTML = `<table class="data-table">
     <thead><tr><th>თარიღი</th><th>სიტყვა</th><th></th></tr></thead>
-    <tbody>${entries.map(([date,word])=>`
+    <tbody>${entries.map(([date,e])=>`
       <tr>
         <td style="color:var(--text-dim)">${date}</td>
-        <td class="word-ka">${word}</td>
-        <td><button class="del-word-btn" onclick="deleteHistoryEntry('${date}')" title="წაშლა">🗑</button></td>
+        <td class="word-ka">${e.word}</td>
+        <td>${e.special?'⭐':''}</td>
       </tr>`).join('')}
     </tbody></table>`;
 }
 window.addHistoryEntry = async function() {
+  return; // DISABLED: /used_words is written only by the daily-word Action
   const date = document.getElementById('hist-date').value;
   const word = document.getElementById('hist-word').value.trim();
   if(!date){ toast('აირჩიე თარიღი'); return; }
@@ -1064,6 +1074,7 @@ window.addHistoryEntry = async function() {
   toast(`${date} — "${word}" შენახულია`);
 };
 window.deleteHistoryEntry = async function(date) {
+  return; // DISABLED: /used_words is written only by the daily-word Action
   if(!confirm(`წაიშალოს ${date}-ის ჩანაწერი?`)) return;
   await remove(ref(db, `word_history/${date}`));
   delete allHistory[date];
