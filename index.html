@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#FFFBF4" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#11120d" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#1e2330" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="სიტყვობანა" />
@@ -14,7 +13,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@700;900&display=swap" rel="stylesheet" />
   <script>
-    (function(){var t=localStorage.getItem('sityvobana-theme');if(t)document.documentElement.setAttribute('data-theme',t);})();
+    // DARK MODE ONLY (for now): ignore saved/system preference and force dark
+    document.documentElement.setAttribute('data-theme','dark');
   </script>
   <style>
     /* ── VARIABLES ── */
@@ -44,7 +44,9 @@
       --shadow-in-xs: inset 2px  2px  5px var(--nm-d), inset -2px  -2px  5px var(--nm-l);
       /* Layout */
       --radius: 12px;
-      --tile-size: min(62px, calc((100vw - 56px) / 5));
+      /* Capped by width AND height so board + header + keyboard always fit the viewport */
+      --tile-size: min(62px, calc((100vw - 56px) / 5), calc((100vh - 260px) / 6));
+      --tile-size: min(62px, calc((100vw - 56px) / 5), calc((100dvh - 260px) / 6));
       --gap: 6px;
       --kb-gap: 5px;
       --kb-h: 44px;
@@ -273,6 +275,8 @@
     .key:active { box-shadow: var(--shadow-in-xs); }
     .enter-key { flex:1.5; }
     .del-key   { flex:1.3; font-size:17px; }
+    .shift-key { flex:1.3; font-size:17px; }
+    .shift-key.active { box-shadow:var(--shadow-in-sm); color:var(--accent); }
     .key.correct { background:var(--green);   color:#FFFBF4; box-shadow:none; }
     .key.present { background:var(--present); color:#FFFBF4; box-shadow:none; }
     .key.absent  { background:var(--bg); box-shadow: var(--shadow-in-sm); color:var(--text-muted); }
@@ -539,7 +543,7 @@
   <button class="mode-pill" id="pill-daily" onclick="goDaily()">📅 დღის სიტყვა</button>
   <button class="mode-pill" id="pill-free" onclick="goFree()">🎮 თავისუფალი</button>
   <button class="mode-pill" onclick="openModal('challenge-modal')">⚔️ გამოწვევა</button>
-  <button class="mode-pill" onclick="openModal('blitz-intro-modal')">⚡ ბლიცი</button>
+  <!-- BLITZ DISABLED --><button class="mode-pill" style="display:none" onclick="openModal('blitz-intro-modal')">⚡ ბლიცი</button>
 </div>
 
 <!-- SIDE MENU -->
@@ -561,7 +565,7 @@
       <button class="menu-mode-pill" id="mpill-daily" onclick="goDaily();closeMenu()">📅 დღის სიტყვა</button>
       <button class="menu-mode-pill" id="mpill-free" onclick="goFree();closeMenu()">🎮 თავისუფალი</button>
       <button class="menu-mode-pill" onclick="openModal('challenge-modal');closeMenu()">⚔️ გამოწვევა</button>
-      <button class="menu-mode-pill" onclick="openModal('blitz-intro-modal');closeMenu()">⚡ ბლიცი</button>
+      <!-- BLITZ DISABLED --><button class="menu-mode-pill" style="display:none" onclick="openModal('blitz-intro-modal');closeMenu()">⚡ ბლიცი</button>
     </div>
   </div>
 
@@ -580,7 +584,8 @@
     <button class="menu-link-row" onclick="openModal('suggest-modal');closeMenu()"><span class="ico">✉️</span>სიტყვის შეთავაზება</button>
     <button class="menu-link-row" onclick="openModal('how-modal');closeMenu()"><span class="ico">❓</span>როგორ ვითამაშოთ</button>
   </div>
-  <div class="menu-section" style="margin-top:auto;">
+  <!-- THEME TOGGLE HIDDEN: dark mode only for now -->
+  <div class="menu-section" style="margin-top:auto;display:none;">
     <button class="menu-link-row" id="theme-toggle-btn" onclick="toggleTheme()" style="justify-content:space-between;">
       <span style="display:flex;align-items:center;gap:10px;"><span class="ico" id="theme-ico">🌙</span><span id="theme-lbl">მუქი თემა</span></span>
       <span id="theme-pill" style="font-size:10px;background:var(--bg);box-shadow:var(--shadow-out-xs);border-radius:20px;padding:3px 10px;color:var(--text-muted)">AUTO</span>
@@ -590,8 +595,8 @@
 
 <div id="toast"></div>
 
-<!-- Hidden input captures native mobile keyboard -->
-<input id="kb-capture" type="text" inputmode="text"
+<!-- Hidden input — native mobile keyboard disabled (inputmode=none + readonly); on-screen keyboard is fully custom -->
+<input id="kb-capture" type="text" inputmode="none" readonly
   autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
   aria-hidden="true" tabindex="-1"
   style="position:fixed;opacity:0;width:1px;height:1px;top:50%;left:50%;border:none;padding:0;outline:none;pointer-events:none;" />
@@ -755,7 +760,7 @@
     <div class="chal-tabs">
       <div class="chal-tab active" onclick="switchChalTab('custom')">✍️ შენი სიტყვა</div>
       <div class="chal-tab" onclick="switchChalTab('daily')">📅 დღის სიტყვა</div>
-      <div class="chal-tab" onclick="switchChalTab('blitz')" style="color:var(--accent2)">⚡ ბლიცი</div>
+      <!-- BLITZ DISABLED --><div class="chal-tab" onclick="switchChalTab('blitz')" style="display:none;color:var(--accent2)">⚡ ბლიცი</div>
     </div>
     <!-- Custom -->
     <div class="chal-panel active" id="cpanel-custom">
@@ -1148,11 +1153,21 @@ function showSpecialBadge(label) {
 }
 
 // ── KEYBOARD ──
-const KB_ROWS = [
-  ["ქ","წ","ჭ","ე","რ","ღ","ტ","თ","ყ","უ","ი","ო","პ"],
-  ["ა","ს","შ","დ","ფ","გ","ჰ","ჯ","ჟ","კ","ლ"],
-  ["⌫","ზ","ძ","ხ","ც","ჩ","ვ","ბ","ნ","მ","ENTER"]
-];
+// iPhone Georgian layout (QWERTY shell). Shift layer follows the standard
+// Georgian shift mapping already used in L2G: წ→ჭ, რ→ღ, ტ→თ, ს→შ, ჯ→ჟ, ც→ჩ, ზ→ძ.
+const KB_LAYERS = {
+  normal: [
+    ["ქ","წ","ე","რ","ტ","ყ","უ","ი","ო","პ"],
+    ["ა","ს","დ","ფ","გ","ჰ","ჯ","კ","ლ","⌫"],
+    ["⇧","ზ","ხ","ც","ვ","ბ","ნ","მ","ENTER"]
+  ],
+  shift: [
+    ["ქ","ჭ","ე","ღ","თ","ყ","უ","ი","ო","პ"],
+    ["ა","შ","დ","ფ","გ","ჰ","ჟ","კ","ლ","⌫"],
+    ["⇧","ძ","ხ","ჩ","ვ","ბ","ნ","მ","ENTER"]
+  ]
+};
+let kbShift = false;
 
 // Latin → Georgian (normal keys + Shift combos for the 7 extras)
 const L2G = {
@@ -1276,7 +1291,11 @@ async function checkChallengeMode() {
   setDailyWord();
 }
 function applyWordLength() {
-  document.documentElement.style.setProperty('--tile-size', `min(62px, calc((100vw - 56px) / ${wordLength}))`);
+  // Cap by width AND height so the board (wordLength+1 rows) + header + keyboard always fit the viewport
+  const rows = wordLength + 1;
+  const vh = (window.CSS && CSS.supports && CSS.supports('height','100dvh')) ? '100dvh' : '100vh';
+  document.documentElement.style.setProperty('--tile-size',
+    `min(62px, calc((100vw - 56px) / ${wordLength}), calc((${vh} - 230px - ${(rows-1)*6}px) / ${rows}))`);
 }
 function setDailyWord() {
   // Word already loaded into targetWord by loadWordsFromAPI()
@@ -1331,13 +1350,14 @@ function restoreBoard(data) {
 const keyColors={};
 function buildKeyboard() {
   const kb=document.getElementById('keyboard'); kb.innerHTML='';
-  KB_ROWS.forEach(row=>{
+  KB_LAYERS[kbShift?'shift':'normal'].forEach(row=>{
     const rowEl=document.createElement('div'); rowEl.className='kb-row';
     row.forEach(key=>{
       const btn=document.createElement('button');
       if(key==='ENTER'){ btn.className='key enter-key'; btn.innerHTML=`<svg width="22" height="17" viewBox="0 0 22 17" fill="none"><path d="M19 3.5 L19 9.5 L4.5 9.5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 5 L3.5 9.5 L9 14" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`; btn.id='key-ENTER'; btn.setAttribute('aria-label','დადასტურება'); }
       else if(key==='⌫'){ btn.className='key del-key'; btn.textContent='⌫'; btn.id='key-DEL'; btn.setAttribute('aria-label','წაშლა'); }
-      else { btn.className='key'; btn.textContent=key; btn.id='key-'+key; }
+      else if(key==='⇧'){ btn.className='key shift-key'+(kbShift?' active':''); btn.textContent='⇧'; btn.id='key-SHIFT'; btn.setAttribute('aria-label','შიფტი'); btn.setAttribute('aria-pressed',kbShift?'true':'false'); }
+      else { btn.className='key'; btn.textContent=key; btn.id='key-'+key; if(keyColors[key]) btn.classList.add(keyColors[key]); }
       btn.onclick=()=>handleKey(key);
       rowEl.appendChild(btn);
     });
@@ -1356,9 +1376,14 @@ function updateKeyColor(letter,cls) {
 // ── INPUT ──
 function handleKey(key) {
   if(gameOver||revealInProgress) return;
+  if(key==='⇧'){ kbShift=!kbShift; buildKeyboard(); return; }
   if(key==='⌫'||key==='Backspace') deleteLetter();
   else if(key==='ENTER'||key==='Enter') submitGuess();
-  else if(/^[\u10D0-\u10FF]$/.test(key)) addLetter(key);
+  else if(/^[\u10D0-\u10FF]$/.test(key)) {
+    addLetter(key);
+    // One-shot shift, like iOS: revert to the normal layer after one letter
+    if(kbShift){ kbShift=false; buildKeyboard(); }
+  }
 }
 document.addEventListener('keydown',e=>{
   if(e.ctrlKey||e.metaKey||e.altKey) return;
@@ -1929,6 +1954,7 @@ async function submitTagSuggestion(wrapId) {
 const _isMobile = () => navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
 
 function setupMobileCapture() {
+  return; // DISABLED: native keyboard must never appear — custom on-screen keyboard only
   if (!_isMobile()) return;
   const inp = document.getElementById('kb-capture');
   if (!inp) return;
@@ -1955,6 +1981,7 @@ function setupMobileCapture() {
 }
 
 function focusCapture() {
+  return; // DISABLED: never focus the capture input — prevents native keyboard popup
   if (!_isMobile() || gameOver) return;
   const inp = document.getElementById('kb-capture');
   if (inp && document.activeElement !== inp) inp.focus();
@@ -1996,8 +2023,8 @@ function toggleTheme() {
   _updateThemeBtn();
 }
 (function _initTheme() {
-  const saved = localStorage.getItem('sityvobana-theme');
-  if (saved) document.documentElement.setAttribute('data-theme', saved);
+  // DARK MODE ONLY (for now): saved preference ignored, toggle hidden in menu
+  document.documentElement.setAttribute('data-theme', 'dark');
   document.addEventListener('DOMContentLoaded', _updateThemeBtn);
   setTimeout(_updateThemeBtn, 0);
 })();
