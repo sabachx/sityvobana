@@ -224,7 +224,7 @@
     }
     #suggest-prompt.show { opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0); }
     #suggest-prompt:hover { background:var(--warn); color:#1A1813; }
-    #suggest-prompt:disabled { opacity:.6; cursor:default; }
+    #suggest-prompt.show:disabled { opacity:.6; cursor:default; }  /* only fade while visible; hidden must stay hidden */
 
     /* ── BOARD ── */
     #board-wrap {
