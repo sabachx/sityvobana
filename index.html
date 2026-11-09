@@ -26,6 +26,8 @@
       --accent2: #1A1813;
       --green: #1A1813;
       --present: #5C564A;
+      --ok: #4C9453;      /* correct-tile green: main buttons, stats highlights, success */
+      --warn: #DA9307;    /* misplaced-tile yellow: warnings */
       --border: rgba(26,24,19,.18);
       /* Backwards-compat aliases used in inline styles */
       --surface: var(--bg);
@@ -166,7 +168,7 @@
       border-radius:var(--radius); padding:10px 6px; text-align:center;
       box-shadow: var(--shadow-in-xs);
     }
-    .menu-stat-box .v { font-size:22px; font-weight:700; color:var(--accent); display:block; }
+    .menu-stat-box .v { font-size:22px; font-weight:700; color:var(--ok); display:block; }
     .menu-stat-box .l { font-size:11px; color:var(--text-muted); display:block; margin-top:2px; }
     .menu-link-row {
       display:flex; align-items:center; gap:10px;
@@ -184,7 +186,7 @@
       font-size:11px; color:var(--text-dim);
       box-shadow: var(--shadow-out-xs);
     }
-    .stat-pill .val { font-size:13px; font-weight:700; color:var(--accent); }
+    .stat-pill .val { font-size:13px; font-weight:700; color:var(--ok); }
     .signin-mini-btn {
       display:inline-flex; align-items:center; gap:5px;
       background:var(--bg); border:none;
@@ -207,6 +209,22 @@
       max-width:88vw; text-align:center;
     }
     #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+    #toast.ok   { background:var(--ok); color:#FFFFFF; }
+    #toast.warn { background:var(--warn); color:#1A1813; }
+    /* One-tap "add this word" button shown under the word-not-found toast */
+    #suggest-prompt {
+      position:fixed; top:108px; left:50%;
+      transform:translateX(-50%) translateY(-8px);
+      display:flex; align-items:center; gap:6px;
+      background:var(--bg); color:var(--text);
+      border:1.5px solid var(--warn); border-radius:0;
+      padding:8px 16px; font:inherit; font-weight:700; font-size:13px;
+      cursor:pointer; z-index:1000; white-space:nowrap; max-width:88vw;
+      opacity:0; pointer-events:none; transition:all .25s;
+    }
+    #suggest-prompt.show { opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0); }
+    #suggest-prompt:hover { background:var(--warn); color:#1A1813; }
+    #suggest-prompt:disabled { opacity:.6; cursor:default; }
 
     /* ── BOARD ── */
     #board-wrap {
@@ -342,8 +360,8 @@
     .btn:active { box-shadow: var(--shadow-in-sm); }
     .btn-primary { background:var(--accent); color:#F6F0E1; box-shadow: var(--shadow-out-sm); }
     .btn-primary:hover { opacity:.9; color:#F6F0E1; }
-    .btn-green { background:var(--green); color:#F6F0E1; box-shadow: var(--shadow-out-sm); }
-    .btn-green:hover { color:#F6F0E1; }
+    .btn-green { background:var(--ok); color:#FFFFFF; box-shadow: var(--shadow-out-sm); }
+    .btn-green:hover { color:#FFFFFF; opacity:.92; }
     .btn-green:active { box-shadow: var(--shadow-in-sm); color:#F6F0E1; }
     .divider { display:flex; align-items:center; gap:8px; color:var(--text-muted); font-size:11px; margin:10px 0; }
     .divider::before,.divider::after { content:''; flex:1; height:1px; background:var(--border); }
@@ -367,7 +385,7 @@
     #next-word-timer span { color:var(--accent); font-weight:700; font-size:14px; }
     .result-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
     .result-stat { background:var(--bg); border-radius:var(--radius); padding:8px 4px; text-align:center; box-shadow: var(--shadow-in-xs); }
-    .result-stat .n { font-size:20px; font-weight:700; color:var(--accent); }
+    .result-stat .n { font-size:20px; font-weight:700; color:var(--ok); }
     .result-stat .l { font-size:11px; color:var(--text-muted); margin-top:2px; }
 
     /* ── DISTRIBUTION CHART ── */
@@ -383,7 +401,7 @@
       padding-right:6px; font-size:11px; font-weight:700; color:#F6F0E1;
       transition:width .6s ease;
     }
-    .dist-bar.highlight { background:var(--accent); color:#F6F0E1; }
+    .dist-bar.highlight { background:var(--ok); color:#FFFFFF; }
 
     /* ── STATS MODAL ── */
     .stats-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px; }
@@ -391,7 +409,7 @@
       background:var(--bg); border-radius:var(--radius); padding:10px 6px;
       text-align:center; box-shadow:var(--shadow-in-xs);
     }
-    .stats-card .v { font-size:22px; font-weight:900; color:var(--accent); }
+    .stats-card .v { font-size:22px; font-weight:900; color:var(--ok); }
     .stats-card .l { font-size:10px; color:var(--text-muted); margin-top:2px; }
     .stats-footer { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:14px; }
     .stats-timer { font-size:11px; color:var(--text-muted); text-align:left; }
@@ -431,14 +449,14 @@
       background:var(--bg); color:var(--text);
       border-radius:0; padding:12px 20px;
       display:flex; align-items:center; gap:12px;
-      border:1px solid var(--text); outline:3px double var(--text); outline-offset:3px;
+      border:1px solid var(--ok); outline:3px double var(--ok); outline-offset:3px;
       z-index:1200; transition:transform .45s cubic-bezier(.34,1.56,.64,1);
       pointer-events:none;
     }
     #badge-toast.show { transform:translateX(-50%) translateY(0); }
     #badge-toast .bt-ico { font-size:30px; animation:badgePop .6s ease; }
     #badge-toast .bt-title { font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; }
-    #badge-toast .bt-name { font-size:14px; font-weight:900; color:var(--accent); }
+    #badge-toast .bt-name { font-size:14px; font-weight:900; color:var(--ok); }
     @keyframes badgePop { 0%{transform:scale(0) rotate(-30deg)} 70%{transform:scale(1.3)} 100%{transform:scale(1)} }
 
     /* ── FREE PLAY BANNER ── */
@@ -677,6 +695,9 @@
 </div>
 
 <div id="toast"></div>
+<button id="suggest-prompt" type="button" onclick="sendSuggestPrompt()" aria-label="დაამატე ეს სიტყვა">
+  <svg class="ic"><use href="#i-mail"/></svg> დაამატე „<span class="sp-word"></span>“
+</button>
 
 <!-- Hidden input — native mobile keyboard disabled (inputmode=none + readonly); on-screen keyboard is fully custom -->
 <input id="kb-capture" type="text" inputmode="none" readonly
@@ -779,15 +800,15 @@
       </div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0;">
         <div style="background:var(--bg);border-radius:var(--radius);padding:8px;text-align:center;box-shadow:var(--shadow-in-xs);">
-          <div style="font-size:18px;font-weight:700;color:var(--accent);" id="ps-streak">0</div>
+          <div style="font-size:18px;font-weight:700;color:var(--ok);" id="ps-streak">0</div>
           <div style="font-size:9px;color:var(--text-muted);"><svg class="ic"><use href="#i-flame"/></svg> სტრიქი</div>
         </div>
         <div style="background:var(--bg);border-radius:var(--radius);padding:8px;text-align:center;box-shadow:var(--shadow-in-xs);">
-          <div style="font-size:18px;font-weight:700;color:var(--accent);" id="ps-best">0</div>
+          <div style="font-size:18px;font-weight:700;color:var(--ok);" id="ps-best">0</div>
           <div style="font-size:9px;color:var(--text-muted);"><svg class="ic"><use href="#i-trophy"/></svg> საუკეთესო</div>
         </div>
         <div style="background:var(--bg);border-radius:var(--radius);padding:8px;text-align:center;box-shadow:var(--shadow-in-xs);">
-          <div style="font-size:18px;font-weight:700;color:var(--accent);" id="ps-played">0</div>
+          <div style="font-size:18px;font-weight:700;color:var(--ok);" id="ps-played">0</div>
           <div style="font-size:9px;color:var(--text-muted);"><svg class="ic"><use href="#i-target"/></svg> ნათამაშები</div>
         </div>
       </div>
@@ -1003,26 +1024,26 @@ window.signInGoogle = async function() {
   try {
     await signInWithPopup(_auth, _googleProvider);
     closeModal('auth-modal');
-    showToast('კეთილი იყოს შემოსვლა');
+    showToast('კეთილი იყოს შემოსვლა',2200,'ok');
   } catch(e) {
     console.error(e);
-    showToast('შესვლა ვერ მოხერხდა: ' + (e.message || e.code));
+    showToast('შესვლა ვერ მოხერხდა: ' + (e.message || e.code),2200,'warn');
   }
 };
 
 window.signInEmail = async function() {
   const email = document.getElementById('login-email').value.trim();
   const pass  = document.getElementById('login-pass').value;
-  if(!email || !pass) { showToast('შეავსე ყველა ველი'); return; }
+  if(!email || !pass) { showToast('შეავსე ყველა ველი',2200,'warn'); return; }
   try {
     await signInWithEmailAndPassword(_auth, email, pass);
     closeModal('auth-modal');
-    showToast('კეთილი იყოს შემოსვლა');
+    showToast('კეთილი იყოს შემოსვლა',2200,'ok');
   } catch(e) {
     if(e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') {
-      showToast('არასწორი ელ-ფოსტა ან პაროლი');
+      showToast('არასწორი ელ-ფოსტა ან პაროლი',2200,'warn');
     } else {
-      showToast('შეცდომა: ' + e.code);
+      showToast('შეცდომა: ' + e.code,2200,'warn');
     }
   }
 };
@@ -1031,18 +1052,18 @@ window.registerEmail = async function() {
   const name  = document.getElementById('reg-name').value.trim();
   const email = document.getElementById('reg-email').value.trim();
   const pass  = document.getElementById('reg-pass').value;
-  if(!name || !email || !pass) { showToast('შეავსე ყველა ველი'); return; }
-  if(pass.length < 6) { showToast('პაროლი მინიმუმ 6 სიმბოლო'); return; }
+  if(!name || !email || !pass) { showToast('შეავსე ყველა ველი',2200,'warn'); return; }
+  if(pass.length < 6) { showToast('პაროლი მინიმუმ 6 სიმბოლო',2200,'warn'); return; }
   try {
     const cred = await createUserWithEmailAndPassword(_auth, email, pass);
     await updateProfile(cred.user, { displayName: name });
     closeModal('auth-modal');
-    showToast('კეთილი იყოს, ' + name);
+    showToast('კეთილი იყოს, ' + name,2200,'ok');
   } catch(e) {
     if(e.code === 'auth/email-already-in-use') {
-      showToast('ეს ელ-ფოსტა უკვე გამოყენებულია');
+      showToast('ეს ელ-ფოსტა უკვე გამოყენებულია',2200,'warn');
     } else {
-      showToast('შეცდომა: ' + e.code);
+      showToast('შეცდომა: ' + e.code,2200,'warn');
     }
   }
 };
@@ -1210,7 +1231,7 @@ window.submitMultipleSuggestions = async function(words) {
       submitted++;
     } catch(e) {
       console.error('Suggestion error:', e.code || e.message);
-      showToast('შეცდომა: ' + (e.code || 'კავშირი ვერ მოხერხდა'));
+      showToast('შეცდომა: ' + (e.code || 'კავშირი ვერ მოხერხდა'),2200,'warn');
     }
   }
   return submitted;
@@ -1275,14 +1296,14 @@ async function loadWordsFromAPI() {
         wordLength     = [...cached.word].length;
         todayIsSpecial = !!cached.special;
         if (todayIsSpecial && cached.special_label) showSpecialBadge(cached.special_label);
-        showToast('ოფლაინ რეჟიმი');
+        showToast('ოფლაინ რეჟიმი',2200,'warn');
         return;
       }
     } catch(e2) {}
     // Full fallback
     targetWord = FALLBACK_WORD;
     wordLength = 5;
-    showToast('API მიუწვდომელია');
+    showToast('API მიუწვდომელია',2200,'warn');
   }
 }
 
@@ -1442,7 +1463,7 @@ async function checkChallengeMode() {
         return;
       }
     }
-    showToast('გამოწვევის ლინკი არასწორია');
+    showToast('გამოწვევის ლინკი არასწორია',2200,'warn');
     setDailyWord(); return;
   }
 
@@ -1597,22 +1618,22 @@ function deleteLetter() {
 }
 async function submitGuess() {
   if(isSubmitting||gameOver||revealInProgress) return;
-  if(currentCol<wordLength){shakeRow(currentRow);showToast(`${wordLength} ასო გჭირდება`);return;}
+  if(currentCol<wordLength){shakeRow(currentRow);showToast(`${wordLength} ასო გჭირდება`,2200,'warn');return;}
   const guess=currentGuess.join('');
 
   // Validate against Firebase for daily AND free play (not for challenge links)
   if(!isChallenge || isFreePlay) {
     if(!/^[\u10D0-\u10FF]+$/.test(guess)) {
-      shakeRow(currentRow); showToast('სიტყვა ვერ მოიძებნა'); return;
+      shakeRow(currentRow); showToast('სიტყვა ვერ მოიძებნა',2200,'warn'); return;
     }
     if(guess !== targetWord) {
       if(window._firebaseReady && typeof window.isValidWord === 'function') {
         isSubmitting = true;
         const valid = await window.isValidWord(guess);
         isSubmitting = false;
-        if(!valid) { shakeRow(currentRow); showToast('სიტყვა ვერ მოიძებნა'); return; }
+        if(!valid) { shakeRow(currentRow); showToast('სიტყვა ვერ მოიძებნა',2200,'warn'); showSuggestPrompt(guess); return; }
       } else {
-        shakeRow(currentRow); showToast('კავშირი მიმდინარეობს, სცადე ისევ'); return;
+        shakeRow(currentRow); showToast('კავშირი მიმდინარეობს, სცადე ისევ',2200,'warn'); return;
       }
     }
   }
@@ -1676,9 +1697,39 @@ function winBounce(ri) {
 
 // ── TOAST ──
 let toastTimer;
-function showToast(msg,dur=2200){
-  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+// type: 'ok' (green, success) | 'warn' (yellow, problem) | omitted (neutral black)
+function showToast(msg,dur=2200,type=''){
+  const t=document.getElementById('toast'); t.textContent=msg;
+  t.classList.remove('ok','warn'); if(type) t.classList.add(type);
+  t.classList.add('show');
   clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+// ── SUGGEST ON "WORD NOT FOUND" ──
+// One tap sends the rejected guess to /suggestions for admin review.
+const _suggestedThisSession = new Set();
+let _suggestPromptTimer;
+function showSuggestPrompt(word){
+  const el=document.getElementById('suggest-prompt'); if(!el) return;
+  if(_suggestedThisSession.has(word) || [...word].length < 4) { hideSuggestPrompt(); return; }
+  el.dataset.word=word;
+  el.querySelector('.sp-word').textContent=word;
+  el.disabled=false;
+  el.classList.add('show');
+  clearTimeout(_suggestPromptTimer); _suggestPromptTimer=setTimeout(hideSuggestPrompt,6000);
+}
+function hideSuggestPrompt(){
+  const el=document.getElementById('suggest-prompt'); if(el) el.classList.remove('show');
+}
+async function sendSuggestPrompt(){
+  const el=document.getElementById('suggest-prompt'); const word=el.dataset.word;
+  if(!word || el.disabled) return;
+  if(!window.submitMultipleSuggestions){ showToast('კავშირი მიმდინარეობს, სცადე ისევ',2200,'warn'); return; }
+  el.disabled=true;
+  const n = await window.submitMultipleSuggestions([word]);
+  hideSuggestPrompt();
+  if(n){ _suggestedThisSession.add(word); showToast(`მადლობა! „${word}“ გაიგზავნა განსახილველად`,2800,'ok'); }
+  else { el.disabled=false; }
 }
 
 // ── STATS ──
@@ -1892,7 +1943,7 @@ function shareResult(){
   let grid=''; guesses.forEach(g=>{grid+=evaluateGuess(g,targetWord).map(r=>map[r]).join('')+'\n';});
   const text=`სიტყვობანა\n${won?guesses.length:'X'}/6\n\n${grid.trim()}\n\n${location.origin}`;
   if(navigator.share) navigator.share({text}).catch(()=>{});
-  else{navigator.clipboard.writeText(text);showToast('კოპირებულია');}
+  else{navigator.clipboard.writeText(text);showToast('კოპირებულია',2200,'ok');}
 }
 
 // ── FREE PLAY ──
@@ -2024,7 +2075,7 @@ async function genChallenge(type){
     const inp=document.getElementById('chal-word-input');
     word=inp.value.trim();
     const len=[...word].length;
-    if(len<4||len>10||!/^[\u10D0-\u10FF]+$/.test(word)){showToast('4-10 ქართული ასო შეიყვანე!');return;}
+    if(len<4||len>10||!/^[\u10D0-\u10FF]+$/.test(word)){showToast('4-10 ქართული ასო შეიყვანე!',2200,'warn');return;}
     linkEl=document.getElementById('chal-link-custom');
     copyBtn=document.getElementById('copy-custom'); shareBtn=document.getElementById('share-custom');
   } else {
@@ -2038,11 +2089,11 @@ async function genChallenge(type){
   linkEl.textContent=url; linkEl.classList.add('visible');
   copyBtn.style.display='flex'; shareBtn.style.display='flex';
 }
-function copyLink(id){navigator.clipboard.writeText(document.getElementById(id).textContent);showToast('კოპირებულია');}
+function copyLink(id){navigator.clipboard.writeText(document.getElementById(id).textContent);showToast('კოპირებულია',2200,'ok');}
 function shareLink(id,title){
   const url=document.getElementById(id).textContent;
   if(navigator.share) navigator.share({title,url}).catch(()=>{});
-  else{navigator.clipboard.writeText(url);showToast('კოპირებულია');}
+  else{navigator.clipboard.writeText(url);showToast('კოპირებულია',2200,'ok');}
 }
 
 // ── FREEPLAY SESSION TRACKING ──
@@ -2196,8 +2247,8 @@ function _commitTag(wrapId, word) {
   const inp = wrap.querySelector('.tag-text-input');
   if (word === undefined) { word = inp.value.trim(); inp.value = ''; }
   if (!word) return;
-  if (!/^[\u10D0-\u10FF]+$/.test(word)) { showToast('მხოლოდ ქართული ასოები'); return; }
-  if ([...word].length < 4) { showToast('სიტყვა ძალიან მოკლეა (მინ. 4 ასო)'); return; }
+  if (!/^[\u10D0-\u10FF]+$/.test(word)) { showToast('მხოლოდ ქართული ასოები',2200,'warn'); return; }
+  if ([...word].length < 4) { showToast('სიტყვა ძალიან მოკლეა (მინ. 4 ასო)',2200,'warn'); return; }
   if (_tagChips[wrapId].has(word)) return;
   _tagChips[wrapId].add(word);
   const chip = document.createElement('span');
@@ -2226,11 +2277,11 @@ function _clearTagInput(wrapId) {
 async function submitTagSuggestion(wrapId) {
   _commitTag(wrapId); // commit any partially-typed word
   const words = [...(_tagChips[wrapId] || new Set())];
-  if (!words.length) { showToast('შეიყვანე სიტყვა'); return; }
-  if (!window.submitMultipleSuggestions) { showToast('კავშირი მიმდინარეობს, სცადე ისევ'); return; }
+  if (!words.length) { showToast('შეიყვანე სიტყვა',2200,'warn'); return; }
+  if (!window.submitMultipleSuggestions) { showToast('კავშირი მიმდინარეობს, სცადე ისევ',2200,'warn'); return; }
   await window.submitMultipleSuggestions(words);
   _clearTagInput(wrapId);
-  showToast('მადლობა სიტყვის გამოგზავნისთვის');
+  showToast('მადლობა სიტყვის გამოგზავნისთვის',2200,'ok');
 }
 
 // ── MOBILE KEYBOARD CAPTURE ──
