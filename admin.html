@@ -247,6 +247,11 @@
     .data-table th{text-align:left;font-size:11px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;padding:8px 12px;border-bottom:1px solid var(--border);}
     .data-table td{padding:9px 12px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle;}
     .data-table tr:hover td{background:rgba(0,0,0,.025);}
+    .users-breakdown{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:14px 0;}
+    .ub-card{border:1px solid var(--border);padding:10px 12px;}
+    .ub-card h4{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin:0 0 6px;}
+    .ub-row{display:flex;justify-content:space-between;font-size:13px;padding:2px 0;}
+    .ub-row b{font-variant-numeric:tabular-nums;}
     .lb-mode-tabs{display:flex;gap:6px;margin-bottom:16px;}
     .lb-mode-btn{padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:var(--bg);color:var(--text-muted);transition:all .2s;box-shadow:var(--shadow-out-xs);}
     .lb-mode-btn.active{background:var(--accent);color:#fff;box-shadow:var(--shadow-in-xs);}
@@ -373,6 +378,7 @@
     <div class="tab" onclick="switchTab('history')">📅 სიტყვის ისტორია</div>
     <div class="tab" onclick="switchTab('leaderboard')">🏆 ლიდერბორდი</div>
     <div class="tab" onclick="switchTab('stats')">📊 სტატისტიკა</div>
+    <div class="tab" onclick="switchTab('users')">👥 მომხმარებლები</div>
   </div>
 
   <div class="content">
@@ -498,6 +504,22 @@
       </div>
       <div class="section-header"><h2>ბოლო შეთავაზებები</h2></div>
       <div id="recent-sugg"></div>
+    </div>
+
+    <!-- USERS TAB -->
+    <div class="tab-panel" id="tab-users">
+      <div class="stats-row">
+        <div class="stat-card"><div class="sc-n" id="us-total">—</div><div class="sc-l">სულ მომხმარებელი</div></div>
+        <div class="stat-card"><div class="sc-n" id="us-active">—</div><div class="sc-l">აქტიური (7 დღე)</div></div>
+        <div class="stat-card"><div class="sc-n" id="us-new">—</div><div class="sc-l">ახალი (30 დღე)</div></div>
+        <div class="stat-card"><div class="sc-n" id="us-played">—</div><div class="sc-l">საშ. ნათამაშები</div></div>
+      </div>
+      <div id="users-breakdown" class="users-breakdown"></div>
+      <div class="section-header"><h2>მომხმარებლების სია</h2>
+        <input type="text" id="users-search" placeholder="ძებნა: სახელი / ელ-ფოსტა" oninput="renderUsers()" style="max-width:260px">
+      </div>
+      <div id="users-list" style="overflow-x:auto"><div class="loading"><span class="spin">⏳</span> იტვირთება...</div></div>
+      <p style="font-size:11px;color:var(--text-muted);margin-top:8px">მხოლოდ ავტორიზებული მოთამაშეები. დემოგრაფია ივსება ავტომატურად შემდეგი შესვლისას (მოწყობილობა, OS, ბრაუზერი, ენა, დროის სარტყელი).</p>
     </div>
 
   </div>
@@ -1033,11 +1055,83 @@ function updateStats() {
 // ── TABS ──
 window.switchTab = function(name) {
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',
-    ['suggestions','words','history','leaderboard','stats'][i]===name));
+    ['suggestions','words','history','leaderboard','stats','users'][i]===name));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   if(name==='history') loadHistory();
   if(name==='leaderboard') loadLeaderboard();
+  if(name==='users') loadUsers();
+};
+
+// ── USERS ──
+// /users/{uid}: profile (written by index.html on sign-in) + stats + daily progress.
+let allUsers = [];
+const TZ_COUNTRY = {
+  'Asia/Tbilisi':'საქართველო','Europe/Moscow':'რუსეთი','Europe/Istanbul':'თურქეთი','Asia/Yerevan':'სომხეთი',
+  'Asia/Baku':'აზერბაიჯანი','Europe/Kiev':'უკრაინა','Europe/Kyiv':'უკრაინა','Europe/Berlin':'გერმანია',
+  'Europe/London':'დიდი ბრიტანეთი','Europe/Paris':'საფრანგეთი','Europe/Rome':'იტალია','Europe/Madrid':'ესპანეთი',
+  'Europe/Athens':'საბერძნეთი','Europe/Warsaw':'პოლონეთი','Europe/Vienna':'ავსტრია','Europe/Brussels':'ბელგია',
+  'Europe/Amsterdam':'ნიდერლანდები','Europe/Prague':'ჩეხეთი','Europe/Dublin':'ირლანდია','Asia/Jerusalem':'ისრაელი',
+  'America/New_York':'აშშ','America/Chicago':'აშშ','America/Denver':'აშშ','America/Los_Angeles':'აშშ','America/Toronto':'კანადა'
+};
+function _country(tz){ return !tz ? '—' : (TZ_COUNTRY[tz] || tz.split('/').pop().replace(/_/g,' ')); }
+const DEVICE_KA = { mobile:'📱 მობილური', tablet:'📲 ტაბლეტი', desktop:'💻 კომპიუტერი' };
+const PROVIDER_KA = { 'google.com':'Google', 'password':'ელ-ფოსტა' };
+async function loadUsers() {
+  document.getElementById('users-list').innerHTML = '<div class="loading"><span class="spin">⏳</span> იტვირთება...</div>';
+  let snap;
+  try { snap = await get(ref(db, 'users')); }
+  catch(e) {
+    document.getElementById('users-list').innerHTML = '<div class="empty">წვდომა უარყოფილია — განაახლე Firebase-ის წესები (database.rules.json)</div>';
+    return;
+  }
+  const val = snap.exists() ? snap.val() : {};
+  allUsers = Object.entries(val).map(([uid,u])=>{
+    const p = (u && u.profile) || {}, st = (u && u.stats) || {};
+    const wins = Object.values(st.distribution || {}).reduce((a,n)=>a+(n||0),0);
+    return { uid, ...p, played: st.played||0, streak: st.streak||0, best: st.best||0,
+             winrate: st.played ? Math.round(wins/st.played*100) : null };
+  });
+  const now = Date.now(), D = 86400000;
+  document.getElementById('us-total').textContent = allUsers.length;
+  document.getElementById('us-active').textContent = allUsers.filter(u=>u.lastSeen && now-u.lastSeen < 7*D).length;
+  document.getElementById('us-new').textContent = allUsers.filter(u=>u.createdAt && now-u.createdAt < 30*D).length;
+  document.getElementById('us-played').textContent = allUsers.length
+    ? (allUsers.reduce((a,u)=>a+u.played,0)/allUsers.length).toFixed(1) : '—';
+  const count = (fn) => { const m={}; allUsers.forEach(u=>{ const k=fn(u)||'უცნობი'; m[k]=(m[k]||0)+1; }); return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,6); };
+  const card = (title, rows) => `<div class="ub-card"><h4>${esc(title)}</h4>${rows.map(([k,n])=>`<div class="ub-row"><span>${esc(k)}</span><b>${n}</b></div>`).join('')}</div>`;
+  document.getElementById('users-breakdown').innerHTML =
+    card('მოწყობილობა', count(u=>DEVICE_KA[u.device]||u.device)) +
+    card('ქვეყანა (დროის სარტყლით)', count(u=>u.timezone && _country(u.timezone))) +
+    card('ოპერაციული სისტემა', count(u=>u.os)) +
+    card('ბრაუზერი', count(u=>u.browser)) +
+    card('ენა', count(u=>u.lang)) +
+    card('შესვლის მეთოდი', count(u=>PROVIDER_KA[u.provider]||u.provider));
+  renderUsers();
+}
+function _d(ts){ return ts ? new Date(ts).toLocaleDateString('ka-GE',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'; }
+window.renderUsers = function() {
+  const q = (document.getElementById('users-search').value||'').trim().toLowerCase();
+  const rows = allUsers
+    .filter(u => !q || (u.name||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q))
+    .sort((a,b)=>(b.lastSeen||0)-(a.lastSeen||0));
+  const c = document.getElementById('users-list');
+  if(!rows.length){ c.innerHTML='<div class="empty">მომხმარებელი არ მოიძებნა</div>'; return; }
+  c.innerHTML = `<table class="data-table">
+    <thead><tr><th>სახელი</th><th>ელ-ფოსტა</th><th>რეგისტრაცია</th><th>ბოლოს</th><th>მოწყობილობა</th><th>OS / ბრაუზერი</th><th>ქვეყანა</th><th>ენა</th><th>ნათამაშები</th><th>მოგება</th><th>სტრიქი</th></tr></thead>
+    <tbody>${rows.map(u=>`<tr>
+      <td style="font-weight:600">${esc(u.name||'—')}</td>
+      <td style="color:var(--text-dim)">${esc(u.email||'—')}</td>
+      <td style="font-size:11px;color:var(--text-muted)">${esc(_d(u.createdAt))}</td>
+      <td style="font-size:11px;color:var(--text-muted)">${esc(_d(u.lastSeen))}</td>
+      <td>${esc(DEVICE_KA[u.device]||u.device||'—')}</td>
+      <td style="font-size:12px">${esc([u.os,u.browser].filter(Boolean).join(' / ')||'—')}</td>
+      <td style="font-size:12px">${esc(_country(u.timezone))}</td>
+      <td style="font-size:12px">${esc(u.lang||'—')}</td>
+      <td>${esc(u.played)}</td>
+      <td>${u.winrate==null?'—':esc(u.winrate)+'%'}</td>
+      <td>${esc(u.streak)} <span style="color:var(--text-muted);font-size:11px">(${esc(u.best)})</span></td>
+    </tr>`).join('')}</tbody></table>`;
 };
 
 // ── WORD HISTORY ──
@@ -1110,7 +1204,7 @@ function renderLeaderboard() {
   if(!entries.length){ container.innerHTML='<div class="empty">ჩანაწერები არ არის</div>'; return; }
   const isFP = lbMode==='freeplay';
   container.innerHTML = `<table class="data-table">
-    <thead><tr><th>#</th><th>მოთამაშე</th><th>თარიღი</th>${isFP?'<th>სიტყვები</th>':''}<th>მცდელობები</th><th>ჰინთები</th><th>ქულა</th><th></th></tr></thead>
+    <thead><tr><th>#</th><th>მოთამაშე</th><th>თარიღი</th>${isFP?'<th>სიტყვები</th>':''}<th>მცდელობები</th><th>ქულა</th><th></th></tr></thead>
     <tbody>${entries.map(([id,e],i)=>{
       const sc = e.score || Math.max(10,(7-(e.guesses||6))*100);
       return `<tr>
@@ -1119,7 +1213,6 @@ function renderLeaderboard() {
         <td style="color:var(--text-muted);font-size:11px">${esc(e.date||'—')}</td>
         ${isFP?`<td style="color:var(--text-muted)">${esc(e.wordsGuessed||'—')}</td>`:''}
         <td style="color:var(--text-muted)">${esc(e.guesses||'—')}</td>
-        <td style="color:var(--text-muted)">${e.hintsUsed!=null?esc(e.hintsUsed):'—'}</td>
         <td style="color:var(--accent);font-weight:700">${esc(sc)}</td>
         <td><button class="del-word-btn" onclick="deleteLbEntry('${esc(id)}')" title="წაშლა">🗑</button></td>
       </tr>`;}).join('')}

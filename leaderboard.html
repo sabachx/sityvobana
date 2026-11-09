@@ -435,12 +435,11 @@ function renderBoard(rows) {
       </td>
       <td>${esc(r.words ?? '—')}</td>
       <td>${esc(r.guesses ?? '—')}</td>
-      <td>${esc(r.hints ?? 0)}</td>
       <td class="lb-points">${esc(r.points)}</td>
     </tr>`;
   }).join('');
   document.getElementById('board-container').innerHTML = `<div class="lb-table-wrap"><table class="lb-table">
-    <thead><tr><th>#</th><th>მოთამაშე</th><th>გამოცნობილი</th><th>მცდელობა</th><th>მინიშნება</th><th>ქულა</th></tr></thead>
+    <thead><tr><th>#</th><th>მოთამაშე</th><th>გამოცნობილი</th><th>მცდელობა</th><th>ქულა</th></tr></thead>
     <tbody>${body}</tbody>
   </table></div>`;
 }

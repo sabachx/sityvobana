@@ -106,7 +106,6 @@
     }
     .icon-btn:hover { color:var(--text); }
     .icon-btn:active { background:var(--paper-aged); }
-    .hint-btn.used { opacity:.3; pointer-events:none; }
     .user-btn {
       background:var(--text);
       border:1px solid var(--text); color:var(--bg);
@@ -263,6 +262,8 @@
     .del-key   { flex:1.3; font-size:17px; }
     .shift-key { flex:1.3; font-size:17px; }
     .shift-key.active { box-shadow: inset 0 0 0 2.5px var(--text); color:var(--text); }
+    #keyboard.kb-full { max-width:640px; }
+    #keyboard.kb-full .enter-key, #keyboard.kb-full .del-key { flex:1.6; }
     .key.correct { background:var(--text); color:var(--bg); box-shadow:none; }
     .key.present { background:var(--bg); box-shadow: inset 0 0 0 2.5px var(--text); color:var(--text); }
     .key.absent  { background:var(--paper-aged); box-shadow: inset 0 0 0 1px var(--rule); color:var(--text-muted); text-decoration:line-through; }
@@ -303,6 +304,8 @@
     #result-modal .result-sub  { margin-bottom:6px; }
     #result-modal #next-word-timer { margin-bottom:6px; }
     #result-modal .dist-chart  { margin-bottom:6px; }
+    #result-modal .stats-cards { margin-bottom:8px; gap:6px; }
+    #result-modal .stats-card .v { font-size:20px; }
     #result-modal .dist-chart h3 { margin-bottom:4px; }
     #result-modal .dist-row    { margin-bottom:3px; }
     #result-modal .dist-bar-wrap { height:18px; }
@@ -602,7 +605,6 @@
   <div class="header-actions">
     <button class="icon-btn" onclick="openStatsModal()" aria-label="სტატისტიკა"><svg class="ic"><use href="#i-stats"/></svg></button>
     <button class="icon-btn" onclick="openModal('how-modal')" aria-label="როგორ ვითამაშოთ"><svg class="ic"><use href="#i-help"/></svg></button>
-    <button class="icon-btn hint-btn" id="hint-btn" onclick="useHint()" aria-label="მინიშნება"><svg class="ic"><use href="#i-bulb"/></svg></button>
     <button class="user-btn" id="user-avatar" onclick="openModal('auth-modal')" aria-label="პროფილი">
       <span id="user-avatar-inner" aria-hidden="true"><svg class="ic"><use href="#i-user"/></svg></span>
     </button>
@@ -625,7 +627,7 @@
   <!-- BLITZ DISABLED --><button class="mode-pill" style="display:none" onclick="openModal('blitz-intro-modal')"><svg class="ic"><use href="#i-bolt"/></svg> ბლიცი</button>
 </div>
 <!-- Free play indicator: visible whenever the round is not counted -->
-<div id="freeplay-banner"><svg class="ic"><use href="#i-dice"/></svg> თავისუფალი თამაში</div>
+<div id="freeplay-banner"><svg class="ic"><use href="#i-dice"/></svg> თავისუფალი თამაში · <svg class="ic"><use href="#i-flame"/></svg> სტრიქი: <span id="fp-streak">0</span></div>
 
 <!-- SIDE MENU -->
 <div id="menu-overlay" onclick="closeMenu()"></div>
@@ -801,6 +803,11 @@
     <div class="result-sub" id="result-sub"></div>
     <div class="result-word" id="result-word"></div>
     <div id="next-word-timer">შემდეგი სიტყვა: <span id="countdown">00:00:00</span></div>
+    <div class="stats-cards" id="result-streak-cards">
+      <div class="stats-card"><div class="v" id="rs-streak">0</div><div class="l">სტრიქი <svg class="ic"><use href="#i-flame"/></svg></div></div>
+      <div class="stats-card"><div class="v" id="rs-winrate">0%</div><div class="l">მოგება</div></div>
+      <div class="stats-card"><div class="v" id="rs-best">0</div><div class="l">საუკეთესო</div></div>
+    </div>
     <div class="dist-chart">
       <h3 id="dist-title"><svg class="ic"><use href="#i-stats"/></svg> გამოცნობის სტატისტიკა</h3>
       <div id="dist-bars"></div>
@@ -956,7 +963,7 @@
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getDatabase, ref, push, get, set, query, orderByChild, equalTo }
+import { getDatabase, ref, push, get, set, update, query, orderByChild, equalTo }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 import {
   getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider,
@@ -985,6 +992,7 @@ onAuthStateChanged(_auth, (user) => {
     const name = user.displayName || user.email.split('@')[0];
     const initial = name[0].toUpperCase();
     setUser({ name, email: user.email, initial, uid: user.uid });
+    _saveUserProfile(user, name);
   } else {
     window._fbUser = null;
     setUser(null);
@@ -1079,6 +1087,46 @@ window._preloadWords = async function() {
     }
   } catch(e) { console.warn('Word preload failed:', e); }
 };
+
+// ── USER PROFILE (for the admin users list) ──
+// Collected passively from the account + browser — no extra steps for the player.
+function _deviceInfo() {
+  const ua = navigator.userAgent || '';
+  const os = /Android/i.test(ua) ? 'Android'
+    : /iPhone|iPod/i.test(ua) ? 'iOS'
+    : (/iPad/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1)) ? 'iPadOS'
+    : /Windows/i.test(ua) ? 'Windows'
+    : /Mac OS X|Macintosh/i.test(ua) ? 'macOS'
+    : /CrOS/i.test(ua) ? 'ChromeOS'
+    : /Linux/i.test(ua) ? 'Linux' : 'სხვა';
+  const browser = /Edg\//.test(ua) ? 'Edge'
+    : /OPR\/|Opera/.test(ua) ? 'Opera'
+    : /SamsungBrowser/.test(ua) ? 'Samsung'
+    : /Firefox|FxiOS/.test(ua) ? 'Firefox'
+    : /Chrome|CriOS/.test(ua) ? 'Chrome'
+    : /Safari/.test(ua) ? 'Safari' : 'სხვა';
+  const minSide = Math.min(screen.width, screen.height);
+  const device = (os === 'iPadOS' || (/Android/i.test(ua) && !/Mobile/i.test(ua))) ? 'tablet'
+    : (/Mobi|iPhone|Android/i.test(ua) || minSide < 500) ? 'mobile' : 'desktop';
+  return { os, browser, device };
+}
+async function _saveUserProfile(user, name) {
+  try {
+    const provider = (user.providerData && user.providerData[0] && user.providerData[0].providerId) || 'password';
+    const created = Date.parse(user.metadata && user.metadata.creationTime) || Date.now();
+    let tz = ''; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch(e) {}
+    await update(ref(_db, `users/${user.uid}/profile`), {
+      name: String(name).slice(0, 40),
+      email: user.email || '',
+      provider,
+      createdAt: created,
+      lastSeen: Date.now(),
+      lang: (navigator.language || '').slice(0, 12),
+      timezone: tz.slice(0, 40),
+      ..._deviceInfo()
+    });
+  } catch(e) { console.warn('Profile save failed:', e); }
+}
 
 // ── USER DATA SYNC ──
 window._saveUserStats = async function(uid, stats) {
@@ -1273,8 +1321,19 @@ const KB_LAYERS = {
     ["ქ","ჭ","ე","ღ","თ","ყ","უ","ი","ო","პ"],
     ["ა","შ","დ","ფ","გ","ჰ","ჟ","კ","ლ","⌫"],
     ["⇧","ძ","ხ","ჩ","ვ","ბ","ნ","მ","ENTER"]
+  ],
+  // Big screens (PC / laptop / tablet): all 33 letters visible, no shift layer.
+  // Each shift letter sits right after its base key (წ ჭ, რ ღ, ტ თ, ს შ, ჯ ჟ, ზ ძ, ც ჩ).
+  full: [
+    ["ქ","წ","ჭ","ე","რ","ღ","ტ","თ","ყ","უ","ი","ო","პ"],
+    ["ა","ს","შ","დ","ფ","გ","ჰ","ჯ","ჟ","კ","ლ"],
+    ["ENTER","ზ","ძ","ხ","ც","ჩ","ვ","ბ","ნ","მ","⌫"]
   ]
 };
+// Wide AND reasonably tall viewport = PC, laptop or tablet. Phones (incl. landscape) keep the shift layout.
+const _bigScreenMQ = window.matchMedia('(min-width: 768px) and (min-height: 520px)');
+function isFullKeyboard(){ return _bigScreenMQ.matches; }
+_bigScreenMQ.addEventListener?.('change', ()=>{ kbShift=false; physShift=false; if(document.getElementById('keyboard')) buildKeyboard(); });
 let kbShift = false;      // sticky one-shot shift (on-screen ⇧ tap)
 let physShift = false;    // momentary shift (physical Shift key held on desktop)
 function shiftOn(){ return kbShift || physShift; }
@@ -1289,7 +1348,10 @@ const L2G = {
 
 // ── STATE ──
 let targetWord="", currentRow=0, currentCol=0, currentGuess=[], gameOver=false, guesses=[], revealInProgress=false, isChallenge=false, wordLength=5, isFreePlay=false, isSubmitting=false;
-const state = { streak:0, best:0, played:0, distribution:{1:0,2:0,3:0,4:0,5:0,6:0}, user:null };
+const state = { streak:0, best:0, played:0, distribution:{1:0,2:0,3:0,4:0,5:0,6:0}, user:null, fp:_emptyFp() };
+// Free-play stats live separately from the daily ones
+function _emptyFp(){ return { streak:0, best:0, played:0, distribution:{1:0,2:0,3:0,4:0,5:0,6:0} }; }
+function _normFp(f){ f=f||{}; return { streak:f.streak||0, best:f.best||0, played:f.played||0, distribution:f.distribution||{1:0,2:0,3:0,4:0,5:0,6:0} }; }
 
 // Expose targetWord to window so Firebase validation module can access it
 Object.defineProperty(window, '_targetWord', { get: () => targetWord });
@@ -1346,6 +1408,7 @@ function loadState() {
     const s = JSON.parse(localStorage.getItem('sitqva_state')||'{}');
     state.streak = s.streak||0; state.best = s.best||0; state.played = s.played||0;
     state.distribution = s.distribution||{1:0,2:0,3:0,4:0,5:0,6:0};
+    state.fp = _normFp(s.fp);
     state.user = s.user||null;
   } catch(e){}
   updateUserUI();
@@ -1355,7 +1418,8 @@ function saveState() {
   if (state.user && window._saveUserStats) {
     window._saveUserStats(state.user.uid, {
       streak: state.streak, best: state.best,
-      played: state.played, distribution: state.distribution
+      played: state.played, distribution: state.distribution,
+      fp: state.fp
     });
   }
 }
@@ -1460,7 +1524,9 @@ function restoreBoard(data) {
 const keyColors={};
 function buildKeyboard() {
   const kb=document.getElementById('keyboard'); kb.innerHTML='';
-  KB_LAYERS[shiftOn()?'shift':'normal'].forEach(row=>{
+  const full=isFullKeyboard();
+  kb.classList.toggle('kb-full', full);
+  KB_LAYERS[full?'full':(shiftOn()?'shift':'normal')].forEach(row=>{
     const rowEl=document.createElement('div'); rowEl.className='kb-row';
     row.forEach(key=>{
       const btn=document.createElement('button');
@@ -1506,7 +1572,7 @@ document.addEventListener('keydown',e=>{
   if(e.ctrlKey||e.metaKey||e.altKey) return;
   if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
   const k=e.key;
-  if(k==='Shift'){ if(!e.repeat && !physShift){ physShift=true; buildKeyboard(); } return; }
+  if(k==='Shift'){ if(!isFullKeyboard() && !e.repeat && !physShift){ physShift=true; buildKeyboard(); } return; }
   if(k==='Backspace'||k==='Delete'){e.preventDefault();flashKey('key-DEL');handleKey('⌫');return;}
   if(k==='Enter'){e.preventDefault();flashKey('key-ENTER');handleKey('ENTER');return;}
   if(/^[\u10D0-\u10FF]$/.test(k)){flashKey('key-'+k);handleKey(k);return;}
@@ -1559,16 +1625,16 @@ async function submitGuess() {
     currentRow++; currentGuess=[]; currentCol=0;
     if(won){
       gameOver=true; const att=currentRow;
-      // Free play rounds do not count toward stats (streak / win rate / distribution)
-      if(!isFreePlay){
-        state.streak++; state.best=Math.max(state.best,state.streak); state.played++;
-        state.distribution[att]=(state.distribution[att]||0)+1;
-      }
+      // Free play keeps its own stats (state.fp) so it never touches the daily streak
+      const st = isFreePlay ? state.fp : state;
+      st.streak++; st.best=Math.max(st.best,st.streak); st.played++;
+      st.distribution[att]=(st.distribution[att]||0)+1;
       saveState(); updateStats(); saveTodayProgress();
       winBounce(currentRow-1); setTimeout(()=>showResult(true,att),1600);
     } else if(currentRow>=maxGuesses){
       gameOver=true;
-      if(!isFreePlay){ state.streak=0; state.played++; }
+      const st = isFreePlay ? state.fp : state;
+      st.streak=0; st.played++;
       saveState(); updateStats(); saveTodayProgress();
       showToast(targetWord); setTimeout(()=>showResult(false),2000);
     } else { saveTodayProgress(); }
@@ -1619,10 +1685,10 @@ function showToast(msg,dur=2200){
 function updateStats(){
   ['streak','best','played'].forEach(k=>{
     const s=document.getElementById('stat-'+k); if(s) s.textContent=state[k];
-    const r=document.getElementById('rs-'+k);   if(r) r.textContent=state[k];
     const p=document.getElementById('ps-'+k);   if(p) p.textContent=state[k];
     const m=document.getElementById('ms-'+k);   if(m) m.textContent=state[k];
   });
+  const fps=document.getElementById('fp-streak'); if(fps) fps.textContent=state.fp.streak;
   const statsPills=document.getElementById('stats-pills');
   if(statsPills) statsPills.style.display=state.user?'flex':'none';
   const menuStats=document.getElementById('menu-stats-section');
@@ -1634,7 +1700,9 @@ function renderDistribution(distObj, highlightAtt, containerId='dist-bars') {
   const c=document.getElementById(containerId); if(!c) return; c.innerHTML='';
   if(!distObj) return;
   const maxV=Math.max(1,...Object.values(distObj));
-  for(let i=1;i<=6;i++){
+  // Longer words allow more rows (wordLength+1), so show every row that has a count
+  const maxRow=Math.max(6,...Object.keys(distObj).map(Number).filter(n=>n>0 && distObj[n]>0));
+  for(let i=1;i<=maxRow;i++){
     const count=distObj[i]||0, pct=Math.round((count/maxV)*100);
     const row=document.createElement('div'); row.className='dist-row';
     const lbl=document.createElement('div'); lbl.className='dist-label'; lbl.textContent=i;
@@ -1766,16 +1834,6 @@ function renderBadges() {
   });
 }
 
-async function fetchWordDistribution(word) {
-  if(!window._fbGetLeaderboard) return null;
-  const entries = await window._fbGetLeaderboard('daily');
-  const dist = {1:0,2:0,3:0,4:0,5:0,6:0};
-  Object.values(entries).forEach(e => {
-    if(e.word===word && e.guesses>=1 && e.guesses<=6) dist[e.guesses]++;
-  });
-  return dist;
-}
-
 // ── RESULT ──
 async function showResult(won,attempts,skipSubmit=false){
   // Badge check at game end (skipSubmit = restoring an old result, not a fresh game end)
@@ -1802,25 +1860,25 @@ async function showResult(won,attempts,skipSubmit=false){
 
   // Submit score — await daily so it's in Firebase before we fetch the distribution
   if(won && !skipSubmit && typeof window.submitScore === 'function'){
-    const wordScore = Math.max(10, (7 - attempts) * 100 - hintsUsed * 50);
+    const wordScore = Math.max(10, (7 - attempts) * 100);
     if(!isFreePlay){
-      await window.submitScore('daily', { guesses: attempts, hintsUsed, score: wordScore, word: targetWord });
+      await window.submitScore('daily', { guesses: attempts, score: wordScore, word: targetWord });
     } else {
-      _fpWords++; _fpAttempts += attempts; _fpHints += hintsUsed; _fpScore += wordScore;
-      window.submitScore('freeplay', { score: _fpScore, guesses: _fpAttempts, hintsUsed: _fpHints, wordsGuessed: _fpWords, word: targetWord });
+      _fpWords++; _fpAttempts += attempts; _fpScore += wordScore;
+      window.submitScore('freeplay', { score: _fpScore, guesses: _fpAttempts, wordsGuessed: _fpWords, word: targetWord });
     }
   }
   // Free-play streak ends on a loss — next word starts a fresh streak from 0
-  if(isFreePlay && !won){ _fpWords=0; _fpAttempts=0; _fpHints=0; _fpScore=0; }
+  if(isFreePlay && !won){ _fpWords=0; _fpAttempts=0; _fpScore=0; }
+  // Player's own streak + guess distribution — free-play stats in free play, daily stats otherwise
+  const st = isFreePlay ? state.fp : state;
+  const wins = Object.values(st.distribution||{}).reduce((s,n)=>s+(n||0),0);
   const distTitle = document.getElementById('dist-title');
-  if(!isFreePlay && !isChallenge) {
-    if(distTitle) distTitle.textContent = 'ვინ რამდენ ცდაში გამოიცნო';
-    const globalDist = await fetchWordDistribution(targetWord);
-    renderDistribution(globalDist || state.distribution, won ? attempts : 0);
-  } else {
-    if(distTitle) distTitle.textContent = 'გამოცნობის სტატისტიკა';
-    renderDistribution(state.distribution, won ? attempts : 0);
-  }
+  if(distTitle) distTitle.textContent = isFreePlay ? 'თავისუფალი თამაში — რამდენ ცდაში' : 'შენი გამოცნობები — რამდენ ცდაში';
+  document.getElementById('rs-streak').textContent = st.streak;
+  document.getElementById('rs-best').textContent = st.best;
+  document.getElementById('rs-winrate').textContent = st.played ? Math.round(wins/st.played*100)+'%' : '0%';
+  renderDistribution(st.distribution, won ? attempts : 0);
   updateStats(); startCountdown(); openModal('result-modal');
   // Persist result so modal re-appears if user navigates away and returns (same tab only)
   try{
@@ -1847,7 +1905,7 @@ function toggleResultSuggest() {
 }
 
 async function startFreePlay(continueSession=false) {
-  if(!continueSession){ _fpWords=0; _fpAttempts=0; _fpHints=0; _fpScore=0; sessionStorage.removeItem('sitqva_fp_result'); }
+  if(!continueSession){ _fpWords=0; _fpAttempts=0; _fpScore=0; sessionStorage.removeItem('sitqva_fp_result'); }
   // ── Switch UI immediately (feels instant) ──
   isFreePlay = true;
   isChallenge = true;
@@ -1856,8 +1914,6 @@ async function startFreePlay(continueSession=false) {
   wordLength = 5;
   Object.keys(keyColors).forEach(k => delete keyColors[k]);
   document.querySelectorAll('#keyboard .key').forEach(k => k.classList.remove('correct','present','absent'));
-  hintsUsed = 0; _hintedPos.clear();
-  document.getElementById('hint-btn')?.classList.remove('used');
   updateModeBar();
   // Show board immediately with dimmed state while word loads
   applyWordLength();
@@ -1889,8 +1945,6 @@ async function switchToDaily() {
   wordLength = 5; isSubmitting = false;
   Object.keys(keyColors).forEach(k => delete keyColors[k]);
   document.querySelectorAll('#keyboard .key').forEach(k => k.classList.remove('correct','present','absent'));
-  hintsUsed = 0; _hintedPos.clear();
-  document.getElementById('hint-btn')?.classList.remove('used');
   await loadWordsFromAPI();
   applyWordLength(); buildBoard(); buildKeyboard(); checkTodayPlayed();
   updateModeBar();
@@ -1991,36 +2045,8 @@ function shareLink(id,title){
   else{navigator.clipboard.writeText(url);showToast('კოპირებულია');}
 }
 
-// ── HINT ──
-let hintsUsed=0, _hintedPos=new Set();
 // ── FREEPLAY SESSION TRACKING ──
-let _fpWords=0, _fpAttempts=0, _fpHints=0, _fpScore=0;
-function useHint(){
-  if(gameOver||revealInProgress) return;
-  if(hintsUsed>=2){showToast('მინიშნებები ამოიწურა');return;}
-  const tA=[...targetWord], conf=new Set(), presentLetters=new Set();
-  guesses.forEach(g=>{
-    const gA=[...g];
-    gA.forEach((l,i)=>{
-      if(l===tA[i]) conf.add(i);
-      else if(tA.includes(l)) presentLetters.add(l);
-    });
-  });
-  // Positions of known-present (yellow) letters that aren't confirmed/hinted yet
-  const yellowAvail=[];
-  presentLetters.forEach(letter=>{
-    tA.forEach((l,i)=>{ if(l===letter&&!conf.has(i)&&!_hintedPos.has(i)) yellowAvail.push(i); });
-  });
-  // Fall back to any unconfirmed/unhinted position if no yellow available
-  const allAvail=Array.from({length:wordLength},(_,i)=>i).filter(i=>!conf.has(i)&&!_hintedPos.has(i));
-  const avail=yellowAvail.length ? yellowAvail : allAvail;
-  if(!avail.length){showToast('ყველა ადგილი ცნობილია');return;}
-  const pos=avail[Math.floor(Math.random()*avail.length)];
-  _hintedPos.add(pos);
-  const ordinals=['პირველი','მეორე','მესამე','მეოთხე','მეხუთე','მეექვსე','მეშვიდე','მერვე','მეცხრე','მეათე'];
-  showToast(`${ordinals[pos]||pos+1} ასო: "${tA[pos]}"`,3000);
-  hintsUsed++; if(hintsUsed>=2) document.getElementById('hint-btn').classList.add('used');
-}
+let _fpWords=0, _fpAttempts=0, _fpScore=0;
 
 // ── AUTH ──
 async function setUser(u){
@@ -2038,6 +2064,8 @@ async function setUser(u){
           state.best   = data.stats.best||0;
           state.played = data.stats.played||0;
           state.distribution = data.stats.distribution||{1:0,2:0,3:0,4:0,5:0,6:0};
+          // Keep whichever free-play record is further along (older accounts have none in Firebase)
+          if(data.stats.fp && (data.stats.fp.played||0) >= state.fp.played) state.fp = _normFp(data.stats.fp);
           localStorage.setItem('sitqva_state', JSON.stringify(state));
           updateStats();
         }
