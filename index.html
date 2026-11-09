@@ -226,8 +226,8 @@
       transition:box-shadow .15s;
     }
     .tile.filled  { box-shadow: inset 0 0 0 2px var(--text); animation:pop .1s ease; }
-    .tile.correct { background:var(--text); box-shadow:none; color:var(--bg); }
-    .tile.present { background:var(--bg); box-shadow: inset 0 0 0 2.5px var(--text); color:var(--text); }
+    .tile.correct { background:#4C9453;box-shadow:none;color:#FFFFFF; }
+    .tile.present { background:#DA9307;box-shadow:none;color:#FFFFFF; }
     .tile.absent  { background:var(--paper-aged); box-shadow: inset 0 0 0 1px var(--rule); color:var(--text-muted); text-decoration:line-through; }
     .tile.reveal  { animation:flip .45s ease forwards; }
     .tile.shake   { animation:shake .35s ease; }
@@ -264,8 +264,8 @@
     .shift-key.active { box-shadow: inset 0 0 0 2.5px var(--text); color:var(--text); }
     #keyboard.kb-full { max-width:640px; }
     #keyboard.kb-full .enter-key, #keyboard.kb-full .del-key { flex:1.6; }
-    .key.correct { background:var(--text); color:var(--bg); box-shadow:none; }
-    .key.present { background:var(--bg); box-shadow: inset 0 0 0 2.5px var(--text); color:var(--text); }
+    .key.correct { background:#4C9453;box-shadow:none;color:#FFFFFF; }
+    .key.present { background:#DA9307;box-shadow:none;color:#FFFFFF; }
     .key.absent  { background:var(--paper-aged); box-shadow: inset 0 0 0 1px var(--rule); color:var(--text-muted); text-decoration:line-through; }
 
     /* ── CHALLENGE BANNER ── */
@@ -488,8 +488,8 @@
       background:var(--bg); color:var(--text); border:none;
       box-shadow: inset 0 0 0 1px var(--text);
     }
-    .how-tile.correct { background:var(--text); box-shadow:none; color:var(--bg); }
-    .how-tile.present { background:var(--bg); box-shadow: inset 0 0 0 2.5px var(--text); color:var(--text); }
+    .how-tile.correct { background:#4C9453;box-shadow:none;color:#FFFFFF; }
+    .how-tile.present { background:#DA9307;box-shadow:none;color:#FFFFFF; }
     .how-tile.absent  { background:var(--paper-aged); box-shadow: inset 0 0 0 1px var(--rule); color:var(--text-muted); text-decoration:line-through; }
     .how-desc { font-size:12px; color:var(--text-dim); margin-bottom:3px; }
     .how-desc span { color:var(--text); font-weight:600; }
@@ -1888,7 +1888,7 @@ async function showResult(won,attempts,skipSubmit=false){
 }
 function shareResult(){
   const won=guesses.length>0&&guesses[guesses.length-1]===targetWord;
-  const map={correct:'⬛',present:'🔳',absent:'⬜'};
+  const map={correct:'🟩',present:'🟨',absent:'⬜'};
   let grid=''; guesses.forEach(g=>{grid+=evaluateGuess(g,targetWord).map(r=>map[r]).join('')+'\n';});
   const text=`სიტყვობანა\n${won?guesses.length:'X'}/6\n\n${grid.trim()}\n\n${location.origin}`;
   if(navigator.share) navigator.share({text}).catch(()=>{});
